@@ -29,4 +29,3 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // !!! must be kept the same as in d_iface.h !!!
 #define TRANSPARENT_COLOR	255
-

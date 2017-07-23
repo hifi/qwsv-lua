@@ -19,9 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // quakedef.h -- primary header for client
 
-#define	QUAKE_GAME			// as opposed to utilities
+#define	QUAKE_GAME              // as opposed to utilities
 
-//define	PARANOID			// speed sapping error checking
+//define        PARANOID                        // speed sapping error checking
 
 #ifdef _WIN32
 #pragma warning( disable : 4244 4127 4201 4214 4514 4305 4115 4018)
@@ -87,14 +87,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // command line parms passed to the program, and the amount of memory
 // available for the program to use
 
-typedef struct
-{
-	char	*basedir;
-	char	*cachedir;		// for development over ISDN lines
-	int		argc;
-	char	**argv;
-	void	*membase;
-	int		memsize;
+typedef struct {
+    char *basedir;
+    char *cachedir;             // for development over ISDN lines
+    int argc;
+    char **argv;
+    void *membase;
+    int memsize;
 } quakeparms_t;
 
 
@@ -109,34 +108,33 @@ extern qboolean noclip_anglehack;
 //
 // host
 //
-extern	quakeparms_t host_parms;
+extern quakeparms_t host_parms;
 
-extern	cvar_t		sys_ticrate;
-extern	cvar_t		sys_nostdout;
-extern	cvar_t		developer;
+extern cvar_t sys_ticrate;
+extern cvar_t sys_nostdout;
+extern cvar_t developer;
 
-extern	cvar_t	password;
+extern cvar_t password;
 
-extern	qboolean	host_initialized;		// true if into command execution
-extern	double		host_frametime;
-extern	byte		*host_basepal;
-extern	byte		*host_colormap;
-extern	int			host_framecount;	// incremented every frame, never reset
-extern	double		realtime;			// not bounded in any way, changed at
-										// start of every frame, never reset
+extern qboolean host_initialized;       // true if into command execution
+extern double host_frametime;
+extern byte *host_basepal;
+extern byte *host_colormap;
+extern int host_framecount;     // incremented every frame, never reset
+extern double realtime;         // not bounded in any way, changed at
+                                                                                // start of every frame, never reset
 
-void Host_ServerFrame (void);
-void Host_InitCommands (void);
-void Host_Init (quakeparms_t *parms);
+void Host_ServerFrame(void);
+void Host_InitCommands(void);
+void Host_Init(quakeparms_t * parms);
 void Host_Shutdown(void);
-void Host_Error (char *error, ...);
-void Host_EndGame (char *message, ...);
+void Host_Error(char *error, ...);
+void Host_EndGame(char *message, ...);
 qboolean Host_SimulationTime(float time);
-void Host_Frame (float time);
-void Host_Quit_f (void);
-void Host_ClientCommands (char *fmt, ...);
-void Host_ShutdownServer (qboolean crash);
+void Host_Frame(float time);
+void Host_Quit_f(void);
+void Host_ClientCommands(char *fmt, ...);
+void Host_ShutdownServer(qboolean crash);
 
-extern qboolean		msg_suppress_1;		// suppresses resolution and cache size console output
-										//  an fullscreen DIB focus gain/loss
-
+extern qboolean msg_suppress_1; // suppresses resolution and cache size console output
+                                                                                //  an fullscreen DIB focus gain/loss

@@ -31,20 +31,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define id386	0
 #endif
 
-#ifdef SERVERONLY		// no asm in dedicated server
+#ifdef SERVERONLY               // no asm in dedicated server
 #undef id386
 #endif
 
 #if id386
-#define UNALIGNED_OK	1	// set to 0 if unaligned accesses are not supported
+#define UNALIGNED_OK	1       // set to 0 if unaligned accesses are not supported
 #else
 #define UNALIGNED_OK	0
 #endif
 
 // !!! if this is changed, it must be changed in d_ifacea.h too !!!
-#define CACHE_SIZE	32		// used to align key data structures
+#define CACHE_SIZE	32      // used to align key data structures
 
-#define UNUSED(x)	(x = x)	// for pesky compiler / lint warnings
+#define UNUSED(x)	(x = x) // for pesky compiler / lint warnings
 
 #define	MINIMUM_MEMORY	0x550000
 
@@ -58,26 +58,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	ROLL	2
 
 
-#define	MAX_SCOREBOARD		16		// max numbers of players
+#define	MAX_SCOREBOARD		16      // max numbers of players
 
 #define	SOUND_CHANNELS		8
 
 
-#define	MAX_QPATH		64			// max length of a quake game pathname
-#define	MAX_OSPATH		128			// max length of a filesystem pathname
+#define	MAX_QPATH		64      // max length of a quake game pathname
+#define	MAX_OSPATH		128     // max length of a filesystem pathname
 
-#define	ON_EPSILON		0.1			// point on plane side epsilon
+#define	ON_EPSILON		0.1     // point on plane side epsilon
 
-#define	MAX_MSGLEN		1450		// max length of a reliable message
-#define	MAX_DATAGRAM	1450		// max length of unreliable message
+#define	MAX_MSGLEN		1450    // max length of a reliable message
+#define	MAX_DATAGRAM	1450    // max length of unreliable message
 
 //
 // per-level limits
 //
-#define	MAX_EDICTS		768			// FIXME: ouch! ouch! ouch!
+#define	MAX_EDICTS		768     // FIXME: ouch! ouch! ouch!
 #define	MAX_LIGHTSTYLES	64
-#define	MAX_MODELS		256			// these are sent over the net as bytes
-#define	MAX_SOUNDS		256			// so they cannot be blindly increased
+#define	MAX_MODELS		256     // these are sent over the net as bytes
+#define	MAX_SOUNDS		256     // so they cannot be blindly increased
 
 #define	SAVEGAME_COMMENT_LENGTH	39
 
@@ -88,11 +88,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 #define	MAX_CL_STATS		32
 #define	STAT_HEALTH			0
-//define	STAT_FRAGS			1
+//define        STAT_FRAGS                      1
 #define	STAT_WEAPON			2
 #define	STAT_AMMO			3
 #define	STAT_ARMOR			4
-//define	STAT_WEAPONFRAME	5
+//define        STAT_WEAPONFRAME        5
 #define	STAT_SHELLS			6
 #define	STAT_NAILS			7
 #define	STAT_ROCKETS		8
@@ -100,10 +100,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	STAT_ACTIVEWEAPON	10
 #define	STAT_TOTALSECRETS	11
 #define	STAT_TOTALMONSTERS	12
-#define	STAT_SECRETS		13		// bumped on client side by svc_foundsecret
-#define	STAT_MONSTERS		14		// bumped by svc_killedmonster
+#define	STAT_SECRETS		13      // bumped on client side by svc_foundsecret
+#define	STAT_MONSTERS		14      // bumped by svc_killedmonster
 #define	STAT_ITEMS			15
-//define	STAT_VIEWHEIGHT		16
+//define        STAT_VIEWHEIGHT         16
 
 
 //
@@ -150,8 +150,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // print flags
 //
-#define	PRINT_LOW			0		// pickup messages
-#define	PRINT_MEDIUM		1		// death messages
-#define	PRINT_HIGH			2		// critical messages
-#define	PRINT_CHAT			3		// chat messages
-
+#define	PRINT_LOW			0       // pickup messages
+#define	PRINT_MEDIUM		1       // death messages
+#define	PRINT_HIGH			2       // critical messages
+#define	PRINT_CHAT			3       // chat messages
