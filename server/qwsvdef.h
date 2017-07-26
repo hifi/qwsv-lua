@@ -49,7 +49,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cmd.h"
 #include "model.h"
 #include "crc.h"
+#ifdef WITH_LUA
+#include "lua_progs.h"
+#else
 #include "progs.h"
+#endif
 
 #include "server.h"
 #include "world.h"

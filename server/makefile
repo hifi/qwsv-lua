@@ -2,41 +2,54 @@ CFLAGS=-DSERVERONLY -Dstricmp=strcasecmp -g -Wall -fomit-frame-pointer -fno-stre
 
 EXE = qwsv
 
-OFILES =\
-         pr_cmds.o \
-		 pr_edict.o \
-		 pr_exec.o \
-		 sv_init.o \
-		 sv_main.o \
-		 sv_ents.o \
-		 sv_send.o \
-		 sv_move.o \
-		 sv_phys.o \
-		 sv_user.o \
-		 sv_ccmds.o \
-                 sv_nchan.o \
-		 world.o \
-         sys_unix.o \
-		 model.o \
-		 cmd.o \
-		 common.o \
-                 md4.o \
-		 crc.o \
-		 cvar.o \
-		 mathlib.o \
-		 zone.o \
-		 pmove.o \
-		 pmovetst.o \
-		 net_chan.o \
-		 net_udp.o 
+OBJS = \
+    sv_init.o \
+    sv_main.o \
+    sv_ents.o \
+    sv_send.o \
+    sv_move.o \
+    sv_phys.o \
+    sv_user.o \
+    sv_ccmds.o \
+    sv_nchan.o \
+    world.o \
+    sys_unix.o \
+    model.o \
+    cmd.o \
+    common.o \
+    md4.o \
+    crc.o \
+    cvar.o \
+    mathlib.o \
+    zone.o \
+    pmove.o \
+    pmovetst.o \
+    net_chan.o \
+    net_udp.o 
+
+PR_OBJS = $(OBJS) \
+    pr_cmds.o \
+    pr_edict.o \
+    pr_exec.o
+
+PRL_OBJS = $(OBJS) \
+    lua_cmds.o \
+    lua_edict.o \
+    lua_exec.o
 
 LDFLAGS = -lm
 
-$(EXE) : $(OFILES)
-	cc $(CFLAGS) -o $(EXE) $(OFILES) $(LDFLAGS) 
+all: $(EXE)-lua
+
+$(EXE) : $(PR_OBJS)
+	cc $(CFLAGS) -o $(EXE) $(PR_OBJS) $(LDFLAGS) 
+
+$(EXE)-lua : CFLAGS += -DWITH_LUA
+$(EXE)-lua : $(PRL_OBJS)
+	cc $(CFLAGS) -o $(EXE) $(PRL_OBJS) $(LDFLAGS) -llua
 
 clean:
-	rm -f $(OFILES) $(EXE)
+	rm -f $(PR_OBJS) $(PRL_OBJS) $(EXE) $(EXE)-lua
 
 app:
 	make "CFLAGS = -O4 -g -Wall  -I../client  -DSERVERONLY"
