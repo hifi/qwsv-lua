@@ -737,7 +737,7 @@ int PF_cvar(lua_State *L)
 {
     char *str;
 
-    str = lua_tostring(L, 1);
+    str = (char *)lua_tostring(L, 1);
 
     lua_pushnumber(L, Cvar_VariableValue(str));
     return 1;
@@ -750,14 +750,15 @@ PF_cvar_set
 float cvar (string)
 =================
 */
-void PF_cvar_set(void)
+int PF_cvar_set(lua_State *L)
 {
     char *var, *val;
 
-    var = G_STRING(OFS_PARM0);
-    val = G_STRING(OFS_PARM1);
+    var = (char *)lua_tostring(L, 1);
+    val = (char *)lua_tostring(L, 2);
 
     Cvar_Set(var, val);
+    return 0;
 }
 
 /*
@@ -1071,22 +1072,22 @@ PF_lightstyle
 void(float style, string value) lightstyle
 ===============
 */
-void PF_lightstyle(void)
+int PF_lightstyle(lua_State *L)
 {
     int style;
     char *val;
     client_t *client;
     int j;
 
-    style = G_FLOAT(OFS_PARM0);
-    val = G_STRING(OFS_PARM1);
+    style = lua_tonumber(L, 1);
+    val = (char *)lua_tostring(L, 2);
 
 // change the string in sv
     sv.lightstyles[style] = val;
 
 // send message to all clients on this server
     if (sv.state != ss_active)
-        return;
+        return 0;
 
     for (j = 0, client = svs.clients; j < MAX_CLIENTS; j++, client++)
         if (client->state == cs_spawned) {
@@ -1095,6 +1096,8 @@ void PF_lightstyle(void)
             ClientReliableWrite_Char(client, style);
             ClientReliableWrite_String(client, val);
         }
+
+    return 0;
 }
 
 void PF_rint(void)
@@ -1642,8 +1645,6 @@ void PF_Fixme(void)
 
 int PF_vec3(lua_State *L)
 {
-    Sys_Printf("PF_Vec3 with %d args\n", lua_gettop(L));
-
     if (lua_gettop(L) != 3)
         luaL_error(L, "vec3() requires 3 args");
 
@@ -1678,6 +1679,9 @@ void PR_InstallBuiltins(void)
     lua_register(L, "random", PF_random);
     lua_register(L, "spawn", PF_Spawn);
     lua_register(L, "setorigin", PF_setorigin);
+    lua_register(L, "cvar", PF_cvar);
+    lua_register(L, "cvar_set", PF_cvar_set);
+    lua_register(L, "lightstyle", PF_lightstyle);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

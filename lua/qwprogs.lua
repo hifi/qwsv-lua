@@ -5,6 +5,21 @@ require "subs"
 require "world"
 require "misc"
 
+-- weapons.qc
+function W_Precache()
+    dprint("testing vec3\n")
+    local e = spawn()
+    e.foo = vec3(1,2,3)
+    e.foo.x = 5
+    --e.velocity = vec3(1,2,3)
+    --e.velocity.x = 5;
+    dprint(tostring(e.foo) .. "\n")
+end
+
+-- combat.qc
+function T_Damage (targ, inflictor, attacker, damage)
+end
+
 function PlayerPreThink()
     -- dprint("PlayerPreThink()\n")
 end

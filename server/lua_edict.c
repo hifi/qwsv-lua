@@ -48,13 +48,13 @@ Sets everything to NULL
 */
 void ED_ClearEdict(edict_t * e)
 {
+    //Con_Printf("ED_ClearEdict(%p)\n", e);
     e->free = false;
-    luaL_unref(L, LUA_REGISTRYINDEX, e->fields);
+
+    if (e->fields)
+        luaL_unref(L, LUA_REGISTRYINDEX, e->fields);
+
     e->fields = 0;
-    /*
-    lua_newtable(L);
-    e->fields = luaL_ref(L, LUA_REGISTRYINDEX);
-    */
 }
 
 /*
@@ -160,6 +160,25 @@ void ED_PushEdict(edict_t *ed)
     }
 }
 
+static void ED_EnsureFields(edict_t *ed)
+{
+    if (ed->fields == 0) {
+        //Sys_Printf("ED_EnsureFields(%p)\n", ed);
+        lua_newtable(L);
+
+        // set some defaults so that math works
+        lua_pushstring(L, "style");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
+        lua_pushstring(L, "speed");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
+        ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+}
+
 //===========================================================================
 /*
 =============
@@ -246,11 +265,7 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_FLOAT(spawnflags);
     FIELD_FLOAT(health);
 
-    /* ensure we have a fields table */
-    if (e->fields == 0) {
-        lua_newtable(L);
-        e->fields = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
+    ED_EnsureFields(e);
 
     FIELD_LSTRING(wad);
     FIELD_LFLOAT(worldtype);
@@ -263,21 +278,6 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_LVEC(mangle);
 
     return false;
-}
-
-static void ED_EnsureFields(edict_t *ed)
-{
-    if (ed->fields == 0) {
-        Sys_Printf("Edict %p getting default fields\n", ed);
-        lua_newtable(L);
-
-        // set some defaults
-        lua_pushstring(L, "style");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
 }
 
 /*
@@ -418,15 +418,13 @@ void ED_LoadFromFile(char *data)
         lua_getglobal(L, PR_GetString(ent->v.classname));
 
         if (!lua_isfunction(L, -1)) {
-            Con_Printf("No spawn function for '%s'\n", PR_GetString(ent->v.classname));
+            //Con_Printf("No spawn function for '%s'\n", PR_GetString(ent->v.classname));
             //ED_Print(ent);
             ED_Free(ent);
             lua_pop(L, 1);
             continue;
         }
 
-        // FIXME
-        ent->fields = 0;
         ED_EnsureFields(ent);
 
         pr_global_struct->self = ent;
@@ -460,6 +458,12 @@ int ED_FindFunction(const char *name)
     return LUA_NOREF;
 }
 
+#define PUSH_FFLOAT(s) \
+    if (strcmp(key, #s) == 0) { \
+        lua_pushnumber(L, (*e)->v.s); \
+        return 1; \
+    }
+
 #define PUSH_FSTRING(s) \
     if (strcmp(key, #s) == 0) { \
         lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
@@ -488,7 +492,7 @@ static int ED_mt_index(lua_State *L)
     PUSH_FSTRING(target);
     PUSH_FSTRING(targetname);
 
-    Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
+    //Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
 
     // pull it from fields table otherwise
     ED_EnsureFields(*e);
@@ -528,7 +532,7 @@ static int ED_mt_newindex(lua_State *L)
     e = lua_touserdata(L, 1);
     key = lua_tostring(L, 2);
 
-    Sys_Printf("ED_mt_newindex(%p, %s)\n", *e, key);
+    //Sys_Printf("ED_mt_newindex(%p, %s)\n", *e, key);
 
     // first handle C fields
     SET_FFLOAT(health);
@@ -539,6 +543,9 @@ static int ED_mt_newindex(lua_State *L)
     SET_FFLOAT(frame);
     SET_FFLOAT(nextthink);
     SET_FFUNC(think);
+    SET_FFUNC(touch);
+    SET_FFUNC(use);
+    //SET_FFUNC(owner); // it's actually an edict
     SET_FVEC3(origin);
     SET_FVEC3(angles);
     SET_FVEC3(view_ofs);
@@ -593,8 +600,6 @@ void vec3_tolua(lua_State *L, vec3_t in, int index)
 
 static int vec3_mt_add(lua_State *L)
 {
-    Sys_Printf("ED_mt_add() with %d args\n", lua_gettop(L));
-
     vec3_t a,b,c;
 
     if (!lua_istable(L, 1) || !lua_istable(L, 2))
@@ -612,8 +617,6 @@ static int vec3_mt_add(lua_State *L)
 
 static int vec3_mt_tostring(lua_State *L)
 {
-    Sys_Printf("ED_mt_tostring() with %d args\n", lua_gettop(L));
-
     char buf[32];
 
     vec3_t a;
@@ -626,9 +629,40 @@ static int vec3_mt_tostring(lua_State *L)
     return 1;
 };
 
+static int vec3_mt_index(lua_State *L)
+{
+    return 0;
+}
+
+static int vec3_mt_newindex(lua_State *L)
+{
+    const char *key;
+    float value;
+
+    key = lua_tostring(L, 2);
+    value = lua_tonumber(L, 3);
+
+    if (!lua_istable(L, 1))
+        luaL_error(L, "not a vec3");
+
+    lua_pushvalue(L, 1);
+    lua_pushnumber(L, value);
+
+    switch(key[0])
+    {
+        case 'x': lua_rawseti(L, -2, 1); break;
+        case 'y': lua_rawseti(L, -2, 2); break;
+        case 'z': lua_rawseti(L, -2, 3); break;
+    }
+
+    return 0;
+}
+
 static const luaL_Reg vec3_mt[] = {
     {"__add",      vec3_mt_add},
     {"__tostring", vec3_mt_tostring},
+    {"__index",    vec3_mt_index},
+    {"__newindex", vec3_mt_newindex},
     {0, 0}
 };
 
@@ -774,8 +808,6 @@ char *PR_StrDup(const char *in)
 
     out = Z_Malloc(strlen(in) + 1);
     strcpy(out, in);
-
-    Con_Printf("PR_StrDup(%s)\n", out);
 
     return out;
 }

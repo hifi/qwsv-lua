@@ -205,9 +205,9 @@ function fire_fly()
     fireball.solid = SOLID_TRIGGER
     fireball.movetype = MOVETYPE_TOSS
     fireball.velocity = vec3(0, 0, 1000)
-    fireball.velocity_x = (random() * 100) - 50
-    fireball.velocity_y = (random() * 100) - 50
-    fireball.velocity_z = self.speed + (random() * 200)
+    fireball.velocity.x = (random() * 100) - 50
+    fireball.velocity.y = (random() * 100) - 50
+    fireball.velocity.z = self.speed + (random() * 200)
     fireball.classname = "fireball"
     setmodel (fireball, "progs/lavaball.mdl")
     setsize (fireball, vec3(0, 0, 0), vec3(0, 0, 0))
@@ -215,6 +215,7 @@ function fire_fly()
     fireball.nextthink = time + 5
     fireball.think = SUB_Remove
     fireball.touch = fire_touch
+    dprint(tostring(fireball.velocity) .. "\n")
     
     self.nextthink = time + (random() * 5) + 3
     self.think = fire_fly
