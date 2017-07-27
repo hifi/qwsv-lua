@@ -131,15 +131,16 @@ This is the only valid way to move an object without using the physics of the wo
 setorigin (entity, origin)
 =================
 */
-void PF_setorigin(void)
+int PF_setorigin(lua_State *L)
 {
-    edict_t *e;
-    float *org;
+    edict_t **e;
+    vec3_t org;
 
-    e = G_EDICT(OFS_PARM0);
-    org = G_VECTOR(OFS_PARM1);
-    VectorCopy(org, e->v.origin);
-    SV_LinkEdict(e, false);
+    e = lua_touserdata(L, 1);
+    vec3_fromlua(L, org, 2);
+    VectorCopy(org, (*e)->v.origin);
+    SV_LinkEdict(*e, false);
+    return 0;
 }
 
 
@@ -418,13 +419,14 @@ Returns a number from 0<= num < 1
 random()
 =================
 */
-void PF_random(void)
+int PF_random(lua_State *L)
 {
     float num;
 
     num = (rand() & 0x7fff) / ((float) 0x7fff);
 
-    G_FLOAT(OFS_RETURN) = num;
+    lua_pushnumber(L, num);
+    return 1;
 }
 
 
@@ -731,13 +733,14 @@ PF_cvar
 float cvar (string)
 =================
 */
-void PF_cvar(void)
+int PF_cvar(lua_State *L)
 {
     char *str;
 
-    str = G_STRING(OFS_PARM0);
+    str = lua_tostring(L, 1);
 
-    G_FLOAT(OFS_RETURN) = Cvar_VariableValue(str);
+    lua_pushnumber(L, Cvar_VariableValue(str));
+    return 1;
 }
 
 /*
@@ -839,13 +842,12 @@ void PF_vtos(void)
     G_INT(OFS_RETURN) = PR_SetString(pr_string_temp);
 }
 
-void PF_Spawn(void)
+int PF_Spawn(lua_State *L)
 {
-#if 0
     edict_t *ed;
     ed = ED_Alloc();
-    RETURN_EDICT(ed);
-#endif
+    ED_PushEdict(ed);
+    return 1;
 }
 
 int PF_Remove(lua_State *L)
@@ -1673,6 +1675,9 @@ void PR_InstallBuiltins(void)
     lua_register(L, "precache_sound", PF_precache_sound);
     lua_register(L, "ambientsound", PF_ambientsound);
     lua_register(L, "makestatic", PF_makestatic);
+    lua_register(L, "random", PF_random);
+    lua_register(L, "spawn", PF_Spawn);
+    lua_register(L, "setorigin", PF_setorigin);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

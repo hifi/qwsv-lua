@@ -1,3 +1,29 @@
+--[[
+    defs.qc
+
+    global definitions
+
+    Copyright (C) 1996-1997  Id Software, Inc.
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to:
+
+        Free Software Foundation, Inc.
+        59 Temple Place - Suite 330
+        Boston, MA  02111-1307, USA
+--]]
+
 -- use Lua booleans?
 FALSE                           = 0
 TRUE                            = 1
@@ -163,8 +189,8 @@ EF_DIMLIGHT     = 8
 EF_FLAG1                = 16
 EF_FLAG2                = 32
 -- GLQuakeWorld Stuff
-EF_BLUE		=	64	-- Blue Globe effect for Quad
-EF_RED		=	128	-- Red Globe effect for Pentagram
+EF_BLUE        =    64    -- Blue Globe effect for Quad
+EF_RED        =    128    -- Red Globe effect for Pentagram
 -- messages
 MSG_BROADCAST   = 0            -- unreliable to all
 MSG_ONE                 = 1            -- reliable to one (msg_entity)
@@ -174,7 +200,7 @@ MSG_MULTICAST   = 4            -- for multicast() call
 
 -- message levels
 PRINT_LOW               = 0            -- pickup messages
-PRINT_MEDIUM    	= 1            -- death messages
+PRINT_MEDIUM        = 1            -- death messages
 PRINT_HIGH              = 2            -- critical messages
 PRINT_CHAT              = 3            -- also goes to chat console
 
@@ -185,3 +211,26 @@ MULTICAST_PVS   = 2            -- within sight
 MULTICAST_ALL_R = 3            -- every client, reliable
 MULTICAST_PHS_R = 4            -- within hearing, reliable
 MULTICAST_PVS_R = 5            -- within sight, reliable
+
+--
+-- globals
+--
+movedist = nil
+
+string_null = ""        -- null string, nothing should be held here
+empty_float = 0
+
+activator = nil         -- the entity that activated a trigger or brush
+
+damage_attacker = nil   -- set by T_Damage
+damage_inflictor = nil
+framecount = 0
+
+--
+-- cvars checked each frame
+--
+teamplay    = 0
+timelimit   = 0
+fraglimit   = 0
+deathmatch  = 0
+rj          = 1

@@ -507,6 +507,13 @@ static int ED_mt_index(lua_State *L)
         return 0; \
     }
 
+#define SET_FFUNC(s)  \
+    if (strcmp(key, #s) == 0) { \
+        lua_pushvalue(L, 3); \
+        (*e)->v.s = luaL_ref(L, LUA_REGISTRYINDEX); \
+        return 0; \
+    }
+
 #define SET_FVEC3(s) \
     if (strcmp(key, #s) == 0) { \
         vec3_fromlua(L, (*e)->v.s, 3); \
@@ -530,6 +537,8 @@ static int ED_mt_newindex(lua_State *L)
     SET_FFLOAT(movetype);
     SET_FFLOAT(flags);
     SET_FFLOAT(frame);
+    SET_FFLOAT(nextthink);
+    SET_FFUNC(think);
     SET_FVEC3(origin);
     SET_FVEC3(angles);
     SET_FVEC3(view_ofs);

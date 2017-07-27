@@ -1,15 +1,9 @@
 package.path = package.path .. ';./id1/?.lua'
 
 require "defs"
+require "subs"
+require "world"
 require "misc"
-
-function main()
-    dprint("main()\n")
-end
-
-function StartFrame()
-    -- dprint ("StartFrame()\n")
-end
 
 function PlayerPreThink()
     -- dprint("PlayerPreThink()\n")
@@ -17,11 +11,6 @@ end
 
 function PlayerPostThink()
     -- dprint("PlayerPostThink()\n")
-end
-
-function worldspawn()
-    dprint("worldspawn()\n")
-    precache_model("progs/player.mdl")
 end
 
 function ClientConnect()
