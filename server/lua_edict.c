@@ -50,8 +50,11 @@ void ED_ClearEdict(edict_t * e)
 {
     e->free = false;
     luaL_unref(L, LUA_REGISTRYINDEX, e->fields);
+    e->fields = 0;
+    /*
     lua_newtable(L);
     e->fields = luaL_ref(L, LUA_REGISTRYINDEX);
+    */
 }
 
 /*
@@ -262,6 +265,21 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     return false;
 }
 
+static void ED_EnsureFields(edict_t *ed)
+{
+    if (ed->fields == 0) {
+        Sys_Printf("Edict %p getting default fields\n", ed);
+        lua_newtable(L);
+
+        // set some defaults
+        lua_pushstring(L, "style");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
+        ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+}
+
 /*
 ====================
 ED_ParseEdict
@@ -400,12 +418,16 @@ void ED_LoadFromFile(char *data)
         lua_getglobal(L, PR_GetString(ent->v.classname));
 
         if (!lua_isfunction(L, -1)) {
-            //Con_Printf("No spawn function for '%s'\n", PR_GetString(ent->v.classname));
+            Con_Printf("No spawn function for '%s'\n", PR_GetString(ent->v.classname));
             //ED_Print(ent);
             ED_Free(ent);
             lua_pop(L, 1);
             continue;
         }
+
+        // FIXME
+        ent->fields = 0;
+        ED_EnsureFields(ent);
 
         pr_global_struct->self = ent;
 
@@ -438,13 +460,11 @@ int ED_FindFunction(const char *name)
     return LUA_NOREF;
 }
 
-static void ED_EnsureFields(edict_t *ed)
-{
-    if (ed->fields == 0) {
-        lua_newtable(L);
-        ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
+#define PUSH_FSTRING(s) \
+    if (strcmp(key, #s) == 0) { \
+        lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
+        return 1; \
     }
-}
 
 #define PUSH_FVEC3(s) \
     if (strcmp(key, #s) == 0) { \
@@ -460,13 +480,15 @@ static int ED_mt_index(lua_State *L)
     e = lua_touserdata(L, 1);
     key = lua_tostring(L, 2);
 
-    Sys_Printf("ED_mt_index(%p, %s)\n", *e, key);
-
     // first handle C fields
     PUSH_FVEC3(origin);
     PUSH_FVEC3(angles);
     PUSH_FVEC3(view_ofs);
     PUSH_FVEC3(velocity);
+    PUSH_FSTRING(target);
+    PUSH_FSTRING(targetname);
+
+    Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
 
     // pull it from fields table otherwise
     ED_EnsureFields(*e);
@@ -507,6 +529,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_FFLOAT(solid);
     SET_FFLOAT(movetype);
     SET_FFLOAT(flags);
+    SET_FFLOAT(frame);
     SET_FVEC3(origin);
     SET_FVEC3(angles);
     SET_FVEC3(view_ofs);
@@ -731,7 +754,8 @@ char *PR_GetString(int num)
 
 int PR_SetString(char *s)
 {
-    return 0;
+    lua_pushstring(L, s);
+    return luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 // XXX: these are *never* freed at this point

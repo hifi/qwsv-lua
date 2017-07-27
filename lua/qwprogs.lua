@@ -1,7 +1,7 @@
 package.path = package.path .. ';./id1/?.lua'
 
-print(package.path)
 require "defs"
+require "misc"
 
 function main()
     dprint("main()\n")

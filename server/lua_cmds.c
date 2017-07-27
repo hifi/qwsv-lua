@@ -187,7 +187,7 @@ int PF_setmodel(lua_State *L)
     e = lua_touserdata(L, 1);
     m = (char *)lua_tostring(L, 2);
 
-// check to see if model was properly precached
+    // check to see if model was properly precached
     for (i = 0, check = sv.model_precache; *check; i++, check++)
         if (!strcmp(*check, m))
             break;
@@ -198,7 +198,7 @@ int PF_setmodel(lua_State *L)
     (*e)->v.model = PR_SetString(m);
     (*e)->v.modelindex = i;
 
-// if it is an inline model, get the size information for it
+    // if it is an inline model, get the size information for it
     if (m[0] == '*') {
         mod = Mod_ForName(m, true);
         VectorCopy(mod->mins, (*e)->v.mins);
@@ -434,20 +434,20 @@ PF_ambientsound
 
 =================
 */
-void PF_ambientsound(void)
+int PF_ambientsound(lua_State *L)
 {
     char **check;
-    char *samp;
-    float *pos;
+    const char *samp;
+    vec3_t pos;
     float vol, attenuation;
     int i, soundnum;
 
-    pos = G_VECTOR(OFS_PARM0);
-    samp = G_STRING(OFS_PARM1);
-    vol = G_FLOAT(OFS_PARM2);
-    attenuation = G_FLOAT(OFS_PARM3);
+    vec3_fromlua(L, pos, 1);
+    samp = lua_tostring(L, 2);
+    vol = lua_tonumber(L, 3);
+    attenuation = lua_tonumber(L, 4);
 
-// check to see if samp was properly precached
+    // check to see if samp was properly precached
     for (soundnum = 0, check = sv.sound_precache; *check;
          check++, soundnum++)
         if (!strcmp(*check, samp))
@@ -455,9 +455,9 @@ void PF_ambientsound(void)
 
     if (!*check) {
         Con_Printf("no precache: %s\n", samp);
-        return;
+        return 0;
     }
-// add an svc_spawnambient command to the level signon packet
+    // add an svc_spawnambient command to the level signon packet
 
     MSG_WriteByte(&sv.signon, svc_spawnstaticsound);
     for (i = 0; i < 3; i++)
@@ -467,7 +467,7 @@ void PF_ambientsound(void)
 
     MSG_WriteByte(&sv.signon, vol * 255);
     MSG_WriteByte(&sv.signon, attenuation * 64);
-
+    return 0;
 }
 
 /*
@@ -848,12 +848,13 @@ void PF_Spawn(void)
 #endif
 }
 
-void PF_Remove(void)
+int PF_Remove(lua_State *L)
 {
-    edict_t *ed;
+    edict_t **ed;
 
-    ed = G_EDICT(OFS_PARM0);
-    ED_Free(ed);
+    ed = lua_touserdata(L, 1);
+    ED_Free(*ed);
+    return 0;
 }
 
 
@@ -912,28 +913,29 @@ void PF_precache_file(void)
     G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
 }
 
-void PF_precache_sound(void)
+int PF_precache_sound(lua_State *L)
 {
-    char *s;
+    const char *s;
     int i;
 
     if (sv.state != ss_loading)
         PR_RunError
             ("PF_Precache_*: Precache can only be done in spawn functions");
 
-    s = G_STRING(OFS_PARM0);
-    G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
-    PR_CheckEmptyString(s);
+    s = lua_tostring(L, 1);
+    lua_pushvalue(L, 1);
+    //PR_CheckEmptyString(s);
 
     for (i = 0; i < MAX_SOUNDS; i++) {
         if (!sv.sound_precache[i]) {
-            sv.sound_precache[i] = s;
-            return;
+            sv.sound_precache[i] = PR_StrDup(s);
+            return 1;
         }
         if (!strcmp(sv.sound_precache[i], s))
-            return;
+            return 1;
     }
     PR_RunError("PF_precache_sound: overflow");
+    return 1;
 }
 
 int PF_precache_model(lua_State *L)
@@ -1452,27 +1454,28 @@ void PF_WriteEntity(void)
 
 int SV_ModelIndex(char *name);
 
-void PF_makestatic(void)
+int PF_makestatic(lua_State *L)
 {
-    edict_t *ent;
+    edict_t **ent;
     int i;
 
-    ent = G_EDICT(OFS_PARM0);
+    ent = lua_touserdata(L, 1);
 
     MSG_WriteByte(&sv.signon, svc_spawnstatic);
 
-    MSG_WriteByte(&sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
+    MSG_WriteByte(&sv.signon, SV_ModelIndex(PR_GetString((*ent)->v.model)));
 
-    MSG_WriteByte(&sv.signon, ent->v.frame);
-    MSG_WriteByte(&sv.signon, ent->v.colormap);
-    MSG_WriteByte(&sv.signon, ent->v.skin);
+    MSG_WriteByte(&sv.signon, (*ent)->v.frame);
+    MSG_WriteByte(&sv.signon, (*ent)->v.colormap);
+    MSG_WriteByte(&sv.signon, (*ent)->v.skin);
     for (i = 0; i < 3; i++) {
-        MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
-        MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
+        MSG_WriteCoord(&sv.signon, (*ent)->v.origin[i]);
+        MSG_WriteAngle(&sv.signon, (*ent)->v.angles[i]);
     }
 
-// throw the entity away now
-    ED_Free(ent);
+    // throw the entity away now
+    ED_Free(*ent);
+    return 0;
 }
 
 //=============================================================================
@@ -1666,6 +1669,10 @@ void PR_InstallBuiltins(void)
     lua_register(L, "find", PF_Find);
     lua_register(L, "setmodel", PF_setmodel);
     lua_register(L, "setsize", PF_setsize);
+    lua_register(L, "remove", PF_Remove);
+    lua_register(L, "precache_sound", PF_precache_sound);
+    lua_register(L, "ambientsound", PF_ambientsound);
+    lua_register(L, "makestatic", PF_makestatic);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);
