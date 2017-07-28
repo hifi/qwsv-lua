@@ -181,4 +181,8 @@ extern dprograms_t *progs;
 extern char *pr_strtbl[MAX_PRSTR];
 extern int num_prstr;
 
-void vec3_fromlua(lua_State *L, vec3_t out, int index);
+/* lua_vector.c */
+void PR_Vec3_Init(lua_State *L);
+vec_t* PR_Vec3_New(lua_State *L);
+vec_t* PR_Vec3_ToVec(lua_State *L, int index);
+void PR_Vec3_Push(lua_State *L, vec3_t in);

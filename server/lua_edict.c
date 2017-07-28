@@ -125,23 +125,6 @@ void ED_Free(edict_t * ed)
     // XXX: do something to Lua fields
 }
 
-void ED_PushVec(vec3_t v)
-{
-    lua_newtable(L);
-    lua_pushnumber(L, 1);
-    lua_pushnumber(L, v[0]);
-    lua_rawset(L, -3);
-    lua_pushnumber(L, 2);
-    lua_pushnumber(L, v[1]);
-    lua_rawset(L, -3);
-    lua_pushnumber(L, 3);
-    lua_pushnumber(L, v[2]);
-    lua_rawset(L, -3);
-
-    luaL_getmetatable(L, "vec3_t");
-    lua_setmetatable(L, -2);
-}
-
 // push an edict or nil to stack, always pushes something
 void ED_PushEdict(edict_t *ed)
 {
@@ -210,8 +193,8 @@ Note: This will not support savegames.
 
 #define FIELD_VEC(n) \
     if (strcmp(key, #n) == 0) { \
+        vec = e->v.n; \
         PARSE_VEC(); \
-        memcpy(e->v.n, vec, sizeof(vec3_t)); \
         return true; \
     }
 
@@ -238,9 +221,9 @@ Note: This will not support savegames.
 #define FIELD_LVEC(n) \
     if (strcmp(key, #n) == 0) { \
         lua_rawgeti(L, LUA_REGISTRYINDEX, e->fields); \
-        PARSE_VEC(); \
         lua_pushstring(L, key); \
-        ED_PushVec(vec); \
+        vec = PR_Vec3_New(L); \
+        PARSE_VEC(); \
         lua_rawset(L, -3); \
         lua_pop(L, 1); \
         return true; \
@@ -251,7 +234,7 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     int i;
     char string[128];
     char *v, *w;
-    vec3_t vec;
+    vec_t *vec;
 
     /* this is a bad hack and needs to be rewritten, this works for start.bsp for now */
     FIELD_FLOAT(sounds);
@@ -472,7 +455,7 @@ int ED_FindFunction(const char *name)
 
 #define PUSH_FVEC3(s) \
     if (strcmp(key, #s) == 0) { \
-        ED_PushVec((*e)->v.s); \
+        PR_Vec3_Push(L, (*e)->v.s); \
         return 1; \
     }
 
@@ -520,7 +503,9 @@ static int ED_mt_index(lua_State *L)
 
 #define SET_FVEC3(s) \
     if (strcmp(key, #s) == 0) { \
-        vec3_fromlua(L, (*e)->v.s, 3); \
+        vec_t *_tmpvec; \
+        _tmpvec = PR_Vec3_ToVec(L, 3); \
+        memcpy((*e)->v.s, _tmpvec, sizeof(vec3_t)); \
         return 0; \
     }
 
@@ -569,103 +554,6 @@ static const luaL_Reg ED_mt[] = {
     {0, 0}
 };
 
-void vec3_fromlua(lua_State *L, vec3_t out, int index)
-{
-    lua_rawgeti(L, index, 1);
-    out[0] = lua_tonumber(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, index, 2);
-    out[1] = lua_tonumber(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, index, 3);
-    out[2] = lua_tonumber(L, -1);
-    lua_pop(L, 1);
-}
-
-void vec3_tolua(lua_State *L, vec3_t in, int index)
-{
-    lua_pushvalue(L, index);
-
-    lua_pushnumber(L, in[0]);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, in[1]);
-    lua_rawseti(L, -2, 2);
-    lua_pushnumber(L, in[2]);
-    lua_rawseti(L, -2, 3);
-
-    lua_pop(L, 1);
-}
-
-static int vec3_mt_add(lua_State *L)
-{
-    vec3_t a,b,c;
-
-    if (!lua_istable(L, 1) || !lua_istable(L, 2))
-        luaL_error(L, "vec3_t can only be added into vec3_t");
-
-    vec3_fromlua(L, a, 1);
-    vec3_fromlua(L, b, 2);
-
-    VectorAdd(a,b,c);
-    
-    ED_PushVec(c);
-
-    return 1;
-};
-
-static int vec3_mt_tostring(lua_State *L)
-{
-    char buf[32];
-
-    vec3_t a;
-
-    vec3_fromlua(L, a, 1);
-
-    sprintf(buf, "%.0f %0.f %.0f", a[0], a[1], a[2]);
-
-    lua_pushstring(L, buf);
-    return 1;
-};
-
-static int vec3_mt_index(lua_State *L)
-{
-    return 0;
-}
-
-static int vec3_mt_newindex(lua_State *L)
-{
-    const char *key;
-    float value;
-
-    key = lua_tostring(L, 2);
-    value = lua_tonumber(L, 3);
-
-    if (!lua_istable(L, 1))
-        luaL_error(L, "not a vec3");
-
-    lua_pushvalue(L, 1);
-    lua_pushnumber(L, value);
-
-    switch(key[0])
-    {
-        case 'x': lua_rawseti(L, -2, 1); break;
-        case 'y': lua_rawseti(L, -2, 2); break;
-        case 'z': lua_rawseti(L, -2, 3); break;
-    }
-
-    return 0;
-}
-
-static const luaL_Reg vec3_mt[] = {
-    {"__add",      vec3_mt_add},
-    {"__tostring", vec3_mt_tostring},
-    {"__index",    vec3_mt_index},
-    {"__newindex", vec3_mt_newindex},
-    {0, 0}
-};
-
 /*
 ===============
 PR_LoadProgs
@@ -683,9 +571,7 @@ void PR_LoadProgs(void)
     L = luaL_newstate();
     luaL_openlibs(L);
 
-    luaL_newmetatable(L, "vec3_t");
-    luaL_openlib(L, 0, vec3_mt, 0);
-    lua_pop(L, 1);
+    PR_Vec3_Init(L);
 
     luaL_newmetatable(L, "edict_t");
     luaL_openlib(L, 0, ED_mt, 0);

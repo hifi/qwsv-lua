@@ -134,10 +134,10 @@ setorigin (entity, origin)
 int PF_setorigin(lua_State *L)
 {
     edict_t **e;
-    vec3_t org;
+    vec_t *org;
 
     e = lua_touserdata(L, 1);
-    vec3_fromlua(L, org, 2);
+    org = PR_Vec3_ToVec(L, 2);
     VectorCopy(org, (*e)->v.origin);
     SV_LinkEdict(*e, false);
     return 0;
@@ -156,11 +156,11 @@ setsize (entity, minvector, maxvector)
 int PF_setsize(lua_State *L)
 {
     edict_t **e;
-    vec3_t min, max;
+    vec_t *min, *max;
 
     e = lua_touserdata(L, 1);
-    vec3_fromlua(L, min, 2);
-    vec3_fromlua(L, max, 3);
+    min = PR_Vec3_ToVec(L, 2);
+    max = PR_Vec3_ToVec(L, 3);
 
     VectorCopy(min, (*e)->v.mins);
     VectorCopy(max, (*e)->v.maxs);
@@ -440,11 +440,11 @@ int PF_ambientsound(lua_State *L)
 {
     char **check;
     const char *samp;
-    vec3_t pos;
+    vec_t *pos;
     float vol, attenuation;
     int i, soundnum;
 
-    vec3_fromlua(L, pos, 1);
+    pos = PR_Vec3_ToVec(L, 1);
     samp = lua_tostring(L, 2);
     vol = lua_tonumber(L, 3);
     attenuation = lua_tonumber(L, 4);
@@ -1645,22 +1645,16 @@ void PF_Fixme(void)
 
 int PF_vec3(lua_State *L)
 {
+    vec_t *v;
+
     if (lua_gettop(L) != 3)
         luaL_error(L, "vec3() requires 3 args");
 
-    lua_newtable(L);
-    lua_pushnumber(L, 1);
-    lua_pushvalue(L, 1);
-    lua_rawset(L, -3);
-    lua_pushnumber(L, 2);
-    lua_pushvalue(L, 2);
-    lua_rawset(L, -3);
-    lua_pushnumber(L, 3);
-    lua_pushvalue(L, 3);
-    lua_rawset(L, -3);
+    v = PR_Vec3_New(L);
 
-    luaL_getmetatable(L, "vec3_t");
-    lua_setmetatable(L, -2);
+    v[0] = lua_tonumber(L, 1);
+    v[1] = lua_tonumber(L, 2);
+    v[2] = lua_tonumber(L, 3);
 
     return 1;
 }

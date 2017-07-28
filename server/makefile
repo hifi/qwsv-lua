@@ -35,7 +35,8 @@ PR_OBJS = $(OBJS) \
 PRL_OBJS = $(OBJS) \
     lua_cmds.o \
     lua_edict.o \
-    lua_exec.o
+    lua_exec.o \
+    lua_vector.o
 
 LDFLAGS = -lm
 
