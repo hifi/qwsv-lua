@@ -401,7 +401,7 @@ void ED_LoadFromFile(char *data)
         lua_getglobal(L, PR_GetString(ent->v.classname));
 
         if (!lua_isfunction(L, -1)) {
-            //Con_Printf("No spawn function for '%s'\n", PR_GetString(ent->v.classname));
+            Con_Printf("No spawn function for '%s'\n", PR_GetString(ent->v.classname));
             //ED_Print(ent);
             ED_Free(ent);
             lua_pop(L, 1);

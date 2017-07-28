@@ -185,8 +185,14 @@ int PF_setmodel(lua_State *L)
     int i;
     model_t *mod;
 
-    e = lua_touserdata(L, 1);
-    m = (char *)lua_tostring(L, 2);
+
+    e = luaL_checkudata(L, 1, "edict_t");
+
+    /* silently ignore if model is nil */
+    if (lua_isnil(L, 2))
+        m = "";
+    else
+        m = (char *)luaL_checkstring(L, 2);
 
     // check to see if model was properly precached
     for (i = 0, check = sv.model_precache; *check; i++, check++)
