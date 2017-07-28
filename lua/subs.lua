@@ -31,44 +31,41 @@ function SUB_Null() end
 function SUB_Remove() remove(self) end
 
 --[[
-
-/*
 QuakeEd only writes a single float for angles (bad idea), so up and down are
 just constant angles.
-*/
-vector() SetMovedir =
-{
-    if (self.angles == '0 -1 0')
-        self.movedir = '0 0 1';
-    else if (self.angles == '0 -2 0')
-        self.movedir = '0 0 -1';
+--]]
+function SetMovedir()
+    if self.angles == vec3(0,-1,0) then
+        self.movedir = vec3(0,0,1)
+    elseif self.angles == vec3(0,-2,0) then
+        self.movedir = vec3(0,0,-1)
     else
-    {
-        makevectors (self.angles);
-        self.movedir = v_forward;
-    }
+        makevectors (self.angles)
+        self.movedir = v_forward
+    end
     
-    self.angles = '0 0 0';
-};
+    self.angles = vec3(0,0,0)
+end
 
-/*
+--[[
 ================
 InitTrigger
 ================
-*/
-void() InitTrigger =
-{
-// trigger angles are used for one-way touches.  An angle of 0 is assumed
-// to mean no restrictions, so use a yaw of 360 instead.
-    if (self.angles != '0 0 0')
-        SetMovedir ();
-    self.solid = SOLID_TRIGGER;
-    setmodel (self, self.model);    // set size and link into world
-    self.movetype = MOVETYPE_NONE;
-    self.modelindex = 0;
-    self.model = "";
-};
+--]]
+function InitTrigger()
+    -- trigger angles are used for one-way touches.  An angle of 0 is assumed
+    -- to mean no restrictions, so use a yaw of 360 instead.
+    if self.angles ~= vec3(0,0,0) then
+        SetMovedir()
+    end
+    self.solid = SOLID_TRIGGER
+    setmodel (self, self.model) -- set size and link into world
+    self.movetype = MOVETYPE_NONE
+    self.modelindex = 0
+    self.model = ""
+end
 
+--[[
 /*
 =============
 SUB_CalcMove

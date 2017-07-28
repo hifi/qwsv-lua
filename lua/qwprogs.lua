@@ -3,6 +3,7 @@ package.path = package.path .. ';./id1/?.lua'
 require "defs"
 require "subs"
 require "world"
+require "triggers"
 require "misc"
 
 -- weapons.qc
