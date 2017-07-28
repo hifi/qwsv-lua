@@ -101,9 +101,20 @@ removed, but the level can continue.
 objerror(value)
 =================
 */
-void PF_objerror(void)
+int PF_objerror(lua_State *L)
 {
+    const char *s;
+    edict_t *ed;
+
+    s = luaL_checkstring(L, 1);
+    Con_Printf("======OBJECT ERROR in %s:\n%s\n",
+               "(unknown)", s);
+    ed = PROG_TO_EDICT(pr_global_struct->self);
+    //ED_Print(ed);
+    ED_Free(ed);
+
     SV_Error("Program error");
+    return 0;
 }
 
 
@@ -116,10 +127,15 @@ Writes new values for v_forward, v_up, and v_right based on angles
 makevectors(vector)
 ==============
 */
-void PF_makevectors(void)
+int PF_makevectors(lua_State *L)
 {
-    AngleVectors(G_VECTOR(OFS_PARM0), pr_global_struct->v_forward,
+    vec_t **v;
+    v = luaL_checkudata(L, 1, "vec3_t");
+
+    AngleVectors((*v), pr_global_struct->v_forward,
                  pr_global_struct->v_right, pr_global_struct->v_up);
+
+    return 0;
 }
 
 /*
@@ -1682,6 +1698,8 @@ void PR_InstallBuiltins(void)
     lua_register(L, "cvar", PF_cvar);
     lua_register(L, "cvar_set", PF_cvar_set);
     lua_register(L, "lightstyle", PF_lightstyle);
+    lua_register(L, "makevectors", PF_makevectors);
+    lua_register(L, "objerror", PF_objerror);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

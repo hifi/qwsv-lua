@@ -125,26 +125,16 @@ void ED_Free(edict_t * ed)
     // XXX: do something to Lua fields
 }
 
-// push an edict or nil to stack, always pushes something
-void ED_PushEdict(edict_t *ed)
-{
-    if (ed) {
-        if (ed->ref == 0) {
-            edict_t **ud = lua_newuserdata(L, sizeof(void*));
-            *ud = ed;
-            ed->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-        }
-        lua_rawgeti(L, LUA_REGISTRYINDEX, ed->ref);
-        luaL_getmetatable(L, "edict_t");
-        lua_setmetatable(L, -2);
-    } else {
-        Sys_Printf("Warning: pushing nil instead of edict!\n");
-        lua_pushnil(L);
-    }
-}
-
 static void ED_EnsureFields(edict_t *ed)
 {
+    if (ed->ref == 0) {
+        edict_t **ud = lua_newuserdata(L, sizeof(void*));
+        *ud = ed;
+        luaL_getmetatable(L, "edict_t");
+        lua_setmetatable(L, -2);
+        ed->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+
     if (ed->fields == 0) {
         //Sys_Printf("ED_EnsureFields(%p)\n", ed);
         lua_newtable(L);
@@ -160,6 +150,12 @@ static void ED_EnsureFields(edict_t *ed)
 
         ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
     }
+}
+
+void ED_PushEdict(edict_t *ed)
+{
+    ED_EnsureFields(ed);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ed->ref);
 }
 
 //===========================================================================
@@ -281,10 +277,8 @@ char *ED_ParseEdict(char *data, edict_t * ent)
     init = false;
 
     // clear it
-#if 0
-    if (ent != sv.edicts)       // hack
-        memset(&ent->v, 0, progs->entityfields * 4);
-#endif
+    ent->fields = 0; // XXX
+    ED_EnsureFields(ent);
 
     // go through all the dictionary pairs
     while (1) {
@@ -360,11 +354,17 @@ void ED_LoadFromFile(char *data)
     edict_t *ent;
     int inhibit;
     int ref;
+    int i;
 
     Con_Printf("ED_LoadFromFile(data=%p)\n", data);
 
     ent = NULL;
     inhibit = 0;
+
+    // XXX: this is a stupid place to do this
+    for (i = 1; i < MAX_CLIENTS; i++) {
+        ED_EnsureFields(EDICT_NUM(i));
+    }
 
     // parse ents
     while (1) {
@@ -383,11 +383,32 @@ void ED_LoadFromFile(char *data)
         data = ED_ParseEdict(data, ent);
 
         // remove things from different skill levels or deathmatch
+#if 0
         if (((int) ent->v.spawnflags & SPAWNFLAG_NOT_DEATHMATCH)) {
             ED_Free(ent);
             inhibit++;
             continue;
         }
+#else
+        #define current_skill 0 // XXX
+        if (deathmatch.value)
+        {
+            if (((int)ent->v.spawnflags & SPAWNFLAG_NOT_DEATHMATCH))
+            {
+                ED_Free (ent);  
+                inhibit++;
+                continue;
+            }
+        }
+        else if ((current_skill == 0 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_EASY))
+            || (current_skill == 1 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_MEDIUM))
+            || (current_skill >= 2 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_HARD)) )
+        {
+            ED_Free (ent);  
+            inhibit++;
+            continue;
+        }
+#endif
         //
         // immediately call spawn function
         //
@@ -408,9 +429,7 @@ void ED_LoadFromFile(char *data)
             continue;
         }
 
-        ED_EnsureFields(ent);
-
-        pr_global_struct->self = ent;
+        pr_global_struct->self = ent->ref;
 
         ref = luaL_ref(L, LUA_REGISTRYINDEX);
         PR_ExecuteProgram(ref);
@@ -472,8 +491,12 @@ static int ED_mt_index(lua_State *L)
     PUSH_FVEC3(angles);
     PUSH_FVEC3(view_ofs);
     PUSH_FVEC3(velocity);
+    PUSH_FVEC3(mins);
+    PUSH_FVEC3(maxs);
     PUSH_FSTRING(target);
     PUSH_FSTRING(targetname);
+    PUSH_FSTRING(message);
+    PUSH_FFLOAT(spawnflags);
 
     //Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
 
@@ -627,13 +650,33 @@ void PR_ExecuteProgram(func_t fnum)
     if (!lua_isfunction(L, -1))
         SV_Error("PR_ExecuteProgram(%d) did not get a function");
 
-    // make this the first argument in the future
-    ED_PushEdict(pr_global_struct->self);
+    // XXX: big hack because first frame is run before other edicts are initialized than world
+    if (sv.state == ss_loading && EDICT_NUM(0)->ref == 0) {
+        ED_EnsureFields(EDICT_NUM(0));
+        pr_global_struct->self = EDICT_NUM(0)->ref;
+        pr_global_struct->other = EDICT_NUM(0)->ref;
+    }
+
+    if (pr_global_struct->self == 0)
+        SV_Error("Executing a function with zero self, this is a bug.\n");
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->self);
     lua_setglobal(L, "self");
 
-    // can we set this only during init?
-    ED_PushEdict(EDICT_NUM(0));
-    lua_setglobal(L, "world");
+    if (EDICT_NUM(0)->ref) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, EDICT_NUM(0)->ref);
+        lua_setglobal(L, "world");
+    }
+
+    if (pr_global_struct->other) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->other);
+    } else {
+        lua_pushnil(L);
+    }
+    lua_setglobal(L, "other");
+
+    lua_pushnumber(L, svs.serverflags);
+    lua_setglobal(L, "serverflags");
 
     lua_pushnumber(L, sv.time);
     lua_setglobal(L, "time");
@@ -696,4 +739,16 @@ char *PR_StrDup(const char *in)
     strcpy(out, in);
 
     return out;
+}
+
+edict_t *PROG_TO_EDICT(int ref)
+{
+    edict_t **e;
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    e = lua_touserdata(L, -1);
+
+    lua_pop(L, 1);
+
+    return *e;
 }

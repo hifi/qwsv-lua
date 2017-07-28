@@ -40,7 +40,7 @@ typedef enum { ev_void, ev_string, ev_float, ev_vector, ev_entity,
 
 struct edict_s;
 
-#include "lua_progdefs.h"
+#include "progdefs.h"
 
 #include <lua.h>
 #include <lualib.h>
@@ -118,8 +118,9 @@ int NUM_FOR_EDICT(edict_t * e);
 
 #define	NEXT_EDICT(e) ((edict_t *)( (byte *)e + pr_edict_size))
 
-#define	EDICT_TO_PROG(e) (e)
-#define PROG_TO_EDICT(e) (e)
+#define	EDICT_TO_PROG(e) (e->ref)
+//#define PROG_TO_EDICT(e) (e)
+edict_t *PROG_TO_EDICT(int ref);
 
 //============================================================================
 

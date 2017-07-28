@@ -24,6 +24,20 @@ static int PR_Vec3_Add(lua_State *L)
     return 1;
 };
 
+static int PR_Vec3_Mul(lua_State *L)
+{
+    vec_t *a,*b;
+    float s;
+
+    a = PR_Vec3_ToVec(L, 1);
+    s = luaL_checknumber(L, 2);
+    b = PR_Vec3_New(L);
+
+    VectorScale(a,s,b);
+
+    return 1;
+};
+
 static int PR_Vec3_ToString(lua_State *L)
 {
     vec_t *a;
@@ -60,6 +74,7 @@ static int PR_Vec3_NewIndex(lua_State *L)
 
 static const luaL_Reg PR_Vec3_Metatable[] = {
     {"__add",      PR_Vec3_Add},
+    {"__mul",      PR_Vec3_Mul},
     {"__tostring", PR_Vec3_ToString},
     {"__newindex", PR_Vec3_NewIndex},
     {0, 0}
