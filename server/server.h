@@ -346,6 +346,7 @@ void SV_DropClient(client_t * drop);
 
 int SV_CalcPing(client_t * cl);
 void SV_FullClientUpdate(client_t * client, sizebuf_t * buf);
+void SV_FullClientUpdateToClient(client_t * client, client_t * cl);
 
 int SV_ModelIndex(char *name);
 

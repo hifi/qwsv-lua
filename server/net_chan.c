@@ -18,10 +18,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "quakedef.h"
+#include "qwsvdef.h"
 
 #ifdef _WIN32
 #include "winquake.h"
+#else
+#include <unistd.h>
+#include <sys/types.h>
+#include <time.h>
 #endif
 
 #define	PACKET_HEADER	8
@@ -318,10 +322,6 @@ qboolean Netchan_Process(netchan_t * chan)
 {
     unsigned sequence, sequence_ack;
     unsigned reliable_ack, reliable_message;
-#ifdef SERVERONLY
-    int qport;
-#endif
-    int i;
 
     if (
 #ifndef SERVERONLY
@@ -337,7 +337,7 @@ qboolean Netchan_Process(netchan_t * chan)
 
     // read the qport if we are a server
 #ifdef SERVERONLY
-    qport = MSG_ReadShort();
+    MSG_ReadShort();
 #endif
 
     reliable_message = sequence >> 31;

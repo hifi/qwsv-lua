@@ -211,7 +211,7 @@ void Sys_Init(void)
 main
 =============
 */
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     double time, oldtime, newtime;
     quakeparms_t parms;
@@ -277,4 +277,6 @@ void main(int argc, char *argv[])
         if (sys_extrasleep.value)
             usleep(sys_extrasleep.value);
     }
+
+    return 0;
 }

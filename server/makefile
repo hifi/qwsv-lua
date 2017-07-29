@@ -1,7 +1,7 @@
 LUA_CFLAGS  := $(shell pkg-config lua5.3 --cflags 2>/dev/null || pkg-config lua --cflags)
 LUA_LIBS    := $(shell pkg-config lua5.3 --libs 2>/dev/null || pkg-config lua --libs)
 
-CFLAGS=-DSERVERONLY -Dstricmp=strcasecmp -g -Wall -fomit-frame-pointer -fno-strength-reduce
+CFLAGS=-DSERVERONLY -Dstricmp=strcasecmp -g -Wall -fomit-frame-pointer -fno-strength-reduce -Wno-format-truncation
 
 EXE = qwsv
 
@@ -38,7 +38,6 @@ PR_OBJS = $(OBJS) \
 PRL_OBJS = $(OBJS) \
     lua_cmds.o \
     lua_edict.o \
-    lua_exec.o \
     lua_vector.o
 
 LDFLAGS = -lm

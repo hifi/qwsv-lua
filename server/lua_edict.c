@@ -23,6 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 lua_State *L;
 
+// leftovers from pr_
+int pr_argc;
+int num_prstr;
 dprograms_t *progs;
 dfunction_t *pr_functions;
 char *pr_strings;
@@ -681,7 +684,14 @@ void PR_ExecuteProgram(func_t fnum)
     lua_pushnumber(L, sv.time);
     lua_setglobal(L, "time");
 
+    lua_pushnumber(L, pr_global_struct->force_retouch);
+    lua_setglobal(L, "force_retouch");
+
     lua_call(L, 0, 0);
+
+    lua_getglobal(L, "force_retouch");
+    pr_global_struct->force_retouch = lua_tonumber(L, -1);
+    lua_pop(L, 1);
 }
 
 edict_t *EDICT_NUM(int n)

@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "qwsvdef.h"
 
+#define PR_RunError(a, ...) SV_Error(a)
+
 extern lua_State *L;
 
 float* g_float_p(int o)

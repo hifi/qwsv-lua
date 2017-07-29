@@ -1449,7 +1449,7 @@ int COM_FOpenFile(char *filename, FILE ** file)
                     continue;
             }
 
-            sprintf(netpath, "%s/%s", search->filename, filename);
+            snprintf(netpath, sizeof(netpath), "%s/%s", search->filename, filename);
 
             findtime = Sys_FileTime(netpath);
             if (findtime == -1)
@@ -2106,11 +2106,11 @@ static byte chktbl[1024 + 4] = {
     0x00, 0x00, 0x00, 0x00
 };
 
+#if 0
 static byte chkbuf[16 + 60 + 4];
 
 static unsigned last_mapchecksum = 0;
 
-#if 0
 /*
 ====================
 COM_BlockSequenceCheckByte

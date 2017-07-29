@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // net_main.c
 
-#include "quakedef.h"
+#include "qwsvdef.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -157,10 +157,10 @@ qboolean NET_StringToAdr(char *s, netadr_t * a)
 // the IP is NOT one of our interfaces.
 qboolean NET_IsClientLegal(netadr_t * adr)
 {
+#if 0
     struct sockaddr_in sadr;
     int newsocket;
 
-#if 0
     if (adr->ip[0] == 127)
         return false;           // no local connections period
 
@@ -190,7 +190,7 @@ qboolean NET_GetPacket(void)
 {
     int ret;
     struct sockaddr_in from;
-    int fromlen;
+    socklen_t fromlen;
 
     fromlen = sizeof(from);
     ret =
@@ -268,7 +268,7 @@ void NET_GetLocalAddress(void)
 {
     char buff[MAXHOSTNAMELEN];
     struct sockaddr_in address;
-    int namelen;
+    socklen_t namelen;
 
     gethostname(buff, MAXHOSTNAMELEN);
     buff[MAXHOSTNAMELEN - 1] = 0;
