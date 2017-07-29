@@ -1,3 +1,6 @@
+LUA_CFLAGS  := $(shell pkg-config lua5.3 --cflags 2>/dev/null || pkg-config lua --cflags)
+LUA_LIBS    := $(shell pkg-config lua5.3 --libs 2>/dev/null || pkg-config lua --libs)
+
 CFLAGS=-DSERVERONLY -Dstricmp=strcasecmp -g -Wall -fomit-frame-pointer -fno-strength-reduce
 
 EXE = qwsv
@@ -45,9 +48,9 @@ all: $(EXE)-lua
 $(EXE) : $(PR_OBJS)
 	cc $(CFLAGS) -o $(EXE) $(PR_OBJS) $(LDFLAGS) 
 
-$(EXE)-lua : CFLAGS += -DWITH_LUA
+$(EXE)-lua : CFLAGS += -DWITH_LUA $(LUA_CFLAGS)
 $(EXE)-lua : $(PRL_OBJS)
-	cc $(CFLAGS) -o $(EXE) $(PRL_OBJS) $(LDFLAGS) -llua
+	cc $(CFLAGS) -o $(EXE) $(PRL_OBJS) $(LDFLAGS) $(LUA_LIBS)
 
 clean:
 	rm -f $(PR_OBJS) $(PRL_OBJS) $(EXE) $(EXE)-lua
