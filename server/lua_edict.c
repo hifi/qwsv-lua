@@ -64,6 +64,14 @@ static void ED_EnsureFields(edict_t *ed)
         lua_pushnumber(L, 0);
         lua_rawset(L, -3);
 
+        lua_pushstring(L, "wait");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
+        lua_pushstring(L, "delay");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
         ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 }
@@ -500,6 +508,7 @@ static int ED_mt_index(lua_State *L)
     PUSH_FREF(enemy);
     PUSH_FREF(model);
     PUSH_FREF(classname);
+    PUSH_FREF(use);
     PUSH_FREF(noise);
     PUSH_FREF(noise1);
     PUSH_FREF(noise2);
@@ -511,8 +520,9 @@ static int ED_mt_index(lua_State *L)
     PUSH_FFLOAT(max_health);
     PUSH_FFLOAT(nextthink);
     PUSH_FFLOAT(solid);
+    PUSH_FFLOAT(flags);
 
-    Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
+    Sys_Printf("ED_mt_index(%p, %s) falling through, fields is %d\n", *e, key, (*e)->fields);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
@@ -565,6 +575,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_FFLOAT(deadflag);
     SET_FFLOAT(health);
     SET_FFLOAT(max_health);
+    SET_FFLOAT(teleport_time);
     SET_FREF(think);
     SET_FREF(touch);
     SET_FREF(use);
@@ -578,20 +589,43 @@ static int ED_mt_newindex(lua_State *L)
     SET_FREF(classname);
     SET_FREF(model);
 
-    Sys_Printf("ED_mt_newindex(%p, %s) falling through\n", *e, key);
+    Sys_Printf("ED_mt_newindex(%p, %s) falling through, fields is %d\n", *e, key, (*e)->fields);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
-    lua_pushvalue(L, 3);
+
+    if (luaL_testudata(L, 3, "vec3_t")) {
+        vec_t *ovec, *nvec;
+        ovec = PR_Vec3_ToVec(L, 3);
+        nvec = PR_Vec3_New(L);
+        memcpy(nvec, ovec, sizeof(vec3_t));
+        Sys_Printf("VEC3 DETECTED\n");
+    } else {
+        lua_pushvalue(L, 3);
+    }
+
     lua_rawset(L, -3);
     lua_pop(L, 1);
 
     return 0;
 }
 
+static int ED_mt_tostring(lua_State *L)
+{
+    static char buf[32];
+    edict_t **e;
+
+    e = luaL_checkudata(L, 1, "edict_t");
+    snprintf(buf, sizeof(buf), "edict_t %p", *e);
+
+    lua_pushstring(L, buf);
+    return 1;
+}
+
 static const luaL_Reg ED_mt[] = {
     {"__index",     ED_mt_index},
     {"__newindex",  ED_mt_newindex},
+    {"__tostring",  ED_mt_tostring},
     {0, 0}
 };
 
@@ -701,6 +735,9 @@ void PR_ExecuteProgram(func_t fnum)
 
     lua_pushnumber(L, pr_global_struct->force_retouch);
     lua_setglobal(L, "force_retouch");
+
+    lua_pushnil(L);
+    lua_setglobal(L, "activator");
 
     PR_Vec3_Push(L, pr_global_struct->v_forward);
     lua_setglobal(L, "v_forward");

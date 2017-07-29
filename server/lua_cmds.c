@@ -919,7 +919,7 @@ int PF_Find(lua_State *L)
             t = PR_GetString(ed->v.classname);
         }
         else if (strcmp(f, "targetname") == 0) {
-            t = PR_GetString(ed->v.classname);
+            t = PR_GetString(ed->v.targetname);
         }
 
         if (!t)
@@ -1394,18 +1394,12 @@ static client_t *Write_GetClient(lua_State *L)
 
 int PF_WriteByte(lua_State *L)
 {
-    float parm0;
-    float parm1;
-
-    parm0 = luaL_checknumber(L, 1);
-    parm1 = luaL_checknumber(L, 2);
-
-    if (parm0 == MSG_ONE) {
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
         client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 1);
-        ClientReliableWrite_Byte(cl, parm1);
+        ClientReliableWrite_Byte(cl, luaL_checknumber(L, 2));
     } else
-        MSG_WriteByte(WriteDest(L), parm1);
+        MSG_WriteByte(WriteDest(L), luaL_checknumber(L, 2));
 
     return 0;
 }
@@ -1449,17 +1443,21 @@ void PF_WriteAngle(void)
     } else
         MSG_WriteAngle(WriteDest(), G_FLOAT(OFS_PARM1));
 }
+#endif
 
-void PF_WriteCoord(void)
+int PF_WriteCoord(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 2);
-        ClientReliableWrite_Coord(cl, G_FLOAT(OFS_PARM1));
+        ClientReliableWrite_Coord(cl, luaL_checknumber(L, 2));
     } else
-        MSG_WriteCoord(WriteDest(), G_FLOAT(OFS_PARM1));
+        MSG_WriteCoord(WriteDest(L), luaL_checknumber(L, 2));
+
+    return 0;
 }
 
+#if 0
 void PF_WriteString(void)
 {
     if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
@@ -1652,15 +1650,16 @@ PF_multicast
 void(vector where, float set) multicast
 ==============
 */
-void PF_multicast(void)
+int PF_multicast(lua_State *L)
 {
-    float *o;
+    vec_t *o;
     int to;
 
-    o = G_VECTOR(OFS_PARM0);
-    to = G_FLOAT(OFS_PARM1);
+    o = luaL_checkudata(L, 1, "vec3_t");
+    to = luaL_checknumber(L, 2);
 
     SV_Multicast(o, to);
+    return 0;
 }
 
 
@@ -1708,6 +1707,8 @@ void PR_InstallBuiltins(void)
     lua_register(L, "centerprint", PF_centerprint);
     lua_register(L, "sound", PF_sound);
     lua_register(L, "WriteByte", PF_WriteByte);
+    lua_register(L, "WriteCoord", PF_WriteCoord);
+    lua_register(L, "multicast", PF_multicast);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

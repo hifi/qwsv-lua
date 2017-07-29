@@ -395,7 +395,7 @@ function teleport_touch()
     -- put a tfog where the player was
     spawn_tfog (other.origin)
 
-    t = find (world, targetname, self.target)
+    t = find (world, "targetname", self.target)
     if not t then
         objerror ("couldn't find target")
     end
@@ -419,7 +419,7 @@ function teleport_touch()
     if other.classname == "player" then
         other.fixangle = 1 -- turn this way immediately
         other.teleport_time = time + 0.7
-        if other.flags & FL_ONGROUND then
+        if (other.flags & FL_ONGROUND) > 0 then
             other.flags = other.flags - FL_ONGROUND
         end
         other.velocity = v_forward * 300

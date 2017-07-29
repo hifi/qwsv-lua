@@ -24,22 +24,43 @@ static int PR_Vec3_Add(lua_State *L)
     return 1;
 };
 
+static int PR_Vec3_Sub(lua_State *L)
+{
+    vec_t *a,*b,*c;
+
+    a = PR_Vec3_ToVec(L, 1);
+    b = PR_Vec3_ToVec(L, 2);
+    c = PR_Vec3_New(L);
+
+    VectorSubtract(a,b,c);
+    
+    return 1;
+};
+
 static int PR_Vec3_Mul(lua_State *L)
 {
     vec_t *a,*b;
     float s;
 
-    a = PR_Vec3_ToVec(L, 1);
+    int i_vec = 1;
+    int i_sec = 2; 
 
-    if (lua_isuserdata(L, 2)) {
-        b = luaL_checkudata(L, 2, "vec3_t");
+    if (!lua_isuserdata(L, 1)) {
+        i_vec = 2;
+        i_sec = 1;
+    }
+
+    a = PR_Vec3_ToVec(L, i_vec);
+
+    if (lua_isuserdata(L, i_sec)) {
+        b = luaL_checkudata(L, i_sec, "vec3_t");
         s = a[0] * b[0]
             + a[1] * b[1]
             + a[2] * b[2];
         lua_pushnumber(L, s);
     } else {
         b = PR_Vec3_New(L);
-        s = luaL_checknumber(L, 2);
+        s = luaL_checknumber(L, i_sec);
         VectorScale(a,s,b);
     }
 
@@ -101,6 +122,7 @@ static int PR_Vec3_NewIndex(lua_State *L)
 
 static const luaL_Reg PR_Vec3_Metatable[] = {
     {"__add",      PR_Vec3_Add},
+    {"__sub",      PR_Vec3_Sub},
     {"__mul",      PR_Vec3_Mul},
     {"__tostring", PR_Vec3_ToString},
     {"__index",    PR_Vec3_Index},
