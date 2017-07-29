@@ -597,7 +597,7 @@ void PR_LoadProgs(void)
     PR_Vec3_Init(L);
 
     luaL_newmetatable(L, "edict_t");
-    luaL_openlib(L, 0, ED_mt, 0);
+    luaL_setfuncs(L, ED_mt, 0);
     lua_pop(L, 1);
 
     PR_InstallBuiltins();

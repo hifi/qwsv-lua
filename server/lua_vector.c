@@ -83,7 +83,7 @@ static const luaL_Reg PR_Vec3_Metatable[] = {
 void PR_Vec3_Init(lua_State *L)
 {
     luaL_newmetatable(L, "vec3_t");
-    luaL_openlib(L, 0, PR_Vec3_Metatable, 0);
+    luaL_setfuncs(L, PR_Vec3_Metatable, 0);
     lua_pop(L, 1);
 }
 
