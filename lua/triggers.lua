@@ -37,7 +37,7 @@ local SPAWNFLAG_NOTOUCH = 1
 
 -- the wait time has passed, so set back up for another activation
 function multi_wait()
-    if self.max_health then
+    if self.max_health and self.max_health > 0 then
         self.health = self.max_health
         self.takedamage = DAMAGE_YES
         self.solid = SOLID_BBOX
@@ -143,7 +143,7 @@ function trigger_multiple()
 
     InitTrigger()
 
-    if self.health > 0 then
+    if self.health and self.health > 0 then
         if (self.spawnflags & SPAWNFLAG_NOTOUCH) > 0 then
             objerror ("health and notouch don't make sense\n")
         end
@@ -345,7 +345,7 @@ function tdeath_touch()
         end
     end
 
-    if other.health then
+    if other.health and other.health > 0 then
         T_Damage (other, self, self, 50000)
     end
 end
