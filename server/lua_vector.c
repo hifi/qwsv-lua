@@ -30,10 +30,18 @@ static int PR_Vec3_Mul(lua_State *L)
     float s;
 
     a = PR_Vec3_ToVec(L, 1);
-    s = luaL_checknumber(L, 2);
-    b = PR_Vec3_New(L);
 
-    VectorScale(a,s,b);
+    if (lua_isuserdata(L, 2)) {
+        b = luaL_checkudata(L, 2, "vec3_t");
+        s = a[0] * b[0]
+            + a[1] * b[1]
+            + a[2] * b[2];
+        lua_pushnumber(L, s);
+    } else {
+        b = PR_Vec3_New(L);
+        s = luaL_checknumber(L, 2);
+        VectorScale(a,s,b);
+    }
 
     return 1;
 };

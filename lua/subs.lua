@@ -208,7 +208,8 @@ void() DelayThink =
     remove(self);
 };
 
-/*
+--]]
+--[[
 ==============================
 SUB_UseTargets
 
@@ -226,83 +227,79 @@ Search for (string)targetname in all entities that
 match (string)self.target and call their .use function
 
 ==============================
-*/
-void() SUB_UseTargets =
-{
-    local entity t, stemp, otemp, act;
-
-//
-// check for a delay
-//
-    if (self.delay)
-    {
-    // create a temp object to fire at a later time
-        t = spawn();
-        t.classname = "DelayedUse";
-        t.nextthink = time + self.delay;
-        t.think = DelayThink;
-        t.enemy = activator;
-        t.message = self.message;
-        t.killtarget = self.killtarget;
-        t.target = self.target;
-        return;
-    }
-    
-    
-//
-// print the message
-//
-    if (activator.classname == "player" && self.message != "")
-    {
-        centerprint (activator, self.message);
-        if (!self.noise)
-            sound (activator, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
-    }
-
-//
-// kill the killtagets
-//
-    if (self.killtarget)
-    {
-        t = world;
-        do
-        {
-            t = find (t, targetname, self.killtarget);
-            if (!t)
-                return;
-            remove (t);
-        } while ( 1 );
-    }
-    
-//
-// fire targets
-//
-    if (self.target)
-    {
-        act = activator;
-        t = world;
-        do
-        {
-            t = find (t, targetname, self.target);
-            if (!t)
-            {
-                return;
-            }
-            stemp = self;
-            otemp = other;
-            self = t;
-            other = stemp;
-            if (self.use != SUB_Null)
-            {
-                if (self.use)
-                    self.use ();
-            }
-            self = stemp;
-            other = otemp;
-            activator = act;
-        } while ( 1 );
-    }
-    
-
-};
 --]]
+function SUB_UseTargets()
+    local t, stemp, otemp, act
+
+    --
+    -- check for a delay
+    --
+    if self.delay and self.delay > 0 then
+        -- create a temp object to fire at a later time
+        t = spawn()
+        t.classname = "DelayedUse"
+        t.nextthink = time + self.delay
+        t.think = DelayThink
+        t.enemy = activator
+        t.message = self.message
+        t.killtarget = self.killtarget
+        t.target = self.target
+        return
+    end
+    
+    
+    --
+    -- print the message
+    --
+    if activator and activator.classname == "player" and self.message and self.message ~= "" then
+        centerprint (activator, self.message)
+        if not self.noise then
+            sound (activator, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM)
+        end
+    end
+
+    --
+    -- kill the killtagets
+    --
+    if self.killtarget and #self.killtarget > 0 then
+        t = world
+        while true do
+            t = find (t, targetname, self.killtarget)
+            if not t then
+                return
+            end
+            remove (t)
+        end
+    end
+    
+    dprint("usetargets before self.target: " .. tostring(self.target) .. "\n")
+    --
+    -- fire targets
+    --
+    if self.target and #self.target > 0 then
+        dprint("activator is " .. tostring(activator) .. "\n")
+        act = activator
+        t = world
+        while true do
+            t = find (t, "targetname", self.target)
+            if not t then
+                return
+            end
+            dprint("find returned something\n")
+            stemp = self
+            otemp = other
+            self = t
+            other = stemp
+            if self.use ~= SUB_Null then
+                if self.use then
+                    self.use ()
+                end
+            end
+            self = stemp
+            other = otemp
+            activator = act
+        end
+    end
+
+    dprint("usetargets end\n")
+end

@@ -296,24 +296,28 @@ single print to a specific client
 centerprint(clientent, value)
 =================
 */
-void PF_centerprint(void)
+int PF_centerprint(lua_State *L)
 {
-    char *s;
+    const char *s;
     int entnum;
+    edict_t **ed;
     client_t *cl;
 
-    entnum = G_EDICTNUM(OFS_PARM0);
-    s = PF_VarString(1);
+    ed = luaL_checkudata(L, 1, "edict_t");
+    s = luaL_checkstring(L, 2);
+
+    entnum = NUM_FOR_EDICT(*ed);
 
     if (entnum < 1 || entnum > MAX_CLIENTS) {
         Con_Printf("tried to sprint to a non-client\n");
-        return;
+        return 0;
     }
 
     cl = &svs.clients[entnum - 1];
 
     ClientReliableWrite_Begin(cl, svc_centerprint, 2 + strlen(s));
     ClientReliableWrite_String(cl, s);
+    return 0;
 }
 
 
@@ -511,21 +515,22 @@ Larger attenuations will drop off.
 
 =================
 */
-void PF_sound(void)
+int PF_sound(lua_State *L)
 {
     char *sample;
     int channel;
-    edict_t *entity;
+    edict_t **entity;
     int volume;
     float attenuation;
 
-    entity = G_EDICT(OFS_PARM0);
-    channel = G_FLOAT(OFS_PARM1);
-    sample = G_STRING(OFS_PARM2);
-    volume = G_FLOAT(OFS_PARM3) * 255;
-    attenuation = G_FLOAT(OFS_PARM4);
+    entity = luaL_checkudata(L, 1, "edict_t");
+    channel = luaL_checknumber(L, 2);
+    sample = (char *)luaL_checkstring(L, 3);
+    volume = luaL_checknumber(L, 4) * 255;
+    attenuation = luaL_checknumber(L, 5);
 
-    SV_StartSound(entity, channel, sample, volume, attenuation);
+    SV_StartSound(*entity, channel, sample, volume, attenuation);
+    return 0;
 }
 
 /*
@@ -894,14 +899,9 @@ int PF_Find(lua_State *L)
     edict_t *ed;
     int i;
 
-    Sys_Printf("PF_Find\n");
-
-    if (!lua_isstring(L, 3))
-        PR_RunError("PF_Find: bad search string");
-
-    e = lua_touserdata(L, 1);
-    f = lua_tostring(L, 2);
-    s = lua_tostring(L, 3);
+    e = luaL_checkudata(L, 1, "edict_t");
+    f = luaL_checkstring(L, 2);
+    s = luaL_checkstring(L, 3);
 
     Sys_Printf("e = %p, *e = %p\n", e, *e);
 
@@ -913,7 +913,12 @@ int PF_Find(lua_State *L)
             continue;
 
         t = NULL;
+
+        // XXX fix these
         if (strcmp(f, "classname") == 0) {
+            t = PR_GetString(ed->v.classname);
+        }
+        else if (strcmp(f, "targetname") == 0) {
             t = PR_GetString(ed->v.classname);
         }
 
@@ -925,8 +930,7 @@ int PF_Find(lua_State *L)
         }
     }
 
-    ED_PushEdict(sv.edicts);
-    return 1;
+    return 0;
 }
 
 void PR_CheckEmptyString(char *s)
@@ -1702,6 +1706,8 @@ void PR_InstallBuiltins(void)
     lua_register(L, "lightstyle", PF_lightstyle);
     lua_register(L, "makevectors", PF_makevectors);
     lua_register(L, "objerror", PF_objerror);
+    lua_register(L, "centerprint", PF_centerprint);
+    lua_register(L, "sound", PF_sound);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

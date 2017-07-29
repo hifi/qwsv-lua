@@ -71,7 +71,7 @@ function multi_trigger()
     
     SUB_UseTargets()
 
-    if self.wait > 0 then
+    if self.wait and self.wait > 0 then
         self.think = multi_wait
         self.nextthink = time + self.wait
     else
@@ -143,8 +143,8 @@ function trigger_multiple()
 
     InitTrigger()
 
-    if self.health then
-        if self.spawnflags & SPAWNFLAG_NOTOUCH then
+    if self.health > 0 then
+        if (self.spawnflags & SPAWNFLAG_NOTOUCH) > 0 then
             objerror ("health and notouch don't make sense\n")
         end
         self.max_health = self.health
@@ -153,7 +153,7 @@ function trigger_multiple()
         self.solid = SOLID_BBOX
         setorigin (self, self.origin) -- make sure it links into the world
     else
-        if not (self.spawnflags & SPAWNFLAG_NOTOUCH) then
+        if (self.spawnflags & SPAWNFLAG_NOTOUCH) == 0 then
             self.touch = multi_touch
         end
     end
@@ -379,7 +379,7 @@ function teleport_touch()
         end
     end
 
-    if self.spawnflags & PLAYER_ONLY then
+    if (self.spawnflags & PLAYER_ONLY) > 0 then
         if other.classname ~= "player" then
             return
         end
@@ -408,7 +408,7 @@ function teleport_touch()
     spawn_tdeath(t.origin, other)
 
     -- move the player and lock him down for a little while
-    if not other.health then
+    if other.health == 0 then
         other.origin = t.origin
         other.velocity = (v_forward * other.velocity.x) + (v_forward * other.velocity.y)
         return

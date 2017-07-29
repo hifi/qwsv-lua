@@ -1,5 +1,7 @@
 package.path = package.path .. ';./id1/?.lua'
 
+activator = nil
+
 require "defs"
 require "subs"
 require "world"

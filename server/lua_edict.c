@@ -42,6 +42,33 @@ func_t SpectatorConnect;
 func_t SpectatorThink;
 func_t SpectatorDisconnect;
 
+static void ED_EnsureFields(edict_t *ed)
+{
+    if (ed->ref == 0) {
+        edict_t **ud = lua_newuserdata(L, sizeof(void*));
+        *ud = ed;
+        luaL_getmetatable(L, "edict_t");
+        lua_setmetatable(L, -2);
+        ed->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+
+    if (ed->fields == 0) {
+        lua_newtable(L);
+
+        // set some defaults so that math works
+        lua_pushstring(L, "style");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
+        lua_pushstring(L, "speed");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
+        ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+}
+
+
 /*
 =================
 ED_ClearEdict
@@ -58,6 +85,7 @@ void ED_ClearEdict(edict_t * e)
         luaL_unref(L, LUA_REGISTRYINDEX, e->fields);
 
     e->fields = 0;
+    ED_EnsureFields(e);
 }
 
 /*
@@ -128,36 +156,8 @@ void ED_Free(edict_t * ed)
     // XXX: do something to Lua fields
 }
 
-static void ED_EnsureFields(edict_t *ed)
-{
-    if (ed->ref == 0) {
-        edict_t **ud = lua_newuserdata(L, sizeof(void*));
-        *ud = ed;
-        luaL_getmetatable(L, "edict_t");
-        lua_setmetatable(L, -2);
-        ed->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
-
-    if (ed->fields == 0) {
-        //Sys_Printf("ED_EnsureFields(%p)\n", ed);
-        lua_newtable(L);
-
-        // set some defaults so that math works
-        lua_pushstring(L, "style");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        lua_pushstring(L, "speed");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
-    }
-}
-
 void ED_PushEdict(edict_t *ed)
 {
-    ED_EnsureFields(ed);
     lua_rawgeti(L, LUA_REGISTRYINDEX, ed->ref);
 }
 
@@ -247,14 +247,14 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_FLOAT(spawnflags);
     FIELD_FLOAT(health);
 
-    ED_EnsureFields(e);
-
     FIELD_LSTRING(wad);
     FIELD_LFLOAT(worldtype);
     FIELD_LFLOAT(light_lev);
     FIELD_LFLOAT(speed);
     FIELD_LFLOAT(style);
     FIELD_LFLOAT(wait);
+    FIELD_LFLOAT(absmin);
+    FIELD_LFLOAT(absmax);
     FIELD_LSTRING(map);
     FIELD_LSTRING(killtarget);
     FIELD_LVEC(mangle);
@@ -278,10 +278,6 @@ char *ED_ParseEdict(char *data, edict_t * ent)
     char keyname[256];
 
     init = false;
-
-    // clear it
-    ent->fields = 0; // XXX
-    ED_EnsureFields(ent);
 
     // go through all the dictionary pairs
     while (1) {
@@ -469,7 +465,7 @@ int ED_FindFunction(const char *name)
         return 1; \
     }
 
-#define PUSH_FSTRING(s) \
+#define PUSH_FREF(s) \
     if (strcmp(key, #s) == 0) { \
         lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
         return 1; \
@@ -496,15 +492,27 @@ static int ED_mt_index(lua_State *L)
     PUSH_FVEC3(velocity);
     PUSH_FVEC3(mins);
     PUSH_FVEC3(maxs);
-    PUSH_FSTRING(target);
-    PUSH_FSTRING(targetname);
-    PUSH_FSTRING(message);
+    PUSH_FVEC3(movedir);
+    PUSH_FREF(target);
+    PUSH_FREF(targetname);
+    PUSH_FREF(message);
+    PUSH_FREF(owner);
+    PUSH_FREF(enemy);
+    PUSH_FREF(model);
+    PUSH_FREF(classname);
+    PUSH_FREF(noise);
+    PUSH_FREF(noise1);
+    PUSH_FREF(noise2);
+    PUSH_FREF(noise3);
     PUSH_FFLOAT(spawnflags);
+    PUSH_FFLOAT(modelindex);
+    PUSH_FFLOAT(sounds);
+    PUSH_FFLOAT(health);
+    PUSH_FFLOAT(max_health);
+    PUSH_FFLOAT(nextthink);
+    PUSH_FFLOAT(solid);
 
-    //Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
-
-    // pull it from fields table otherwise
-    ED_EnsureFields(*e);
+    Sys_Printf("ED_mt_index(%p, %s) falling through\n", *e, key);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
@@ -520,18 +528,18 @@ static int ED_mt_index(lua_State *L)
         return 0; \
     }
 
-#define SET_FFUNC(s)  \
-    if (strcmp(key, #s) == 0) { \
-        lua_pushvalue(L, 3); \
-        (*e)->v.s = luaL_ref(L, LUA_REGISTRYINDEX); \
-        return 0; \
-    }
-
 #define SET_FVEC3(s) \
     if (strcmp(key, #s) == 0) { \
         vec_t *_tmpvec; \
         _tmpvec = PR_Vec3_ToVec(L, 3); \
         memcpy((*e)->v.s, _tmpvec, sizeof(vec3_t)); \
+        return 0; \
+    }
+
+#define SET_FREF(s)  \
+    if (strcmp(key, #s) == 0) { \
+        lua_pushvalue(L, 3); \
+        (*e)->v.s = luaL_ref(L, LUA_REGISTRYINDEX); \
         return 0; \
     }
 
@@ -543,8 +551,6 @@ static int ED_mt_newindex(lua_State *L)
     e = lua_touserdata(L, 1);
     key = lua_tostring(L, 2);
 
-    //Sys_Printf("ED_mt_newindex(%p, %s)\n", *e, key);
-
     // first handle C fields
     SET_FFLOAT(health);
     SET_FFLOAT(takedamage);
@@ -553,17 +559,26 @@ static int ED_mt_newindex(lua_State *L)
     SET_FFLOAT(flags);
     SET_FFLOAT(frame);
     SET_FFLOAT(nextthink);
-    SET_FFUNC(think);
-    SET_FFUNC(touch);
-    SET_FFUNC(use);
-    //SET_FFUNC(owner); // it's actually an edict
+    SET_FFLOAT(modelindex);
+    SET_FFLOAT(sounds);
+    SET_FFLOAT(fixangle);
+    SET_FFLOAT(deadflag);
+    SET_FFLOAT(health);
+    SET_FFLOAT(max_health);
+    SET_FREF(think);
+    SET_FREF(touch);
+    SET_FREF(use);
+    SET_FREF(owner);
+    SET_FREF(enemy);
     SET_FVEC3(origin);
     SET_FVEC3(angles);
     SET_FVEC3(view_ofs);
     SET_FVEC3(velocity);
+    SET_FVEC3(movedir);
+    SET_FREF(classname);
+    SET_FREF(model);
 
-    // set the data to a field otherwise
-    ED_EnsureFields(*e);
+    Sys_Printf("ED_mt_newindex(%p, %s) falling through\n", *e, key);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
@@ -686,6 +701,9 @@ void PR_ExecuteProgram(func_t fnum)
 
     lua_pushnumber(L, pr_global_struct->force_retouch);
     lua_setglobal(L, "force_retouch");
+
+    PR_Vec3_Push(L, pr_global_struct->v_forward);
+    lua_setglobal(L, "v_forward");
 
     lua_call(L, 0, 0);
 
