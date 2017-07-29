@@ -72,6 +72,10 @@ static void ED_EnsureFields(edict_t *ed)
         lua_pushnumber(L, 0);
         lua_rawset(L, -3);
 
+        lua_pushstring(L, "attack_finished");
+        lua_pushnumber(L, 0);
+        lua_rawset(L, -3);
+
         ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 }

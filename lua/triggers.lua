@@ -507,12 +507,12 @@ function trigger_onlyregistered_touch()
     end
 
     self.attack_finished = time + 2
-    if cvar("registered") then
+    if cvar("registered") > 0 then
         self.message = ""
         SUB_UseTargets()
         remove (self)
     else
-        if self.message ~= "" then
+        if not self.message and self.message ~= "" then
             centerprint (other, self.message)
             sound (other, CHAN_BODY, "misc/talk.wav", 1, ATTN_NORM)
         end
@@ -537,7 +537,7 @@ function hurt_on()
 end
 
 function hurt_touch()
-    if other.takedamage then
+    if other.takedamage > 0 then
         self.solid = SOLID_NOT
         T_Damage (other, self, self, self.dmg)
         self.think = hurt_on
@@ -575,7 +575,7 @@ function trigger_push_touch()
             end
         end
     end
-    if self.spawnflags & PUSH_ONCE then
+    if (self.spawnflags & PUSH_ONCE) > 0 then
         remove(self)
     end
 end
