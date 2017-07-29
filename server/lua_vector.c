@@ -59,6 +59,25 @@ static int PR_Vec3_ToString(lua_State *L)
     return 1;
 };
 
+static int PR_Vec3_Index(lua_State *L)
+{
+    vec_t *v;
+    const char *key;
+
+    v = PR_Vec3_ToVec(L, 1);
+    key = luaL_checkstring(L, 2);
+
+    switch(key[0])
+    {
+        case 'x': lua_pushnumber(L, v[0]); break;
+        case 'y': lua_pushnumber(L, v[1]); break;
+        case 'z': lua_pushnumber(L, v[2]); break;
+        default: luaL_error(L, "vec3_t can only have x/y/x");
+    }
+
+    return 1;
+}
+
 static int PR_Vec3_NewIndex(lua_State *L)
 {
     vec_t *v;
@@ -84,6 +103,7 @@ static const luaL_Reg PR_Vec3_Metatable[] = {
     {"__add",      PR_Vec3_Add},
     {"__mul",      PR_Vec3_Mul},
     {"__tostring", PR_Vec3_ToString},
+    {"__index",    PR_Vec3_Index},
     {"__newindex", PR_Vec3_NewIndex},
     {0, 0}
 };

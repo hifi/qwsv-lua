@@ -1346,27 +1346,18 @@ MESSAGE WRITING
 #define	MSG_INIT		3       // write to the init string
 #define	MSG_MULTICAST	4       // for multicast()
 
-sizebuf_t *WriteDest(void)
+sizebuf_t *WriteDest(lua_State *L)
 {
-#if 0
-    int entnum;
     int dest;
-    edict_t *ent;
 
-    dest = G_FLOAT(OFS_PARM0);
+    dest = luaL_checkinteger(L, 1);
+
     switch (dest) {
     case MSG_BROADCAST:
         return &sv.datagram;
 
     case MSG_ONE:
         SV_Error("Shouldn't be at MSG_ONE");
-#if 0
-        ent = PROG_TO_EDICT(pr_global_struct->msg_entity);
-        entnum = NUM_FOR_EDICT(ent);
-        if (entnum < 1 || entnum > MAX_CLIENTS)
-            PR_RunError("WriteDest: not a client");
-        return &svs.clients[entnum - 1].netchan.message;
-#endif
 
     case MSG_ALL:
         return &sv.reliable_datagram;
@@ -1381,15 +1372,14 @@ sizebuf_t *WriteDest(void)
         return &sv.multicast;
 
     default:
-        PR_RunError("WriteDest: bad destination");
+        luaL_error(L, "WriteDest: bad destination");
         break;
     }
 
-#endif
     return NULL;
 }
 
-static client_t *Write_GetClient(void)
+static client_t *Write_GetClient(lua_State *L)
 {
     int entnum;
     edict_t *ent;
@@ -1397,21 +1387,29 @@ static client_t *Write_GetClient(void)
     ent = PROG_TO_EDICT(pr_global_struct->msg_entity);
     entnum = NUM_FOR_EDICT(ent);
     if (entnum < 1 || entnum > MAX_CLIENTS)
-        PR_RunError("WriteDest: not a client");
+        luaL_error(L, "WriteDest: not a client");
     return &svs.clients[entnum - 1];
 }
 
 
-void PF_WriteByte(void)
+int PF_WriteByte(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
-        ClientReliableCheckBlock(cl, 1);
-        ClientReliableWrite_Byte(cl, G_FLOAT(OFS_PARM1));
-    } else
-        MSG_WriteByte(WriteDest(), G_FLOAT(OFS_PARM1));
-}
+    float parm0;
+    float parm1;
 
+    parm0 = luaL_checknumber(L, 1);
+    parm1 = luaL_checknumber(L, 2);
+
+    if (parm0 == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
+        ClientReliableCheckBlock(cl, 1);
+        ClientReliableWrite_Byte(cl, parm1);
+    } else
+        MSG_WriteByte(WriteDest(L), parm1);
+
+    return 0;
+}
+#if 0
 void PF_WriteChar(void)
 {
     if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
@@ -1482,6 +1480,7 @@ void PF_WriteEntity(void)
     } else
         MSG_WriteShort(WriteDest(), G_EDICTNUM(OFS_PARM1));
 }
+#endif
 
 //=============================================================================
 
@@ -1708,6 +1707,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "objerror", PF_objerror);
     lua_register(L, "centerprint", PF_centerprint);
     lua_register(L, "sound", PF_sound);
+    lua_register(L, "WriteByte", PF_WriteByte);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

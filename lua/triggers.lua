@@ -373,7 +373,7 @@ function teleport_touch()
     local t
     local org
 
-    if self.targetname then
+    if self.targetname and #self.targetname > 0 then
         if self.nextthink < time then
             return -- not fired yet
         end
@@ -460,7 +460,7 @@ function trigger_teleport()
     InitTrigger()
     self.touch = teleport_touch
     -- find the destination 
-    if not self.target then
+    if not self.target or #self.target == 0 then
         objerror ("no target")
     end
     self.use = teleport_use

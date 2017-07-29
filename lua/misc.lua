@@ -193,7 +193,7 @@ function misc_fireball()
     self.classname = "fireball"
     self.nextthink = time + (random() * 5)
     self.think = fire_fly
-    if not self.speed then
+    if not self.speed or self.speed == 0 then
         self.speed = 1000
     end
 end
