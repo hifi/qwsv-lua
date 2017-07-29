@@ -272,12 +272,10 @@ function SUB_UseTargets()
         end
     end
     
-    dprint("usetargets before self.target: " .. tostring(self.target) .. "\n")
     --
     -- fire targets
     --
     if self.target and #self.target > 0 then
-        dprint("activator is " .. tostring(activator) .. "\n")
         act = activator
         t = world
         while true do
@@ -285,7 +283,6 @@ function SUB_UseTargets()
             if not t then
                 return
             end
-            dprint("find returned something\n")
             stemp = self
             otemp = other
             self = t
@@ -300,6 +297,4 @@ function SUB_UseTargets()
             activator = act
         end
     end
-
-    dprint("usetargets end\n")
 end

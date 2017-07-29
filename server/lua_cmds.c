@@ -298,13 +298,13 @@ centerprint(clientent, value)
 */
 int PF_centerprint(lua_State *L)
 {
-    const char *s;
+    char *s;
     int entnum;
     edict_t **ed;
     client_t *cl;
 
     ed = luaL_checkudata(L, 1, "edict_t");
-    s = luaL_checkstring(L, 2);
+    s = (char *)luaL_checkstring(L, 2);
 
     entnum = NUM_FOR_EDICT(*ed);
 
@@ -903,8 +903,6 @@ int PF_Find(lua_State *L)
     f = luaL_checkstring(L, 2);
     s = luaL_checkstring(L, 3);
 
-    Sys_Printf("e = %p, *e = %p\n", e, *e);
-
     i = NUM_FOR_EDICT(*e);
 
     for (i++; i < sv.num_edicts; i++) {
@@ -920,6 +918,8 @@ int PF_Find(lua_State *L)
         }
         else if (strcmp(f, "targetname") == 0) {
             t = PR_GetString(ed->v.targetname);
+        } else {
+            SV_Error("PF_Find() called with unknown field");
         }
 
         if (!t)

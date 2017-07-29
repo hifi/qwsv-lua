@@ -594,12 +594,12 @@ static int ED_mt_newindex(lua_State *L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
 
+    // deep copy of vec3_t when assigning
     if (luaL_testudata(L, 3, "vec3_t")) {
         vec_t *ovec, *nvec;
         ovec = PR_Vec3_ToVec(L, 3);
         nvec = PR_Vec3_New(L);
         memcpy(nvec, ovec, sizeof(vec3_t));
-        Sys_Printf("VEC3 DETECTED\n");
     } else {
         lua_pushvalue(L, 3);
     }
