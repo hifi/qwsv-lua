@@ -9,6 +9,7 @@ require "buttons"
 require "triggers"
 require "plats"
 require "misc"
+require "server"
 
 -- weapons.qc
 function W_Precache()
