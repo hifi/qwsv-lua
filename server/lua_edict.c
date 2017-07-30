@@ -585,8 +585,6 @@ static int ED_mt_index(lua_State *L)
     PUSH_REF(noise2);
     PUSH_REF(noise3);
 
-    Sys_Printf("ED_mt_index(%p, %s) falling through, fields is %d\n", *e, key, (*e)->fields);
-
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
     lua_rawget(L, -2);
@@ -701,8 +699,6 @@ static int ED_mt_newindex(lua_State *L)
     SET_REF(noise1);
     SET_REF(noise2);
     SET_REF(noise3);
-
-    Sys_Printf("ED_mt_newindex(%p, %s) falling through, fields is %d\n", *e, key, (*e)->fields);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
