@@ -578,7 +578,7 @@ function func_illusionary()
     self.movetype = MOVETYPE_NONE
     self.solid = SOLID_NOT
     setmodel (self, self.model)
-    makestatic ()
+    makestatic (self)
 end
 
 --[[
