@@ -66,77 +66,76 @@ function InitTrigger()
 end
 
 --[[
-/*
 =============
 SUB_CalcMove
 
 calculate self.velocity and self.nextthink to reach dest from
 self.origin traveling at speed
 ===============
-*/
-void(entity ent, vector tdest, float tspeed, void() func) SUB_CalcMoveEnt =
-{
-local entity    stemp;
-    stemp = self;
-    self = ent;
+--]]
+function SUB_CalcMoveEnt(ent, tdest, tspeed, func)
+    local stemp
+    stemp = self
+    self = ent
 
-    SUB_CalcMove (tdest, tspeed, func);
-    self = stemp;
-};
+    SUB_CalcMove (tdest, tspeed, func)
+    self = stemp
+end
 
-void(vector tdest, float tspeed, void() func) SUB_CalcMove =
-{
-local vector    vdestdelta;
-local float        len, traveltime;
+function SUB_CalcMove(tdest, tspeed, func)
+    local vdestdelta
+    local len, traveltime
 
-    if (!tspeed)
-        objerror("No speed is defined!");
+    if not tspeed or tspeed == 0 then
+        objerror("No speed is defined!")
+    end
 
-    self.think1 = func;
-    self.finaldest = tdest;
-    self.think = SUB_CalcMoveDone;
+    self.think1 = func
+    self.finaldest = tdest
+    self.think = SUB_CalcMoveDone
 
-    if (tdest == self.origin)
-    {
-        self.velocity = '0 0 0';
-        self.nextthink = self.ltime + 0.1;
-        return;
-    }
+    if tdest == self.origin then
+        self.velocity = vec3(0,0,0)
+        self.nextthink = self.ltime + 0.1
+        return
+    end
         
-// set destdelta to the vector needed to move
+    -- set destdelta to the vector needed to move
     vdestdelta = tdest - self.origin;
     
-// calculate length of vector
-    len = vlen (vdestdelta);
+    -- calculate length of vector
+    len = #vdestdelta
     
-// divide by speed to get time to reach dest
-    traveltime = len / tspeed;
+    -- divide by speed to get time to reach dest
+    traveltime = len / tspeed
 
-    if (traveltime < 0.03)
-        traveltime = 0.03;
+    if traveltime < 0.03 then
+        traveltime = 0.03
+    end
     
-// set nextthink to trigger a think when dest is reached
-    self.nextthink = self.ltime + traveltime;
+    -- set nextthink to trigger a think when dest is reached
+    self.nextthink = self.ltime + traveltime
 
-// scale the destdelta vector by the time spent traveling to get velocity
-    self.velocity = vdestdelta * (1/traveltime);    // qcc won't take vec/float    
-};
+    -- scale the destdelta vector by the time spent traveling to get velocity
+    self.velocity = vdestdelta * (1/traveltime) -- qcc won't take vec/float    
+end
 
-/*
+--[[
 ============
 After moving, set origin to exact final destination
 ============
-*/
-void()  SUB_CalcMoveDone =
-{
-    setorigin(self, self.finaldest);
-    self.velocity = '0 0 0';
-    self.nextthink = -1;
-    if (self.think1)
-        self.think1();
-};
+--]]
+function SUB_CalcMoveDone()
+    setorigin(self, self.finaldest)
+    self.velocity = vec3(0,0,0)
+    self.nextthink = -1
+    if self.think1 then
+        self.think1()
+    end
+end
 
 
+--[[
 /*
 =============
 SUB_CalcAngleMove

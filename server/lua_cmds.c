@@ -863,11 +863,12 @@ void PF_ftos(void)
     G_INT(OFS_RETURN) = PR_SetString(pr_string_temp);
 }
 
-void PF_fabs(void)
+int PF_fabs(lua_State *L)
 {
     float v;
-    v = G_FLOAT(OFS_PARM0);
-    G_FLOAT(OFS_RETURN) = fabs(v);
+    v = luaL_checknumber(L, 1);
+    lua_pushnumber(L, fabs(v));
+    return 1;
 }
 
 void PF_vtos(void)
@@ -1073,7 +1074,7 @@ PF_droptofloor
 void() droptofloor
 ===============
 */
-void PF_droptofloor(void)
+int PF_droptofloor(lua_State *L)
 {
     edict_t *ent;
     vec3_t end;
@@ -1088,14 +1089,16 @@ void PF_droptofloor(void)
         SV_Move(ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
 
     if (trace.fraction == 1 || trace.allsolid)
-        G_FLOAT(OFS_RETURN) = 0;
+        lua_pushnumber(L, 0);
     else {
         VectorCopy(trace.endpos, ent->v.origin);
         SV_LinkEdict(ent, false);
         ent->v.flags = (int) ent->v.flags | FL_ONGROUND;
         ent->v.groundentity = EDICT_TO_PROG(trace.ent);
-        G_FLOAT(OFS_RETURN) = 1;
+        lua_pushnumber(L, 1);
     }
+
+    return 1;
 }
 
 /*
@@ -1714,6 +1717,8 @@ void PR_InstallBuiltins(void)
     lua_register(L, "WriteByte", PF_WriteByte);
     lua_register(L, "WriteCoord", PF_WriteCoord);
     lua_register(L, "multicast", PF_multicast);
+    lua_register(L, "droptofloor", PF_droptofloor);
+    lua_register(L, "fabs", PF_fabs);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

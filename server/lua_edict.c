@@ -270,6 +270,9 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_LSTRING(map);
     FIELD_LSTRING(killtarget);
     FIELD_LVEC(mangle);
+    FIELD_LFLOAT(dmg);
+    FIELD_LFLOAT(height);
+    FIELD_LFLOAT(count);
 
     return false;
 }
@@ -885,7 +888,7 @@ char *PR_GetString(int num)
     lua_rawgeti(L, LUA_REGISTRYINDEX, num);
 
     if (!lua_isstring(L, -1))
-        SV_Error("PR_GetString(%d) did not get a string");
+        SV_Error("PR_GetString() did not get a string");
 
     snprintf(buf, sizeof(buf), "%s", lua_tostring(L, -1));
 
@@ -916,6 +919,9 @@ char *PR_StrDup(const char *in)
 edict_t *PROG_TO_EDICT(int ref)
 {
     edict_t **e;
+
+    if (ref == 0)
+        return NULL;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
     e = lua_touserdata(L, -1);

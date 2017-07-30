@@ -252,7 +252,7 @@ function misc_explobox()
     self.movetype = MOVETYPE_NONE
     precache_model ("maps/b_explob.bsp")
     setmodel (self, "maps/b_explob.bsp")
-    setsize (self, '0 0 0', '32 32 64')
+    setsize (self, vec3(0,0,0), vec3(32,32,64))
     precache_sound ("weapons/r_exp3.wav")
     self.health = 20
     self.th_die = barrel_explode

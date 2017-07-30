@@ -94,6 +94,22 @@ static int PR_Vec3_ToString(lua_State *L)
     return 1;
 };
 
+static int PR_Vec3_Len(lua_State *L)
+{
+    vec_t *value1;
+    float new;
+
+    value1 = PR_Vec3_ToVec(L, 1);
+
+    new =
+        value1[0] * value1[0] + value1[1] * value1[1] +
+        value1[2] * value1[2];
+    new = sqrt(new);
+
+    lua_pushnumber(L, new);
+    return 1;
+}
+
 static int PR_Vec3_Index(lua_State *L)
 {
     vec_t *v;
@@ -140,6 +156,7 @@ static const luaL_Reg PR_Vec3_Metatable[] = {
     {"__sub",      PR_Vec3_Sub},
     {"__mul",      PR_Vec3_Mul},
     {"__tostring", PR_Vec3_ToString},
+    {"__len",      PR_Vec3_Len},
     {"__index",    PR_Vec3_Index},
     {"__newindex", PR_Vec3_NewIndex},
     {0, 0}
