@@ -1481,7 +1481,7 @@ int PF_makestatic(lua_State *L)
     edict_t **ent;
     int i;
 
-    ent = lua_touserdata(L, 1);
+    ent = luaL_checkudata(L, 1, "edict_t");
 
     MSG_WriteByte(&sv.signon, svc_spawnstatic);
 
