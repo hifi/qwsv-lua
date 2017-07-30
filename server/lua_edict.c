@@ -269,6 +269,7 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_LFLOAT(absmax);
     FIELD_LSTRING(map);
     FIELD_LSTRING(killtarget);
+    FIELD_LSTRING(mdl);
     FIELD_LVEC(mangle);
     FIELD_LFLOAT(dmg);
     FIELD_LFLOAT(height);
