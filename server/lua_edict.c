@@ -209,43 +209,33 @@ Note: This will not support savegames.
         return true; \
     }
 
-#define FIELD_LSTRING(n) \
-    if (strcmp(key, #n) == 0) { \
-        lua_rawgeti(L, LUA_REGISTRYINDEX, e->fields); \
-        lua_pushstring(L, key); \
-        lua_pushstring(L, value); \
-        lua_rawset(L, -3); \
-        lua_pop(L, 1); \
-        return true; \
-    }
+static double* str_tonumber(const char *s)
+{
+    static double d;
 
-#define FIELD_LFLOAT(n) \
-    if (strcmp(key, #n) == 0) { \
-        lua_rawgeti(L, LUA_REGISTRYINDEX, e->fields); \
-        lua_pushstring(L, key); \
-        lua_pushnumber(L, atof(value)); \
-        lua_rawset(L, -3); \
-        lua_pop(L, 1); \
-        return true; \
-    }
+    if (sscanf(s, "%lf", &d) == 1)
+        return &d;
 
-#define FIELD_LVEC(n) \
-    if (strcmp(key, #n) == 0) { \
-        lua_rawgeti(L, LUA_REGISTRYINDEX, e->fields); \
-        lua_pushstring(L, key); \
-        vec = PR_Vec3_New(L); \
-        PARSE_VEC(); \
-        lua_rawset(L, -3); \
-        lua_pop(L, 1); \
-        return true; \
-    }
+    return NULL;
+}
+
+static vec_t* str_tovector(const char *s)
+{
+    static vec3_t v;
+
+    if (sscanf(s, "%f %f %f", &v[0], &v[1], &v[2]) == 3)
+        return v;
+
+    return NULL;
+}
 
 qboolean ED_SetField(edict_t *e, const char *key, const char *value)
 {
     int i;
     char string[128];
     char *v, *w;
-    vec_t *vec;
+    vec_t *vec, *nvec;
+    double *num;
 
     /* this is a bad hack and needs to be rewritten, this works for start.bsp for now */
     FIELD_FLOAT(sounds);
@@ -259,25 +249,21 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_FLOAT(spawnflags);
     FIELD_FLOAT(health);
 
-    FIELD_LSTRING(wad);
-    FIELD_LFLOAT(worldtype);
-    FIELD_LFLOAT(light_lev);
-    FIELD_LFLOAT(speed);
-    FIELD_LFLOAT(style);
-    FIELD_LFLOAT(wait);
-    FIELD_LFLOAT(absmin);
-    FIELD_LFLOAT(absmax);
-    FIELD_LSTRING(map);
-    FIELD_LSTRING(killtarget);
-    FIELD_LSTRING(mdl);
-    FIELD_LVEC(mangle);
-    FIELD_LFLOAT(dmg);
-    FIELD_LFLOAT(height);
-    FIELD_LFLOAT(count);
-    FIELD_LFLOAT(lip);
-    FIELD_LFLOAT(delay);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, e->fields);
+    lua_pushstring(L, key);
 
-    return false;
+    if ((vec = str_tovector(value))) {
+        nvec = PR_Vec3_New(L);
+        memcpy(nvec, vec, sizeof(vec3_t));
+    } else if ((num = str_tonumber(value))) {
+        lua_pushnumber(L, *num);
+    } else {
+        lua_pushstring(L, value);
+    }
+
+    lua_rawset(L, -3);
+    lua_pop(L, 1);
+    return true;
 }
 
 /*
