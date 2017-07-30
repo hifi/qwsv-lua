@@ -333,13 +333,14 @@ PF_normalize
 vector normalize(vector)
 =================
 */
-void PF_normalize(void)
+int PF_normalize(lua_State *L)
 {
-    float *value1;
-    vec3_t newvalue;
+    vec_t *value1;
+    vec_t *newvalue;
     float new;
 
-    value1 = G_VECTOR(OFS_PARM0);
+    value1 = PR_Vec3_ToVec(L, 1);
+    newvalue = PR_Vec3_New(L);
 
     new =
         value1[0] * value1[0] + value1[1] * value1[1] +
@@ -355,29 +356,7 @@ void PF_normalize(void)
         newvalue[2] = value1[2] * new;
     }
 
-    VectorCopy(newvalue, G_VECTOR(OFS_RETURN));
-}
-
-/*
-=================
-PF_vlen
-
-scalar vlen(vector)
-=================
-*/
-void PF_vlen(void)
-{
-    float *value1;
-    float new;
-
-    value1 = G_VECTOR(OFS_PARM0);
-
-    new =
-        value1[0] * value1[0] + value1[1] * value1[1] +
-        value1[2] * value1[2];
-    new = sqrt(new);
-
-    G_FLOAT(OFS_RETURN) = new;
+    return 1;
 }
 
 /*
@@ -413,13 +392,15 @@ PF_vectoangles
 vector vectoangles(vector)
 =================
 */
-void PF_vectoangles(void)
+int PF_vectoangles(lua_State *L)
 {
-    float *value1;
+    vec_t *value1;
     float forward;
     float yaw, pitch;
+    vec_t *ret;
 
-    value1 = G_VECTOR(OFS_PARM0);
+    value1 = PR_Vec3_ToVec(L, 1);
+    ret = PR_Vec3_New(L);
 
     if (value1[1] == 0 && value1[0] == 0) {
         yaw = 0;
@@ -438,9 +419,11 @@ void PF_vectoangles(void)
             pitch += 360;
     }
 
-    G_FLOAT(OFS_RETURN + 0) = pitch;
-    G_FLOAT(OFS_RETURN + 1) = yaw;
-    G_FLOAT(OFS_RETURN + 2) = 0;
+    ret[0] = pitch;
+    ret[1] = yaw;
+    ret[2] = 0;
+
+    return 1;
 }
 
 /*
@@ -1176,13 +1159,14 @@ void PF_checkbottom(void)
 PF_pointcontents
 =============
 */
-void PF_pointcontents(void)
+int PF_pointcontents(lua_State *L)
 {
-    float *v;
+    vec_t *v;
 
-    v = G_VECTOR(OFS_PARM0);
+    v = PR_Vec3_ToVec(L, 1);
 
-    G_FLOAT(OFS_RETURN) = SV_PointContents(v);
+    lua_pushnumber(L, SV_PointContents(v));
+    return 1;
 }
 
 /*
@@ -1697,11 +1681,13 @@ void PR_InstallBuiltins(void)
 {
     lua_register(L, "dprint", PF_dprint);
     lua_register(L, "precache_model", PF_precache_model);
+    lua_register(L, "precache_model2", PF_precache_model);
     lua_register(L, "find", PF_Find);
     lua_register(L, "setmodel", PF_setmodel);
     lua_register(L, "setsize", PF_setsize);
     lua_register(L, "remove", PF_Remove);
     lua_register(L, "precache_sound", PF_precache_sound);
+    lua_register(L, "precache_sound2", PF_precache_sound);
     lua_register(L, "ambientsound", PF_ambientsound);
     lua_register(L, "makestatic", PF_makestatic);
     lua_register(L, "random", PF_random);
@@ -1719,6 +1705,9 @@ void PR_InstallBuiltins(void)
     lua_register(L, "multicast", PF_multicast);
     lua_register(L, "droptofloor", PF_droptofloor);
     lua_register(L, "fabs", PF_fabs);
+    lua_register(L, "normalize", PF_normalize);
+    lua_register(L, "vectoangles", PF_vectoangles);
+    lua_register(L, "pointcontents", PF_pointcontents);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

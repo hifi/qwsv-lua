@@ -273,6 +273,8 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     FIELD_LFLOAT(dmg);
     FIELD_LFLOAT(height);
     FIELD_LFLOAT(count);
+    FIELD_LFLOAT(lip);
+    FIELD_LFLOAT(delay);
 
     return false;
 }

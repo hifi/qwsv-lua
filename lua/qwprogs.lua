@@ -11,6 +11,8 @@ require "misc"
 -- weapons.qc
 function W_Precache()
 end
+function SpawnBlood(org, damage)
+end
 
 -- combat.qc
 function T_Damage (targ, inflictor, attacker, damage)
