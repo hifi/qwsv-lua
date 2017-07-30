@@ -6,6 +6,7 @@ require "world"
 require "doors"
 require "buttons"
 require "triggers"
+require "plats"
 require "misc"
 
 -- weapons.qc
