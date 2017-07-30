@@ -21,23 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef int func_t;
 typedef int string_t;
 
-/*
-typedef enum { ev_void, ev_string, ev_float, ev_vector, ev_entity,
-        ev_field, ev_function, ev_pointer } etype_t;
-        */
-
-#define	OFS_NULL		0
-#define	OFS_RETURN		1
-#define	OFS_PARM0		4
-#define	OFS_PARM1		7
-#define	OFS_PARM2		10
-#define	OFS_PARM3		13
-#define	OFS_PARM4		16
-#define	OFS_PARM5		19
-#define	OFS_PARM6		22
-#define	OFS_PARM7		25
-#define	RESERVED_OFS	28
-
 struct edict_s;
 
 #include "progdefs.h"
@@ -46,22 +29,12 @@ struct edict_s;
 #include <lualib.h>
 #include <lauxlib.h>
 
-typedef union eval_s {
-    string_t string;
-    float _float;
-    float vector[3];
-    func_t function;
-    int _int;
-    int edict;
-} eval_t;
-
 typedef struct {
     unsigned short type;    // if DEF_SAVEGLOBGAL bit is set
                             // the variable needs to be saved in savegames
     unsigned short ofs;
     int s_name;
 } ddef_t;
-#define	DEF_SAVEGLOBAL	(1<<15)
 
 #define	MAX_ENT_LEAFS	16
 typedef struct edict_s {
@@ -79,10 +52,6 @@ typedef struct edict_s {
     int fields;                 // Lua fields table ref
 } edict_t;
 
-#define	EDICT_FROM_AREA(l) STRUCT_FROM_LINK(l,edict_t,area)
-
-//============================================================================
-
 //============================================================================
 
 void PR_Init(void);
@@ -92,62 +61,25 @@ void PR_ExecuteProgram(func_t fnum);
 void PR_LoadProgs(void);
 
 void PR_Profile_f(void);
-char *PR_StrDup(const char *);
+char *PR_StrDup(const char *); // XXX: this needs to be fixed
 
 edict_t *ED_Alloc(void);
 void ED_Free(edict_t * ed);
 void ED_PushEdict(edict_t *ed);
 
-char *ED_NewString(char *string);
-// returns a copy of the string allocated from the server's string heap
-
 void ED_Print(edict_t * ed);
-void ED_Write(FILE * f, edict_t * ed);
 char *ED_ParseEdict(char *data, edict_t * ent);
-
-void ED_WriteGlobals(FILE * f);
-void ED_ParseGlobals(char *data);
-
 void ED_LoadFromFile(char *data);
-
-//define EDICT_NUM(n) ((edict_t *)(sv.edicts+ (n)*pr_edict_size))
-//define NUM_FOR_EDICT(e) (((byte *)(e) - sv.edicts)/pr_edict_size)
 
 edict_t *EDICT_NUM(int n);
 int NUM_FOR_EDICT(edict_t * e);
-
 #define	NEXT_EDICT(e) ((edict_t *)( (byte *)e + pr_edict_size))
 
 #define	EDICT_TO_PROG(e) (e->ref)
-//#define PROG_TO_EDICT(e) (e)
 edict_t *PROG_TO_EDICT(int ref);
+#define	EDICT_FROM_AREA(l) STRUCT_FROM_LINK(l,edict_t,area)
 
 //============================================================================
-
-float* g_float_p(int o);
-#define G_FLOAT(o) (*g_float_p(o))
-int* g_int_p(int o);
-#define G_INT(o) (*g_int_p(o))
-edict_t* G_EDICT(int o);
-#define G_EDICTNUM(o) NUM_FOR_EDICT(G_EDICT(o))
-vec_t* G_VECTOR(int o);
-char* G_STRING(int o);
-int G_FUNCTION(int o);
-
-#define	E_FLOAT(e,o) (((float*)&e->v)[o])
-#define	E_INT(e,o) (*(int *)&((float*)&e->v)[o])
-#define	E_VECTOR(e,o) (&((float*)&e->v)[o])
-#define	E_STRING(e,o) (PR_GetString(*(string_t *)&((float*)&e->v)[o]))
-
-extern int type_size[8];
-
-typedef void (*builtin_t) (void);
-extern builtin_t *pr_builtins;
-extern int pr_numbuiltins;
-
-extern int pr_argc;
-
-extern qboolean pr_trace;
 
 extern func_t SpectatorConnect;
 extern func_t SpectatorThink;
@@ -158,20 +90,31 @@ void PR_RunError(char *error, ...);
 void ED_PrintEdicts(void);
 void ED_PrintNum(int ent);
 
+typedef union eval_s {
+    string_t string;
+    float _float;
+    float vector[3];
+    func_t function;
+    int _int;
+    int edict;
+} eval_t;
+
 eval_t *GetEdictFieldValue(edict_t * ed, char *field);
 
 //
-// PR STrings stuff
+// PR Strings stuff
 //
 #define MAX_PRSTR 1024
 
 char *PR_GetString(int num);
 int PR_SetString(char *s);
 
-/* compatibility things */
+//
+// compatibility with the engine as it is
+//
 extern char *pr_strings;
 extern globalvars_t *pr_global_struct;
-extern int pr_edict_size;       // in bytes
+extern int pr_edict_size; // in bytes
 
 typedef struct {
     int entityfields;
@@ -179,8 +122,36 @@ typedef struct {
 
 typedef int dfunction_t;
 extern dprograms_t *progs;
-extern char *pr_strtbl[MAX_PRSTR];
 extern int num_prstr;
+
+//
+// lua_edict.c helpers
+//
+
+#define PARSE_VEC() \
+    strcpy(string, value); \
+    v = string; \
+    w = string; \
+    for (i = 0; i < 3; i++) { \
+        while (*v && *v != ' ') \
+            v++; \
+        *v = 0; \
+        vec[i] = atof(w); \
+        w = v = v + 1; \
+    }
+
+#define FIELD_FLOAT(n) \
+    if (strcmp(key, #n) == 0) { e->v.n = atof(value); return true; }
+
+#define FIELD_STRING(n) \
+    if (strcmp(key, #n) == 0) { lua_pushstring(L, value); e->v.n = luaL_ref(L, LUA_REGISTRYINDEX); return true; }
+
+#define FIELD_VEC(n) \
+    if (strcmp(key, #n) == 0) { \
+        vec = e->v.n; \
+        PARSE_VEC(); \
+        return true; \
+    }
 
 #define PUSH_GREF(s) \
     if (pr_global_struct->s) \
@@ -202,7 +173,9 @@ extern int num_prstr;
     pr_global_struct->s = lua_tonumber(L, -1); \
     lua_pop(L, 1); \
 
-/* lua_vector.c */
+//
+// lua_vector.c
+//
 void PR_Vec3_Init(lua_State *L);
 vec_t* PR_Vec3_New(lua_State *L);
 vec_t* PR_Vec3_ToVec(lua_State *L, int index);

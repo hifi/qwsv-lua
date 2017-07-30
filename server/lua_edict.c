@@ -23,20 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 lua_State *L;
 
-// leftovers from pr_
-int pr_argc;
+// shared compatibility variables
 int num_prstr;
 dprograms_t *progs;
-dfunction_t *pr_functions;
 char *pr_strings;
 globalvars_t *pr_global_struct;
-int pr_edict_size;              // in bytes
-
-int type_size[8] =
-    { 1, sizeof(void *) / 4, 1, 3, 1, 1, sizeof(void *) / 4,
-sizeof(void *) / 4 };
-
-#define	MAX_FIELD_LEN	64
+int pr_edict_size; // in bytes
 
 func_t SpectatorConnect;
 func_t SpectatorThink;
@@ -184,30 +176,6 @@ Note: Expects the Lua stack to have a table.
 Note: This will not support savegames.
 =============
 */
-#define PARSE_VEC() \
-    strcpy(string, value); \
-    v = string; \
-    w = string; \
-    for (i = 0; i < 3; i++) { \
-        while (*v && *v != ' ') \
-            v++; \
-        *v = 0; \
-        vec[i] = atof(w); \
-        w = v = v + 1; \
-    }
-
-#define FIELD_FLOAT(n) \
-    if (strcmp(key, #n) == 0) { e->v.n = atof(value); return true; }
-
-#define FIELD_STRING(n) \
-    if (strcmp(key, #n) == 0) { lua_pushstring(L, value); e->v.n = luaL_ref(L, LUA_REGISTRYINDEX); return true; }
-
-#define FIELD_VEC(n) \
-    if (strcmp(key, #n) == 0) { \
-        vec = e->v.n; \
-        PARSE_VEC(); \
-        return true; \
-    }
 
 static double* str_tonumber(const char *s)
 {
@@ -237,7 +205,7 @@ qboolean ED_SetField(edict_t *e, const char *key, const char *value)
     vec_t *vec, *nvec;
     double *num;
 
-    /* this is a bad hack and needs to be rewritten, this works for start.bsp for now */
+    // first handle C fields
     FIELD_FLOAT(sounds);
     FIELD_STRING(classname);
     FIELD_STRING(message);
@@ -736,11 +704,20 @@ void PR_LoadProgs(void)
 {
     byte* code;
 
+    // shared state
+    pr_global_struct = Z_Malloc(sizeof *pr_global_struct);
+
+    // sv_init.c compatibility
     pr_edict_size = sizeof(edict_t);
     pr_strings = ""; // uh?
-    pr_global_struct = Z_Malloc(sizeof *pr_global_struct);
+
+    // sv_user.c compatibility
     progs = Z_Malloc(sizeof *progs);
-    progs->entityfields = sizeof(((edict_t *)0)->v) / 4; // this is also horrible
+    progs->entityfields = sizeof(((edict_t *)0)->v) / 4;
+
+    // sv_ccmds.c compatibility
+    num_prstr = 0;
+
     L = luaL_newstate();
     luaL_openlibs(L);
 

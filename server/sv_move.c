@@ -367,6 +367,7 @@ qboolean SV_CloseEnough(edict_t * ent, edict_t * goal, float dist)
     return true;
 }
 
+#ifndef WITH_LUA
 /*
 ======================
 SV_MoveToGoal
@@ -397,3 +398,4 @@ void SV_MoveToGoal(void)
         SV_NewChaseDir(ent, goal, dist);
     }
 }
+#endif

@@ -24,60 +24,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern lua_State *L;
 
-float* g_float_p(int o)
-{
-    return NULL;
-}
-
-int* g_int_p(int o)
-{
-    return NULL;
-}
-
-edict_t* G_EDICT(int o)
-{
-    return NULL;
-}
-
-vec_t* G_VECTOR(int o)
-{
-    return NULL;
-}
-
-char* G_STRING(int o)
-{
-    return NULL;
-}
-
-int G_FUNCTION(int o)
-{
-    return 0;
-}
-
-#define	RETURN_EDICT(e) NULL
-#define	RETURN_STRING(s) NULL
-
 /*
 ===============================================================================
 
-						BUILT-IN FUNCTIONS
+                        BUILT-IN FUNCTIONS
 
 ===============================================================================
 */
 
-char *PF_VarString(int first)
-{
-    int i;
-    static char out[256];
-
-    out[0] = 0;
-    for (i = first; i < pr_argc; i++) {
-        strcat(out, G_STRING((OFS_PARM0 + i * 3)));
-    }
-    return out;
-}
-
-
+#if 0
 /*
 =================
 PF_errror
@@ -92,6 +47,7 @@ void PF_error(void)
 {
     SV_Error("Program error");
 }
+#endif
 
 /*
 =================
@@ -208,7 +164,6 @@ int PF_setmodel(lua_State *L)
     int i;
     model_t *mod;
 
-
     e = luaL_checkudata(L, 1, "edict_t");
 
     /* silently ignore if model is nil */
@@ -262,6 +217,7 @@ int PF_bprint(lua_State *L)
     return 0;
 }
 
+#if 0
 /*
 =================
 PF_sprint
@@ -292,7 +248,7 @@ void PF_sprint(void)
 
     SV_ClientPrintf(client, level, "%s", s);
 }
-
+#endif
 
 /*
 =================
@@ -361,6 +317,7 @@ int PF_normalize(lua_State *L)
     return 1;
 }
 
+#if 0
 /*
 =================
 PF_vectoyaw
@@ -385,7 +342,7 @@ void PF_vectoyaw(void)
 
     G_FLOAT(OFS_RETURN) = yaw;
 }
-
+#endif
 
 /*
 =================
@@ -523,6 +480,7 @@ int PF_sound(lua_State *L)
     return 0;
 }
 
+#if 0
 /*
 =================
 PF_break
@@ -658,7 +616,7 @@ it is not returned at all.
 name checkclient ()
 =================
 */
-#define	MAX_CHECK	16
+#define    MAX_CHECK    16
 int c_invis, c_notvis;
 void PF_checkclient(void)
 {
@@ -745,6 +703,7 @@ void PF_localcmd(void)
     Cbuf_AddText(str);
 }
 
+#endif
 /*
 =================
 PF_cvar
@@ -780,6 +739,7 @@ int PF_cvar_set(lua_State *L)
     return 0;
 }
 
+#if 0
 /*
 =================
 PF_findradius
@@ -821,7 +781,7 @@ void PF_findradius(void)
 
     RETURN_EDICT(chain);
 }
-
+#endif
 
 /*
 =========
@@ -834,33 +794,12 @@ int PF_dprint(lua_State *L)
     return 0;
 }
 
-char pr_string_temp[128];
-
-void PF_ftos(void)
-{
-    float v;
-    v = G_FLOAT(OFS_PARM0);
-
-    if (v == (int) v)
-        sprintf(pr_string_temp, "%d", (int) v);
-    else
-        sprintf(pr_string_temp, "%5.1f", v);
-    G_INT(OFS_RETURN) = PR_SetString(pr_string_temp);
-}
-
 int PF_fabs(lua_State *L)
 {
     float v;
     v = luaL_checknumber(L, 1);
     lua_pushnumber(L, fabs(v));
     return 1;
-}
-
-void PF_vtos(void)
-{
-    sprintf(pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0],
-            G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
-    G_INT(OFS_RETURN) = PR_SetString(pr_string_temp);
 }
 
 int PF_Spawn(lua_State *L)
@@ -924,16 +863,12 @@ int PF_Find(lua_State *L)
     return 0;
 }
 
-void PR_CheckEmptyString(char *s)
-{
-    if (s[0] <= ' ')
-        PR_RunError("Bad string");
-}
-
+#if 0
 void PF_precache_file(void)
 {                               // precache_file is only used to copy files with qcc, it does nothing
     G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
 }
+#endif
 
 int PF_precache_sound(lua_State *L)
 {
@@ -946,7 +881,6 @@ int PF_precache_sound(lua_State *L)
 
     s = lua_tostring(L, 1);
     lua_pushvalue(L, 1);
-    //PR_CheckEmptyString(s);
 
     for (i = 0; i < MAX_SOUNDS; i++) {
         if (!sv.sound_precache[i]) {
@@ -971,7 +905,6 @@ int PF_precache_model(lua_State *L)
 
     s = lua_tostring(L, 1);
     lua_pushvalue(L, 1);
-    //PR_CheckEmptyString(s);
 
     for (i = 0; i < MAX_MODELS; i++) {
         if (!sv.model_precache[i]) {
@@ -985,23 +918,17 @@ int PF_precache_model(lua_State *L)
     return 1;
 }
 
-
+#if 0
 void PF_coredump(void)
 {
 }
 
 void PF_traceon(void)
 {
-#if 0
-    pr_trace = true;
-#endif
 }
 
 void PF_traceoff(void)
 {
-#if 0
-    pr_trace = false;
-#endif
 }
 
 void PF_eprint(void)
@@ -1017,7 +944,6 @@ float(float yaw, float dist) walkmove
 */
 void PF_walkmove(void)
 {
-#if 0
     edict_t *ent;
     float yaw, dist;
     vec3_t move;
@@ -1049,8 +975,8 @@ void PF_walkmove(void)
 // restore program state
     //pr_xfunction = oldf;
     pr_global_struct->self = oldself;
-#endif
 }
+#endif
 
 /*
 ===============
@@ -1103,10 +1029,10 @@ int PF_lightstyle(lua_State *L)
     style = lua_tonumber(L, 1);
     val = (char *)lua_tostring(L, 2);
 
-// change the string in sv
+    // change the string in sv
     sv.lightstyles[style] = val;
 
-// send message to all clients on this server
+    // send message to all clients on this server
     if (sv.state != ss_active)
         return 0;
 
@@ -1121,6 +1047,7 @@ int PF_lightstyle(lua_State *L)
     return 0;
 }
 
+#if 0
 void PF_rint(void)
 {
     float f;
@@ -1129,16 +1056,6 @@ void PF_rint(void)
         G_FLOAT(OFS_RETURN) = (int) (f + 0.5);
     else
         G_FLOAT(OFS_RETURN) = (int) (f - 0.5);
-}
-
-void PF_floor(void)
-{
-    G_FLOAT(OFS_RETURN) = floor(G_FLOAT(OFS_PARM0));
-}
-
-void PF_ceil(void)
-{
-    G_FLOAT(OFS_RETURN) = ceil(G_FLOAT(OFS_PARM0));
 }
 
 
@@ -1155,6 +1072,7 @@ void PF_checkbottom(void)
 
     G_FLOAT(OFS_RETURN) = SV_CheckBottom(ent);
 }
+#endif
 
 /*
 =============
@@ -1171,6 +1089,7 @@ int PF_pointcontents(lua_State *L)
     return 1;
 }
 
+#if 0
 /*
 =============
 PF_nextent
@@ -1206,12 +1125,12 @@ Pick a vector for the player to shoot along
 vector aim(entity, missilespeed)
 =============
 */
-//cvar_t        sv_aim = {"sv_aim", "0.93"};
+#endif
 cvar_t sv_aim = { "sv_aim", "2" };
+#if 0
 
 void PF_aim(void)
 {
-#if 0
     edict_t *ent, *check, *bestent;
     vec3_t start, dir, end, bestdir;
     int i, j;
@@ -1285,8 +1204,8 @@ void PF_aim(void)
     } else {
         VectorCopy(bestdir, G_VECTOR(OFS_RETURN));
     }
-#endif
 }
+#endif
 
 /*
 ==============
@@ -1334,11 +1253,11 @@ MESSAGE WRITING
 ===============================================================================
 */
 
-#define	MSG_BROADCAST	0       // unreliable to all
-#define	MSG_ONE			1       // reliable to one (msg_entity)
-#define	MSG_ALL			2       // reliable to all
-#define	MSG_INIT		3       // write to the init string
-#define	MSG_MULTICAST	4       // for multicast()
+#define  MSG_BROADCAST  0 // unreliable to all
+#define  MSG_ONE        1 // reliable to one (msg_entity)
+#define  MSG_ALL        2 // reliable to all
+#define  MSG_INIT       3 // write to the init string
+#define  MSG_MULTICAST  4 // for multicast()
 
 sizebuf_t *WriteDest(lua_State *L)
 {
@@ -1504,6 +1423,7 @@ int PF_makestatic(lua_State *L)
 
 //=============================================================================
 
+#if 0
 /*
 ==============
 PF_setspawnparms
@@ -1578,7 +1498,7 @@ void PF_logfrag(void)
         fflush(sv_fraglogfile);
     }
 }
-
+#endif
 
 /*
 ==============
@@ -1623,23 +1543,6 @@ int PF_infokey(lua_State *L)
 
 /*
 ==============
-PF_stof
-
-float(string s) stof
-==============
-*/
-void PF_stof(void)
-{
-    char *s;
-
-    s = G_STRING(OFS_PARM0);
-
-    G_FLOAT(OFS_RETURN) = atof(s);
-}
-
-
-/*
-==============
 PF_multicast
 
 void(vector where, float set) multicast
@@ -1657,13 +1560,7 @@ int PF_multicast(lua_State *L)
     return 0;
 }
 
-
-void PF_Fixme(void)
-{
-    PR_RunError("unimplemented bulitin");
-}
-
-
+// new built-in for Lua
 int PF_vec3(lua_State *L)
 {
     vec_t *v;
