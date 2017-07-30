@@ -471,19 +471,22 @@ int ED_FindFunction(const char *name)
     return LUA_NOREF;
 }
 
-#define PUSH_FFLOAT(s) \
+#define PUSH_FLOAT(s) \
     if (strcmp(key, #s) == 0) { \
         lua_pushnumber(L, (*e)->v.s); \
         return 1; \
     }
 
-#define PUSH_FREF(s) \
+#define PUSH_REF(s) \
     if (strcmp(key, #s) == 0) { \
-        lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
+        if ((*e)->v.s == 0) \
+            lua_pushnil(L); \
+        else \
+            lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
         return 1; \
     }
 
-#define PUSH_FVEC3(s) \
+#define PUSH_VEC3(s) \
     if (strcmp(key, #s) == 0) { \
         PR_Vec3_Push(L, (*e)->v.s); \
         return 1; \
@@ -498,33 +501,82 @@ static int ED_mt_index(lua_State *L)
     key = lua_tostring(L, 2);
 
     // first handle C fields
-    PUSH_FVEC3(origin);
-    PUSH_FVEC3(angles);
-    PUSH_FVEC3(view_ofs);
-    PUSH_FVEC3(velocity);
-    PUSH_FVEC3(mins);
-    PUSH_FVEC3(maxs);
-    PUSH_FVEC3(movedir);
-    PUSH_FREF(target);
-    PUSH_FREF(targetname);
-    PUSH_FREF(message);
-    PUSH_FREF(owner);
-    PUSH_FREF(enemy);
-    PUSH_FREF(model);
-    PUSH_FREF(classname);
-    PUSH_FREF(use);
-    PUSH_FREF(noise);
-    PUSH_FREF(noise1);
-    PUSH_FREF(noise2);
-    PUSH_FREF(noise3);
-    PUSH_FFLOAT(spawnflags);
-    PUSH_FFLOAT(modelindex);
-    PUSH_FFLOAT(sounds);
-    PUSH_FFLOAT(health);
-    PUSH_FFLOAT(max_health);
-    PUSH_FFLOAT(nextthink);
-    PUSH_FFLOAT(solid);
-    PUSH_FFLOAT(flags);
+    PUSH_FLOAT(modelindex);
+    PUSH_VEC3(absmin);
+    PUSH_VEC3(absmax);
+    PUSH_FLOAT(ltime);
+    PUSH_FLOAT(lastruntime);
+    PUSH_FLOAT(movetype);
+    PUSH_FLOAT(solid);
+    PUSH_VEC3(origin);
+    PUSH_VEC3(oldorigin);
+    PUSH_VEC3(velocity);
+    PUSH_VEC3(angles);
+    PUSH_VEC3(avelocity);
+    PUSH_REF(classname);
+    PUSH_REF(model);
+    PUSH_FLOAT(frame);
+    PUSH_FLOAT(skin);
+    PUSH_FLOAT(effects);
+    PUSH_VEC3(mins);
+    PUSH_VEC3(maxs);
+    PUSH_VEC3(size);
+    PUSH_REF(touch);
+    PUSH_REF(use);
+    PUSH_REF(think);
+    PUSH_REF(blocked);
+    PUSH_FLOAT(nextthink);
+    PUSH_REF(groundentity);
+    PUSH_FLOAT(health);
+    PUSH_FLOAT(frags);
+    PUSH_FLOAT(weapon);
+    PUSH_REF(weaponmodel);
+    PUSH_FLOAT(weaponframe);
+    PUSH_FLOAT(currentammo);
+    PUSH_FLOAT(ammo_shells);
+    PUSH_FLOAT(ammo_nails);
+    PUSH_FLOAT(ammo_rockets);
+    PUSH_FLOAT(ammo_cells);
+    PUSH_FLOAT(items);
+    PUSH_FLOAT(takedamage);
+    PUSH_REF(chain);
+    PUSH_FLOAT(deadflag);
+    PUSH_VEC3(view_ofs);
+    PUSH_FLOAT(button0);
+    PUSH_FLOAT(button1);
+    PUSH_FLOAT(button2);
+    PUSH_FLOAT(impulse);
+    PUSH_FLOAT(fixangle);
+    PUSH_VEC3(v_angle);
+    PUSH_REF(netname);
+    PUSH_REF(enemy);
+    PUSH_FLOAT(flags);
+    PUSH_FLOAT(colormap);
+    PUSH_FLOAT(team);
+    PUSH_FLOAT(max_health);
+    PUSH_FLOAT(teleport_time);
+    PUSH_FLOAT(armortype);
+    PUSH_FLOAT(armorvalue);
+    PUSH_FLOAT(waterlevel);
+    PUSH_FLOAT(watertype);
+    PUSH_FLOAT(ideal_yaw);
+    PUSH_FLOAT(yaw_speed);
+    PUSH_REF(aiment);
+    PUSH_REF(goalentity);
+    PUSH_FLOAT(spawnflags);
+    PUSH_REF(target);
+    PUSH_REF(targetname);
+    PUSH_FLOAT(dmg_take);
+    PUSH_FLOAT(dmg_save);
+    PUSH_REF(dmg_inflictor);
+    PUSH_REF(owner);
+    PUSH_VEC3(movedir);
+    PUSH_REF(message);
+    PUSH_FLOAT(sounds);
+    PUSH_REF(noise);
+    PUSH_REF(noise1);
+    PUSH_REF(noise2);
+    PUSH_REF(noise3);
 
     Sys_Printf("ED_mt_index(%p, %s) falling through, fields is %d\n", *e, key, (*e)->fields);
 
@@ -536,13 +588,13 @@ static int ED_mt_index(lua_State *L)
     return 1;
 }
 
-#define SET_FFLOAT(s)  \
+#define SET_FLOAT(s)  \
     if (strcmp(key, #s) == 0) { \
         (*e)->v.s = lua_tonumber(L, 3); \
         return 0; \
     }
 
-#define SET_FVEC3(s) \
+#define SET_VEC3(s) \
     if (strcmp(key, #s) == 0) { \
         vec_t *_tmpvec; \
         _tmpvec = PR_Vec3_ToVec(L, 3); \
@@ -550,7 +602,7 @@ static int ED_mt_index(lua_State *L)
         return 0; \
     }
 
-#define SET_FREF(s)  \
+#define SET_REF(s)  \
     if (strcmp(key, #s) == 0) { \
         lua_pushvalue(L, 3); \
         (*e)->v.s = luaL_ref(L, LUA_REGISTRYINDEX); \
@@ -566,32 +618,82 @@ static int ED_mt_newindex(lua_State *L)
     key = lua_tostring(L, 2);
 
     // first handle C fields
-    SET_FFLOAT(health);
-    SET_FFLOAT(takedamage);
-    SET_FFLOAT(solid);
-    SET_FFLOAT(movetype);
-    SET_FFLOAT(flags);
-    SET_FFLOAT(frame);
-    SET_FFLOAT(nextthink);
-    SET_FFLOAT(modelindex);
-    SET_FFLOAT(sounds);
-    SET_FFLOAT(fixangle);
-    SET_FFLOAT(deadflag);
-    SET_FFLOAT(health);
-    SET_FFLOAT(max_health);
-    SET_FFLOAT(teleport_time);
-    SET_FREF(think);
-    SET_FREF(touch);
-    SET_FREF(use);
-    SET_FREF(owner);
-    SET_FREF(enemy);
-    SET_FVEC3(origin);
-    SET_FVEC3(angles);
-    SET_FVEC3(view_ofs);
-    SET_FVEC3(velocity);
-    SET_FVEC3(movedir);
-    SET_FREF(classname);
-    SET_FREF(model);
+    SET_FLOAT(modelindex);
+    SET_VEC3(absmin);
+    SET_VEC3(absmax);
+    SET_FLOAT(ltime);
+    SET_FLOAT(lastruntime);
+    SET_FLOAT(movetype);
+    SET_FLOAT(solid);
+    SET_VEC3(origin);
+    SET_VEC3(oldorigin);
+    SET_VEC3(velocity);
+    SET_VEC3(angles);
+    SET_VEC3(avelocity);
+    SET_REF(classname);
+    SET_REF(model);
+    SET_FLOAT(frame);
+    SET_FLOAT(skin);
+    SET_FLOAT(effects);
+    SET_VEC3(mins);
+    SET_VEC3(maxs);
+    SET_VEC3(size);
+    SET_REF(touch);
+    SET_REF(use);
+    SET_REF(think);
+    SET_REF(blocked);
+    SET_FLOAT(nextthink);
+    SET_REF(groundentity);
+    SET_FLOAT(health);
+    SET_FLOAT(frags);
+    SET_FLOAT(weapon);
+    SET_REF(weaponmodel);
+    SET_FLOAT(weaponframe);
+    SET_FLOAT(currentammo);
+    SET_FLOAT(ammo_shells);
+    SET_FLOAT(ammo_nails);
+    SET_FLOAT(ammo_rockets);
+    SET_FLOAT(ammo_cells);
+    SET_FLOAT(items);
+    SET_FLOAT(takedamage);
+    SET_REF(chain);
+    SET_FLOAT(deadflag);
+    SET_VEC3(view_ofs);
+    SET_FLOAT(button0);
+    SET_FLOAT(button1);
+    SET_FLOAT(button2);
+    SET_FLOAT(impulse);
+    SET_FLOAT(fixangle);
+    SET_VEC3(v_angle);
+    SET_REF(netname);
+    SET_REF(enemy);
+    SET_FLOAT(flags);
+    SET_FLOAT(colormap);
+    SET_FLOAT(team);
+    SET_FLOAT(max_health);
+    SET_FLOAT(teleport_time);
+    SET_FLOAT(armortype);
+    SET_FLOAT(armorvalue);
+    SET_FLOAT(waterlevel);
+    SET_FLOAT(watertype);
+    SET_FLOAT(ideal_yaw);
+    SET_FLOAT(yaw_speed);
+    SET_REF(aiment);
+    SET_REF(goalentity);
+    SET_FLOAT(spawnflags);
+    SET_REF(target);
+    SET_REF(targetname);
+    SET_FLOAT(dmg_take);
+    SET_FLOAT(dmg_save);
+    SET_REF(dmg_inflictor);
+    SET_REF(owner);
+    SET_VEC3(movedir);
+    SET_REF(message);
+    SET_FLOAT(sounds);
+    SET_REF(noise);
+    SET_REF(noise1);
+    SET_REF(noise2);
+    SET_REF(noise3);
 
     Sys_Printf("ED_mt_newindex(%p, %s) falling through, fields is %d\n", *e, key, (*e)->fields);
 
