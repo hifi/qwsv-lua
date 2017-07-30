@@ -11,6 +11,20 @@ typedef struct vec3_wrap_s {
     vec3_t v;
 } vec3_wrap_t;
 
+static int PR_Vec3_Eq(lua_State *L)
+{
+    vec_t *a,*b;
+
+    a = PR_Vec3_ToVec(L, 1);
+    b = PR_Vec3_ToVec(L, 2);
+
+    lua_pushboolean(L, a[0] == b[0]
+                    && a[1] == b[1]
+                    && a[2] == b[2]);
+
+    return 1;
+};
+
 static int PR_Vec3_Add(lua_State *L)
 {
     vec_t *a,*b,*c;
@@ -121,6 +135,7 @@ static int PR_Vec3_NewIndex(lua_State *L)
 }
 
 static const luaL_Reg PR_Vec3_Metatable[] = {
+    {"__eq",       PR_Vec3_Eq},
     {"__add",      PR_Vec3_Add},
     {"__sub",      PR_Vec3_Sub},
     {"__mul",      PR_Vec3_Mul},

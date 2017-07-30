@@ -60,7 +60,7 @@ function multi_trigger()
         WriteByte (MSG_ALL, SVC_FOUNDSECRET)
     end
 
-    if self.noise then
+    if self.noise and self.noise > 0 then
         sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM)
     end
 
@@ -136,7 +136,7 @@ function trigger_multiple()
         self.noise = "misc/trigger1.wav"
     end
     
-    if not self.wait then
+    if not self.wait or self.wait == 0 then
         self.wait = 0.2
     end
     self.use = multi_use

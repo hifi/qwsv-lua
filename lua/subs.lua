@@ -264,7 +264,7 @@ function SUB_UseTargets()
     if self.killtarget and #self.killtarget > 0 then
         t = world
         while true do
-            t = find (t, targetname, self.killtarget)
+            t = find (t, "targetname", self.killtarget)
             if not t then
                 return
             end
