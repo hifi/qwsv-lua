@@ -182,6 +182,26 @@ extern dprograms_t *progs;
 extern char *pr_strtbl[MAX_PRSTR];
 extern int num_prstr;
 
+#define PUSH_GREF(s) \
+    if (pr_global_struct->s) \
+        lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->s); \
+    else \
+        lua_pushnil(L); \
+    lua_setglobal(L, #s);
+
+#define PUSH_GFLOAT(s) \
+    lua_pushnumber(L, pr_global_struct->s); \
+    lua_setglobal(L, #s);
+
+#define PUSH_GVEC3(s) \
+    PR_Vec3_Push(L, pr_global_struct->s); \
+    lua_setglobal(L, #s);
+
+#define GET_GFLOAT(s) \
+    lua_getglobal(L, #s); \
+    pr_global_struct->s = lua_tonumber(L, -1); \
+    lua_pop(L, 1); \
+
 /* lua_vector.c */
 void PR_Vec3_Init(lua_State *L);
 vec_t* PR_Vec3_New(lua_State *L);

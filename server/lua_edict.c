@@ -90,7 +90,6 @@ Sets everything to NULL
 */
 void ED_ClearEdict(edict_t * e)
 {
-    //Con_Printf("ED_ClearEdict(%p)\n", e);
     e->free = false;
 
     if (e->fields)
@@ -98,6 +97,9 @@ void ED_ClearEdict(edict_t * e)
 
     e->fields = 0;
     ED_EnsureFields(e);
+
+    // XXX: actually release refs
+    memset(&e->v, 0, sizeof(entvars_t));
 }
 
 /*
@@ -164,8 +166,6 @@ void ED_Free(edict_t * ed)
     ed->v.solid = 0;
 
     ed->freetime = sv.time;
-
-    // XXX: do something to Lua fields
 }
 
 void ED_PushEdict(edict_t *ed)
@@ -290,6 +290,10 @@ char *ED_ParseEdict(char *data, edict_t * ent)
     char keyname[256];
 
     init = false;
+
+    // clear it
+    if (ent != sv.edicts) // XXX: refs!
+        memset(&ent->v, 0, sizeof(entvars_t));
 
     // go through all the dictionary pairs
     while (1) {
@@ -795,26 +799,6 @@ void PR_Init(void)
     Cmd_AddCommand("profile", PR_Profile_f);
     */
 }
-
-#define PUSH_GREF(s) \
-    if (pr_global_struct->s) \
-        lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->s); \
-    else \
-        lua_pushnil(L); \
-    lua_setglobal(L, #s);
-
-#define PUSH_GFLOAT(s) \
-    lua_pushnumber(L, pr_global_struct->s); \
-    lua_setglobal(L, #s);
-
-#define PUSH_GVEC3(s) \
-    PR_Vec3_Push(L, pr_global_struct->s); \
-    lua_setglobal(L, #s);
-
-#define GET_GFLOAT(s) \
-    lua_getglobal(L, #s); \
-    pr_global_struct->s = lua_tonumber(L, -1); \
-    lua_pop(L, 1); \
 
 /*
 ====================

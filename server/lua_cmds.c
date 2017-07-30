@@ -137,6 +137,11 @@ int PF_makevectors(lua_State *L)
     AngleVectors((*v), pr_global_struct->v_forward,
                  pr_global_struct->v_right, pr_global_struct->v_up);
 
+    // global variables need to be pushed back
+    PUSH_GVEC3(v_forward);
+    PUSH_GVEC3(v_up);
+    PUSH_GVEC3(v_right);
+
     return 0;
 }
 

@@ -67,7 +67,7 @@ static int PR_Vec3_Mul(lua_State *L)
     a = PR_Vec3_ToVec(L, i_vec);
 
     if (lua_isuserdata(L, i_sec)) {
-        b = luaL_checkudata(L, i_sec, "vec3_t");
+        b = PR_Vec3_ToVec(L, i_sec);
         s = a[0] * b[0]
             + a[1] * b[1]
             + a[2] * b[2];
@@ -88,7 +88,7 @@ static int PR_Vec3_ToString(lua_State *L)
 
     a = PR_Vec3_ToVec(L, 1);
 
-    sprintf(buf, "%.0f %0.f %.0f", a[0], a[1], a[2]);
+    sprintf(buf, "%.1f %.1f %.1f", a[0], a[1], a[2]);
 
     lua_pushstring(L, buf);
     return 1;

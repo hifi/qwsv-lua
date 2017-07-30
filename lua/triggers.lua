@@ -408,7 +408,7 @@ function teleport_touch()
     spawn_tdeath(t.origin, other)
 
     -- move the player and lock him down for a little while
-    if other.health == 0 then
+    if not other.health or other.health == 0 then
         other.origin = t.origin
         other.velocity = (v_forward * other.velocity.x) + (v_forward * other.velocity.y)
         return
@@ -437,7 +437,7 @@ function info_teleport_destination()
     self.angles = vec3(0,0,0)
     self.model = ""
     self.origin = self.origin + vec3(0,0,27)
-    if not self.targetname then
+    if not self.targetname or #self.targetname == 0 then
         objerror ("no targetname")
     end
 end
