@@ -2,6 +2,7 @@ package.path = package.path .. ';./id1/?.lua'
 
 require "defs"
 require "subs"
+require "combat"
 require "world"
 require "doors"
 require "buttons"
@@ -13,10 +14,6 @@ require "misc"
 function W_Precache()
 end
 function SpawnBlood(org, damage)
-end
-
--- combat.qc
-function T_Damage (targ, inflictor, attacker, damage)
 end
 
 function PlayerPreThink()

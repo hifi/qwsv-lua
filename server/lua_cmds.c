@@ -1585,17 +1585,17 @@ PF_infokey
 string(entity e, string key) infokey
 ==============
 */
-void PF_infokey(void)
+int PF_infokey(lua_State *L)
 {
-    edict_t *e;
+    edict_t **e;
     int e1;
     char *value;
     char *key;
     static char ov[256];
 
-    e = G_EDICT(OFS_PARM0);
-    e1 = NUM_FOR_EDICT(e);
-    key = G_STRING(OFS_PARM1);
+    e = luaL_checkudata(L, 1, "edict_t");
+    e1 = NUM_FOR_EDICT(*e);
+    key = (char *)luaL_checkstring(L, 2);
 
     if (e1 == 0) {
         if ((value = Info_ValueForKey(svs.info, key)) == NULL || !*value)
@@ -1615,7 +1615,8 @@ void PF_infokey(void)
     } else
         value = "";
 
-    RETURN_STRING(value);
+    lua_pushstring(L, value);
+    return 1;
 }
 
 /*
@@ -1708,6 +1709,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "normalize", PF_normalize);
     lua_register(L, "vectoangles", PF_vectoangles);
     lua_register(L, "pointcontents", PF_pointcontents);
+    lua_register(L, "infokey", PF_infokey);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);
