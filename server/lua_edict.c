@@ -796,6 +796,26 @@ void PR_Init(void)
     */
 }
 
+#define PUSH_GREF(s) \
+    if (pr_global_struct->s) \
+        lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->s); \
+    else \
+        lua_pushnil(L); \
+    lua_setglobal(L, #s);
+
+#define PUSH_GFLOAT(s) \
+    lua_pushnumber(L, pr_global_struct->s); \
+    lua_setglobal(L, #s);
+
+#define PUSH_GVEC3(s) \
+    PR_Vec3_Push(L, pr_global_struct->s); \
+    lua_setglobal(L, #s);
+
+#define GET_GFLOAT(s) \
+    lua_getglobal(L, #s); \
+    pr_global_struct->s = lua_tonumber(L, -1); \
+    lua_pop(L, 1); \
+
 /*
 ====================
 PR_ExecuteProgram
@@ -813,46 +833,43 @@ void PR_ExecuteProgram(func_t fnum)
         ED_EnsureFields(EDICT_NUM(0));
         pr_global_struct->self = EDICT_NUM(0)->ref;
         pr_global_struct->other = EDICT_NUM(0)->ref;
+        pr_global_struct->world = EDICT_NUM(0)->ref;
     }
 
     if (pr_global_struct->self == 0)
         SV_Error("Executing a function with zero self, this is a bug.\n");
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->self);
-    lua_setglobal(L, "self");
-
-    if (EDICT_NUM(0)->ref) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, EDICT_NUM(0)->ref);
-        lua_setglobal(L, "world");
-    }
-
-    if (pr_global_struct->other) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, pr_global_struct->other);
-    } else {
-        lua_pushnil(L);
-    }
-    lua_setglobal(L, "other");
-
-    lua_pushnumber(L, svs.serverflags);
-    lua_setglobal(L, "serverflags");
-
-    lua_pushnumber(L, sv.time);
-    lua_setglobal(L, "time");
-
-    lua_pushnumber(L, pr_global_struct->force_retouch);
-    lua_setglobal(L, "force_retouch");
-
-    lua_pushnil(L);
-    lua_setglobal(L, "activator");
-
-    PR_Vec3_Push(L, pr_global_struct->v_forward);
-    lua_setglobal(L, "v_forward");
+    // most of these should be pushed only once per frame
+    PUSH_GREF(self);
+    PUSH_GREF(other);
+    PUSH_GREF(world);
+    PUSH_GFLOAT(time);
+    PUSH_GFLOAT(frametime);
+    PUSH_GREF(newmis);
+    PUSH_GFLOAT(force_retouch);
+    PUSH_GREF(mapname);
+    PUSH_GFLOAT(serverflags);
+    PUSH_GFLOAT(total_secrets);
+    PUSH_GFLOAT(total_monsters);
+    PUSH_GFLOAT(found_secrets);
+    PUSH_GFLOAT(killed_monsters);
+    PUSH_GVEC3(v_forward);
+    PUSH_GVEC3(v_up);
+    PUSH_GVEC3(v_right);
+    PUSH_GFLOAT(trace_allsolid);
+    PUSH_GFLOAT(trace_startsolid);
+    PUSH_GFLOAT(trace_fraction);
+    PUSH_GVEC3(trace_endpos);
+    PUSH_GVEC3(trace_plane_normal);
+    PUSH_GFLOAT(trace_plane_dist);
+    PUSH_GREF(trace_ent);
+    PUSH_GFLOAT(trace_inopen);
+    PUSH_GFLOAT(trace_inwater);
+    PUSH_GREF(msg_entity);
 
     lua_call(L, 0, 0);
 
-    lua_getglobal(L, "force_retouch");
-    pr_global_struct->force_retouch = lua_tonumber(L, -1);
-    lua_pop(L, 1);
+    GET_GFLOAT(force_retouch);
 }
 
 edict_t *EDICT_NUM(int n)
