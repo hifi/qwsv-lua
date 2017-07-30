@@ -60,7 +60,7 @@ function multi_trigger()
         WriteByte (MSG_ALL, SVC_FOUNDSECRET)
     end
 
-    if self.noise and self.noise > 0 then
+    if self.noise and #self.noise > 0 then
         sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM)
     end
 

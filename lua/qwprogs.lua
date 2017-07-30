@@ -4,6 +4,7 @@ require "defs"
 require "subs"
 require "world"
 require "doors"
+require "buttons"
 require "triggers"
 require "misc"
 
