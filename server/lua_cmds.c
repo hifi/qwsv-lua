@@ -249,15 +249,17 @@ broadcast print to everyone on server
 bprint(value)
 =================
 */
-void PF_bprint(void)
+int PF_bprint(lua_State *L)
 {
-    char *s;
+    const char *s;
     int level;
 
-    level = G_FLOAT(OFS_PARM0);
+    level = luaL_checkinteger(L, 1);
+    s = luaL_checkstring(L, 2);
 
-    s = PF_VarString(1);
     SV_BroadcastPrintf(level, "%s", s);
+
+    return 0;
 }
 
 /*
@@ -1710,6 +1712,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "vectoangles", PF_vectoangles);
     lua_register(L, "pointcontents", PF_pointcontents);
     lua_register(L, "infokey", PF_infokey);
+    lua_register(L, "bprint", PF_bprint);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

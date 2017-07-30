@@ -769,6 +769,12 @@ void PR_LoadProgs(void)
     pr_global_struct->ClientDisconnect = ED_FindFunction("ClientDisconnect");
     pr_global_struct->SetNewParms = ED_FindFunction("SetNewParms");
     pr_global_struct->SetChangeParms = ED_FindFunction("SetChangeParms");
+
+    SpectatorConnect = SpectatorThink = SpectatorDisconnect = 0;
+
+    SpectatorConnect = ED_FindFunction("SpectatorConnect");
+    SpectatorThink = ED_FindFunction("SpectatorThink");
+    SpectatorDisconnect = ED_FindFunction("SpectatorDisconnect");
 }
 
 
