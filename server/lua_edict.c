@@ -702,6 +702,8 @@ PR_LoadProgs
 */
 void PR_LoadProgs(void)
 {
+    const char *path;
+    char *buf;
     byte* code;
 
     // shared state
@@ -720,6 +722,20 @@ void PR_LoadProgs(void)
 
     L = luaL_newstate();
     luaL_openlibs(L);
+
+    // weird trick to append to packages.path
+    lua_newtable(L);
+    lua_getglobal(L, "package");
+    lua_getfield(L, -1, "path");
+    path = lua_tostring(L, -1);
+    //lua_pop(L, 1);
+
+    buf = Z_Malloc(strlen(path) + strlen(com_gamedir) + 8);
+    sprintf(buf, "%s;%s/?.lua", path, com_gamedir);
+
+    lua_pushstring(L, buf);
+    lua_setfield(L, -3, "path");
+    lua_pop(L, 2);
 
     PR_Vec3_Init(L);
 
