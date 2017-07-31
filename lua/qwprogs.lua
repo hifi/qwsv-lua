@@ -1,6 +1,7 @@
 require "defs"
 require "subs"
 require "combat"
+require "items"
 require "world"
 require "spectate"
 require "doors"

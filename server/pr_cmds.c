@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -635,7 +635,7 @@ void PF_checkclient(void)
         sv.lastcheck = PF_newcheckclient(sv.lastcheck);
         sv.lastchecktime = sv.time;
     }
-// return check if it might be visible  
+// return check if it might be visible
     ent = EDICT_NUM(sv.lastcheck);
     if (ent->free || ent->v.health <= 0) {
         RETURN_EDICT(sv.edicts);
