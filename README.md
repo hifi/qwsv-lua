@@ -7,6 +7,7 @@ This project aims to be a complete conversion from QuakeC to Lua 5.3 of the orig
  * Complete as-is conversion of QuakeWorld QuakeC source to Lua
  * High compatiblity with original `qwsv` (minimal changes to engine)
  * Portability to production quality forks of `qwsv` like MVDSV
+ * Replace built-ins with Lua where possible (`vtos()` etc.)
 
 ## Non-goals
 
