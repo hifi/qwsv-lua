@@ -68,7 +68,7 @@ function multi_trigger()
     self.takedamage = DAMAGE_NO
 
     activator = self.enemy
-    
+
     SUB_UseTargets()
 
     if self.wait and self.wait > 0 then
@@ -97,7 +97,7 @@ function multi_touch()
     if other.classname ~= "player" then
         return
     end
-    
+
     -- if the trigger has an angles field, check player's facing direction
     if self.movedir ~= vec3(0,0,0) then
         makevectors (other.angles)
@@ -105,7 +105,7 @@ function multi_touch()
             return -- not facing the right way
         end
     end
-    
+
     self.enemy = other
     multi_trigger()
 end
@@ -135,7 +135,7 @@ function trigger_multiple()
         precache_sound ("misc/trigger1.wav")
         self.noise = "misc/trigger1.wav"
     end
-    
+
     if not self.wait or self.wait == 0 then
         self.wait = 0.2
     end
@@ -209,7 +209,7 @@ function trigger_secret()
     if not self.sounds then
         self.sounds = 1
     end
-    
+
     if self.sounds == 1 then
         precache_sound ("misc/secret.wav")
         self.noise = "misc/secret.wav"
@@ -230,7 +230,7 @@ function counter_use()
     if self.count < 0 then
         return
     end
-    
+
     if self.count ~= 0 then
         if activator.classname == "player"
         and (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0 then
@@ -246,7 +246,7 @@ function counter_use()
         end
         return
     end
-    
+
     if activator.classname == "player"
     and (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0 then
         centerprint(activator, "Sequence completed!")
@@ -304,7 +304,7 @@ function play_teleport()
     remove (self)
 end
 
-function spawn_tfog(org) 
+function spawn_tfog(org)
     s = spawn ()
     s.origin = org
     s.nextthink = time + 0.2
@@ -337,7 +337,7 @@ function tdeath_touch()
             self.owner = other
             T_Damage (other2, self, self, 50000)
         end
-            
+
         if other.invincible_finished > time then
             self.classname = "teledeath2"
             T_Damage (self.owner, self, self, 50000)
@@ -365,7 +365,7 @@ function spawn_tdeath(org, death_owner)
     death.nextthink = time + 0.2
     death.think = SUB_Remove
     death.owner = death_owner
-    
+
     force_retouch = 2 -- make sure even still objects get hit
 end
 
@@ -399,7 +399,7 @@ function teleport_touch()
     if not t then
         objerror ("couldn't find target")
     end
-        
+
     -- spawn a tfog flash in front of the destination
     makevectors (t.mangle)
     org = t.origin + 32 * v_forward
@@ -459,7 +459,7 @@ function trigger_teleport()
 
     InitTrigger()
     self.touch = teleport_touch
-    -- find the destination 
+    -- find the destination
     if not self.target or #self.target == 0 then
         objerror ("no target")
     end
@@ -603,11 +603,11 @@ function trigger_monsterjump_touch()
     -- set XY even if not on ground, so the jump will clear lips
     other.velocity.x = self.movedir.x * self.speed
     other.velocity.y = self.movedir.y * self.speed
-    
+
     if (other.flags & FL_ONGROUND) == 0 then
         return
     end
-    
+
     other.flags = other.flags - FL_ONGROUND
 
     other.velocity.z = self.height

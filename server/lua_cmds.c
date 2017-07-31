@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -217,7 +217,6 @@ int PF_bprint(lua_State *L)
     return 0;
 }
 
-#if 0
 /*
 =================
 PF_sprint
@@ -227,28 +226,29 @@ single print to a specific client
 sprint(clientent, value)
 =================
 */
-void PF_sprint(void)
+int PF_sprint(lua_State *L)
 {
+    edict_t **e;
     char *s;
     client_t *client;
     int entnum;
     int level;
 
-    entnum = G_EDICTNUM(OFS_PARM0);
-    level = G_FLOAT(OFS_PARM1);
-
-    s = PF_VarString(2);
+    e = luaL_checkudata(L, 1, "edict_t");
+    entnum = NUM_FOR_EDICT(*e);
+    level = luaL_checknumber(L, 2);
+    s = (char *)luaL_checkstring(L, 3);
 
     if (entnum < 1 || entnum > MAX_CLIENTS) {
         Con_Printf("tried to sprint to a non-client\n");
-        return;
+        return 0;
     }
 
     client = &svs.clients[entnum - 1];
 
     SV_ClientPrintf(client, level, "%s", s);
+    return 0;
 }
-#endif
 
 /*
 =================
@@ -630,7 +630,7 @@ void PF_checkclient(void)
         sv.lastcheck = PF_newcheckclient(sv.lastcheck);
         sv.lastchecktime = sv.time;
     }
-// return check if it might be visible  
+// return check if it might be visible
     ent = EDICT_NUM(sv.lastcheck);
     if (ent->free || ent->v.health <= 0) {
         RETURN_EDICT(sv.edicts);
@@ -652,7 +652,7 @@ void PF_checkclient(void)
 }
 
 //============================================================================
-
+#endif
 
 /*
 =================
@@ -663,29 +663,33 @@ Sends text over to the client's execution buffer
 stuffcmd (clientent, value)
 =================
 */
-void PF_stuffcmd(void)
+int PF_stuffcmd(lua_State *L)
 {
+    edict_t **e;
     int entnum;
     char *str;
     client_t *cl;
 
-    entnum = G_EDICTNUM(OFS_PARM0);
+    e = luaL_checkudata(L, 1, "edict_t");
+    entnum = NUM_FOR_EDICT(*e);
     if (entnum < 1 || entnum > MAX_CLIENTS)
         PR_RunError("Parm 0 not a client");
-    str = G_STRING(OFS_PARM1);
+    str = (char *)luaL_checkstring(L, 2);
 
     cl = &svs.clients[entnum - 1];
 
     if (strcmp(str, "disconnect\n") == 0) {
         // so long and thanks for all the fish
         cl->drop = true;
-        return;
+        return 0;
     }
 
     ClientReliableWrite_Begin(cl, svc_stufftext, 2 + strlen(str));
     ClientReliableWrite_String(cl, str);
+    return 0;
 }
 
+#if 0
 /*
 =================
 PF_localcmd
@@ -1593,6 +1597,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "random", PF_random);
     lua_register(L, "spawn", PF_Spawn);
     lua_register(L, "setorigin", PF_setorigin);
+    lua_register(L, "stuffcmd", PF_stuffcmd);
     lua_register(L, "cvar", PF_cvar);
     lua_register(L, "cvar_set", PF_cvar_set);
     lua_register(L, "lightstyle", PF_lightstyle);
@@ -1610,6 +1615,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "pointcontents", PF_pointcontents);
     lua_register(L, "infokey", PF_infokey);
     lua_register(L, "bprint", PF_bprint);
+    lua_register(L, "sprint", PF_sprint);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);
