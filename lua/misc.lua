@@ -67,7 +67,7 @@ function light()
         remove(self)
         return
     end
-    
+
     if self.style >= 32 then
         self.use = light_use
         if (self.spawnflags & START_OFF) > 0 then
@@ -95,7 +95,7 @@ function light_fluoro()
             lightstyle(self.style, "m")
         end
     end
-    
+
     precache_sound ("ambience/fl_hum1.wav")
     ambientsound (self.origin, "ambience/fl_hum1.wav", 0.5, ATTN_STATIC)
 end
@@ -215,7 +215,7 @@ function fire_fly()
     fireball.nextthink = time + 5
     fireball.think = SUB_Remove
     fireball.touch = fire_touch
-    
+
     self.nextthink = time + (random() * 5) + 3
     self.think = fire_fly
 end
@@ -305,7 +305,7 @@ local SPAWNFLAG_LASER      = 2
 
 function Laser_Touch()
     local org
-    
+
     if other == self.owner then
         return -- don't explode on owner
     end
@@ -314,7 +314,7 @@ function Laser_Touch()
         remove(self)
         return
     end
-    
+
     sound (self, CHAN_WEAPON, "enforcer/enfstop.wav", 1, ATTN_STATIC)
     org = self.origin - 8*normalize(self.velocity)
 
@@ -331,7 +331,7 @@ function Laser_Touch()
         WriteCoord (MSG_MULTICAST, org.z)
         multicast (org, MULTICAST_PVS)
     end
-    
+
     remove(self)
 end
 
@@ -341,7 +341,7 @@ function LaunchLaser(org, vec)
     end
 
     vec = normalize(vec)
-    
+
     newmis = spawn()
     newmis.owner = self
     newmis.movetype = MOVETYPE_FLY
@@ -391,11 +391,11 @@ function trap_spikeshooter()
     SetMovedir()
     self.use = spikeshooter_use
     if (self.spawnflags & SPAWNFLAG_LASER) > 0 then
-        precache_model2 ("progs/laser.mdl")
-        precache_sound2 ("enforcer/enfire.wav")
-        precache_sound2 ("enforcer/enfstop.wav")
+        precache_model2("progs/laser.mdl")
+        precache_sound2("enforcer/enfire.wav")
+        precache_sound2("enforcer/enfstop.wav")
     else
-        precache_sound ("weapons/spike2.wav")
+        precache_sound("weapons/spike2.wav")
     end
 end
 
@@ -407,7 +407,7 @@ Continuously fires spikes.
 --]]
 function trap_shooter()
     trap_spikeshooter()
-    
+
     if self.wait == 0 then
         self.wait = 1
     end
@@ -504,25 +504,25 @@ function bubble_bob()
     if rnd1 < -10 then
         rnd1 = -5
     end
-        
+
     if rnd2 > 10 then
         rnd2 = 5
     end
     if rnd2 < -10 then
         rnd2 = -5
     end
-        
+
     if rnd3 < 10 then
         rnd3 = 15
     end
     if rnd3 > 30 then
         rnd3 = 25
     end
-    
+
     self.velocity.x = rnd1
     self.velocity.y = rnd2
     self.velocity.z = rnd3
-        
+
     self.nextthink = time + 0.5
     self.think = bubble_bob
 end
