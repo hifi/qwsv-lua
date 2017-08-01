@@ -160,11 +160,6 @@ void ED_Free(edict_t * ed)
     ed->freetime = sv.time;
 }
 
-void ED_PushEdict(edict_t *ed)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, ed->ref);
-}
-
 //===========================================================================
 /*
 =============

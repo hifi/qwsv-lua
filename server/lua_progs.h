@@ -89,6 +89,7 @@ void PR_RunError(char *error, ...);
 
 void ED_PrintEdicts(void);
 void ED_PrintNum(int ent);
+#define ED_PushEdict(L, e) lua_rawgeti(L, LUA_REGISTRYINDEX, e->ref);
 
 typedef union eval_s {
     string_t string;

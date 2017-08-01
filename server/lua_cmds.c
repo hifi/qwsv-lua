@@ -32,7 +32,6 @@ extern lua_State *L;
 ===============================================================================
 */
 
-#if 0
 /*
 =================
 PF_errror
@@ -43,11 +42,11 @@ Dumps self.
 error(value)
 =================
 */
-void PF_error(void)
+int PF_error(lua_State *L)
 {
-    SV_Error("Program error");
+    SV_Error("FIXME: PF_error not implemented.");
+    return 0;
 }
-#endif
 
 /*
 =================
@@ -317,7 +316,6 @@ int PF_normalize(lua_State *L)
     return 1;
 }
 
-#if 0
 /*
 =================
 PF_vectoyaw
@@ -325,12 +323,12 @@ PF_vectoyaw
 float vectoyaw(vector)
 =================
 */
-void PF_vectoyaw(void)
+int PF_vectoyaw(lua_State *L)
 {
-    float *value1;
+    vec_t *value1;
     float yaw;
 
-    value1 = G_VECTOR(OFS_PARM0);
+    value1 = PR_Vec3_ToVec(L, 1);
 
     if (value1[1] == 0 && value1[0] == 0)
         yaw = 0;
@@ -340,9 +338,9 @@ void PF_vectoyaw(void)
             yaw += 360;
     }
 
-    G_FLOAT(OFS_RETURN) = yaw;
+    lua_pushnumber(L, yaw);
+    return 1;
 }
-#endif
 
 /*
 =================
@@ -480,7 +478,6 @@ int PF_sound(lua_State *L)
     return 0;
 }
 
-#if 0
 /*
 =================
 PF_break
@@ -488,11 +485,11 @@ PF_break
 break()
 =================
 */
-void PF_break(void)
+int PF_break(lua_State *L)
 {
     Con_Printf("break statement\n");
     *(int *) -4 = 0;            // dump to debugger
-//      PR_RunError ("break statement");
+    return 0;
 }
 
 /*
@@ -506,19 +503,19 @@ if the tryents flag is set.
 traceline (vector1, vector2, tryents)
 =================
 */
-void PF_traceline(void)
+int PF_traceline(lua_State *L)
 {
     float *v1, *v2;
     trace_t trace;
     int nomonsters;
-    edict_t *ent;
+    edict_t **ent;
 
-    v1 = G_VECTOR(OFS_PARM0);
-    v2 = G_VECTOR(OFS_PARM1);
-    nomonsters = G_FLOAT(OFS_PARM2);
-    ent = G_EDICT(OFS_PARM3);
+    v1 = PR_Vec3_ToVec(L, 1);
+    v2 = PR_Vec3_ToVec(L, 2);
+    nomonsters = lua_tointeger(L, 3);
+    ent = luaL_checkudata(L, 4, "edict_t");
 
-    trace = SV_Move(v1, vec3_origin, vec3_origin, v2, nomonsters, ent);
+    trace = SV_Move(v1, vec3_origin, vec3_origin, v2, nomonsters, *ent);
 
     pr_global_struct->trace_allsolid = trace.allsolid;
     pr_global_struct->trace_startsolid = trace.startsolid;
@@ -532,20 +529,19 @@ void PF_traceline(void)
         pr_global_struct->trace_ent = EDICT_TO_PROG(trace.ent);
     else
         pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
-}
 
-/*
-=================
-PF_checkpos
+    // XXX: these really need to be return values
+    PUSH_GREF(trace_allsolid);
+    PUSH_GREF(trace_startsolid);
+    PUSH_GREF(trace_fraction);
+    PUSH_GREF(trace_inwater);
+    PUSH_GREF(trace_inopen);
+    PUSH_GVEC3(trace_endpos);
+    PUSH_GVEC3(trace_plane_normal);
+    PUSH_GREF(trace_plane_dist);
+    PUSH_GREF(trace_ent);
 
-Returns true if the given entity can move to the given position from it's
-current position by walking or rolling.
-FIXME: make work...
-scalar checkpos (entity, vector)
-=================
-*/
-void PF_checkpos(void)
-{
+    return 0;
 }
 
 //============================================================================
@@ -618,41 +614,41 @@ name checkclient ()
 */
 #define    MAX_CHECK    16
 int c_invis, c_notvis;
-void PF_checkclient(void)
+int PF_checkclient(lua_State *L)
 {
     edict_t *ent, *self;
     mleaf_t *leaf;
     int l;
     vec3_t view;
 
-// find a new check if on a new frame
+    // find a new check if on a new frame
     if (sv.time - sv.lastchecktime >= 0.1) {
         sv.lastcheck = PF_newcheckclient(sv.lastcheck);
         sv.lastchecktime = sv.time;
     }
-// return check if it might be visible
+    // return check if it might be visible
     ent = EDICT_NUM(sv.lastcheck);
     if (ent->free || ent->v.health <= 0) {
-        RETURN_EDICT(sv.edicts);
-        return;
+        ED_PushEdict(L, sv.edicts);
+        return 1;
     }
-// if current entity can't possibly see the check entity, return 0
+    // if current entity can't possibly see the check entity, return 0
     self = PROG_TO_EDICT(pr_global_struct->self);
     VectorAdd(self->v.origin, self->v.view_ofs, view);
     leaf = Mod_PointInLeaf(view, sv.worldmodel);
     l = (leaf - sv.worldmodel->leafs) - 1;
     if ((l < 0) || !(checkpvs[l >> 3] & (1 << (l & 7)))) {
         c_notvis++;
-        RETURN_EDICT(sv.edicts);
-        return;
+        ED_PushEdict(L, sv.edicts);
+        return 1;
     }
-// might be able to see it
+    // might be able to see it
     c_invis++;
-    RETURN_EDICT(ent);
+    ED_PushEdict(L, ent);
+    return 1;
 }
 
 //============================================================================
-#endif
 
 /*
 =================
@@ -689,7 +685,6 @@ int PF_stuffcmd(lua_State *L)
     return 0;
 }
 
-#if 0
 /*
 =================
 PF_localcmd
@@ -699,15 +694,15 @@ Sends text over to the client's execution buffer
 localcmd (string)
 =================
 */
-void PF_localcmd(void)
+int PF_localcmd(lua_State *L)
 {
     char *str;
 
-    str = G_STRING(OFS_PARM0);
+    str = (char *)luaL_checkstring(L, 1);
     Cbuf_AddText(str);
+    return 0;
 }
 
-#endif
 /*
 =================
 PF_cvar
@@ -743,7 +738,6 @@ int PF_cvar_set(lua_State *L)
     return 0;
 }
 
-#if 0
 /*
 =================
 PF_findradius
@@ -753,18 +747,18 @@ Returns a chain of entities that have origins within a spherical area
 findradius (origin, radius)
 =================
 */
-void PF_findradius(void)
+int PF_findradius(lua_State *L)
 {
     edict_t *ent, *chain;
     float rad;
-    float *org;
+    vec_t *org;
     vec3_t eorg;
     int i, j;
 
     chain = (edict_t *) sv.edicts;
 
-    org = G_VECTOR(OFS_PARM0);
-    rad = G_FLOAT(OFS_PARM1);
+    org = PR_Vec3_ToVec(L, 1);
+    rad = luaL_checknumber(L, 2);
 
     ent = NEXT_EDICT(sv.edicts);
     for (i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent)) {
@@ -783,9 +777,9 @@ void PF_findradius(void)
         chain = ent;
     }
 
-    RETURN_EDICT(chain);
+    ED_PushEdict(L, chain);
+    return 1;
 }
-#endif
 
 /*
 =========
@@ -810,7 +804,7 @@ int PF_Spawn(lua_State *L)
 {
     edict_t *ed;
     ed = ED_Alloc();
-    ED_PushEdict(ed);
+    ED_PushEdict(L, ed);
     return 1;
 }
 
@@ -859,7 +853,7 @@ int PF_Find(lua_State *L)
         if (!t)
             continue;
         if (!strcmp(t, s)) {
-            ED_PushEdict(ed);
+            ED_PushEdict(L, ed);
             return 1;
         }
     }
@@ -867,12 +861,11 @@ int PF_Find(lua_State *L)
     return 0;
 }
 
-#if 0
-void PF_precache_file(void)
-{                               // precache_file is only used to copy files with qcc, it does nothing
-    G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
+int PF_precache_file(lua_State *L)
+{
+    // precache_file is only used to copy files with qcc, it does nothing
+    return 0;
 }
-#endif
 
 int PF_precache_sound(lua_State *L)
 {
@@ -938,6 +931,7 @@ void PF_traceoff(void)
 void PF_eprint(void)
 {
 }
+#endif
 
 /*
 ===============
@@ -946,21 +940,20 @@ PF_walkmove
 float(float yaw, float dist) walkmove
 ===============
 */
-void PF_walkmove(void)
+int PF_walkmove(lua_State *L)
 {
     edict_t *ent;
     float yaw, dist;
     vec3_t move;
-    dfunction_t *oldf;
     int oldself;
 
     ent = PROG_TO_EDICT(pr_global_struct->self);
-    yaw = G_FLOAT(OFS_PARM0);
-    dist = G_FLOAT(OFS_PARM1);
+    yaw = luaL_checknumber(L, 1);
+    dist = luaL_checknumber(L, 2);
 
     if (!((int) ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM))) {
-        G_FLOAT(OFS_RETURN) = 0;
-        return;
+        lua_pushnumber(L, 0);
+        return 1;
     }
 
     yaw = yaw * M_PI * 2 / 360;
@@ -969,18 +962,16 @@ void PF_walkmove(void)
     move[1] = sin(yaw) * dist;
     move[2] = 0;
 
-// save program state, because SV_movestep may call other progs
-    //oldf = pr_xfunction;
+    // save program state, because SV_movestep may call other progs
     oldself = pr_global_struct->self;
 
-    G_FLOAT(OFS_RETURN) = SV_movestep(ent, move, true);
+    lua_pushnumber(L, SV_movestep(ent, move, true));
 
-
-// restore program state
-    //pr_xfunction = oldf;
+    // restore program state
     pr_global_struct->self = oldself;
+
+    return 1;
 }
-#endif
 
 /*
 ===============
@@ -1051,32 +1042,33 @@ int PF_lightstyle(lua_State *L)
     return 0;
 }
 
-#if 0
-void PF_rint(void)
+int PF_rint(lua_State *L)
 {
     float f;
-    f = G_FLOAT(OFS_PARM0);
-    if (f > 0)
-        G_FLOAT(OFS_RETURN) = (int) (f + 0.5);
-    else
-        G_FLOAT(OFS_RETURN) = (int) (f - 0.5);
-}
+    f = luaL_checknumber(L, 1);
 
+    if (f > 0)
+        lua_pushnumber(L, (int) (f + 0.5));
+    else
+        lua_pushnumber(L, (int) (f - 0.5));
+
+    return 1;
+}
 
 /*
 =============
 PF_checkbottom
 =============
 */
-void PF_checkbottom(void)
+int PF_checkbottom(lua_State *L)
 {
-    edict_t *ent;
+    edict_t **ent;
 
-    ent = G_EDICT(OFS_PARM0);
+    ent = luaL_checkudata(L, 1, "edict_t");
 
-    G_FLOAT(OFS_RETURN) = SV_CheckBottom(ent);
+    lua_pushnumber(L, SV_CheckBottom(*ent));
+    return 1;
 }
-#endif
 
 /*
 =============
@@ -1093,7 +1085,6 @@ int PF_pointcontents(lua_State *L)
     return 1;
 }
 
-#if 0
 /*
 =============
 PF_nextent
@@ -1101,24 +1092,27 @@ PF_nextent
 entity nextent(entity)
 =============
 */
-void PF_nextent(void)
+int PF_nextent(lua_State *L)
 {
     int i;
-    edict_t *ent;
+    edict_t **tent, *ent;
 
-    i = G_EDICTNUM(OFS_PARM0);
+    tent = luaL_checkudata(L, 1, "edict_t");
+    i = NUM_FOR_EDICT(*tent);
     while (1) {
         i++;
         if (i == sv.num_edicts) {
-            RETURN_EDICT(sv.edicts);
-            return;
+            ED_PushEdict(L, sv.edicts);
+            return 1;
         }
         ent = EDICT_NUM(i);
         if (!ent->free) {
-            RETURN_EDICT(ent);
-            return;
+            ED_PushEdict(L, ent);
+            return 1;
         }
     }
+
+    return 0;
 }
 
 /*
@@ -1129,47 +1123,46 @@ Pick a vector for the player to shoot along
 vector aim(entity, missilespeed)
 =============
 */
-#endif
 cvar_t sv_aim = { "sv_aim", "2" };
-#if 0
 
-void PF_aim(void)
+int PF_aim(lua_State *L)
 {
-    edict_t *ent, *check, *bestent;
+    edict_t **ent, *check, *bestent;
     vec3_t start, dir, end, bestdir;
     int i, j;
     trace_t tr;
     float dist, bestdist;
-    float speed;
     char *noaim;
+    vec_t *ret;
 
-    ent = G_EDICT(OFS_PARM0);
-    speed = G_FLOAT(OFS_PARM1);
+    ent = luaL_checkudata(L, 1, "edict_t");
 
-    VectorCopy(ent->v.origin, start);
+    ret = PR_Vec3_New(L);
+
+    VectorCopy((*ent)->v.origin, start);
     start[2] += 20;
 
-// noaim option
-    i = NUM_FOR_EDICT(ent);
+    // noaim option
+    i = NUM_FOR_EDICT(*ent);
     if (i > 0 && i < MAX_CLIENTS) {
         noaim = Info_ValueForKey(svs.clients[i - 1].userinfo, "noaim");
         if (atoi(noaim) > 0) {
-            VectorCopy(pr_global_struct->v_forward, G_VECTOR(OFS_RETURN));
-            return;
+            VectorCopy(pr_global_struct->v_forward, ret);
+            return 1;
         }
     }
-// try sending a trace straight
+    // try sending a trace straight
     VectorCopy(pr_global_struct->v_forward, dir);
     VectorMA(start, 2048, dir, end);
-    tr = SV_Move(start, vec3_origin, vec3_origin, end, false, ent);
+    tr = SV_Move(start, vec3_origin, vec3_origin, end, false, *ent);
     if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
-        && (!teamplay.value || ent->v.team <= 0
-            || ent->v.team != tr.ent->v.team)) {
-        VectorCopy(pr_global_struct->v_forward, G_VECTOR(OFS_RETURN));
-        return;
+        && (!teamplay.value || (*ent)->v.team <= 0
+            || (*ent)->v.team != tr.ent->v.team)) {
+        VectorCopy(pr_global_struct->v_forward, ret);
+        return 1;
     }
 
-// try all possible entities
+    // try all possible entities
     VectorCopy(dir, bestdir);
     bestdist = sv_aim.value;
     bestent = NULL;
@@ -1178,10 +1171,10 @@ void PF_aim(void)
     for (i = 1; i < sv.num_edicts; i++, check = NEXT_EDICT(check)) {
         if (check->v.takedamage != DAMAGE_AIM)
             continue;
-        if (check == ent)
+        if (check == *ent)
             continue;
-        if (teamplay.value && ent->v.team > 0
-            && ent->v.team == check->v.team)
+        if (teamplay.value && (*ent)->v.team > 0
+            && (*ent)->v.team == check->v.team)
             continue;           // don't aim at teammate
         for (j = 0; j < 3; j++)
             end[j] = check->v.origin[j]
@@ -1191,7 +1184,7 @@ void PF_aim(void)
         dist = DotProduct(dir, pr_global_struct->v_forward);
         if (dist < bestdist)
             continue;           // to far to turn
-        tr = SV_Move(start, vec3_origin, vec3_origin, end, false, ent);
+        tr = SV_Move(start, vec3_origin, vec3_origin, end, false, *ent);
         if (tr.ent == check) {  // can shoot at this one
             bestdist = dist;
             bestent = check;
@@ -1199,17 +1192,18 @@ void PF_aim(void)
     }
 
     if (bestent) {
-        VectorSubtract(bestent->v.origin, ent->v.origin, dir);
+        VectorSubtract(bestent->v.origin, (*ent)->v.origin, dir);
         dist = DotProduct(dir, pr_global_struct->v_forward);
         VectorScale(pr_global_struct->v_forward, dist, end);
         end[2] = dir[2];
         VectorNormalize(end);
-        VectorCopy(end, G_VECTOR(OFS_RETURN));
+        VectorCopy(end, ret);
     } else {
-        VectorCopy(bestdir, G_VECTOR(OFS_RETURN));
+        VectorCopy(bestdir, ret);
     }
+
+    return 1;
 }
-#endif
 
 /*
 ==============
@@ -1320,47 +1314,54 @@ int PF_WriteByte(lua_State *L)
 
     return 0;
 }
-#if 0
-void PF_WriteChar(void)
+
+int PF_WriteChar(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 1);
-        ClientReliableWrite_Char(cl, G_FLOAT(OFS_PARM1));
+        ClientReliableWrite_Char(cl, luaL_checknumber(L, 2));
     } else
-        MSG_WriteChar(WriteDest(), G_FLOAT(OFS_PARM1));
+        MSG_WriteChar(WriteDest(L), luaL_checknumber(L, 2));
+
+    return 0;
 }
 
-void PF_WriteShort(void)
+int PF_WriteShort(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 2);
-        ClientReliableWrite_Short(cl, G_FLOAT(OFS_PARM1));
+        ClientReliableWrite_Short(cl, luaL_checknumber(L, 2));
     } else
-        MSG_WriteShort(WriteDest(), G_FLOAT(OFS_PARM1));
+        MSG_WriteShort(WriteDest(L), luaL_checknumber(L, 2));
+
+    return 0;
 }
 
-void PF_WriteLong(void)
+int PF_WriteLong(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 4);
-        ClientReliableWrite_Long(cl, G_FLOAT(OFS_PARM1));
+        ClientReliableWrite_Long(cl, luaL_checknumber(L, 2));
     } else
-        MSG_WriteLong(WriteDest(), G_FLOAT(OFS_PARM1));
+        MSG_WriteLong(WriteDest(L), luaL_checknumber(L, 2));
+
+    return 0;
 }
 
-void PF_WriteAngle(void)
+int PF_WriteAngle(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 1);
-        ClientReliableWrite_Angle(cl, G_FLOAT(OFS_PARM1));
+        ClientReliableWrite_Angle(cl, luaL_checknumber(L, 2));
     } else
-        MSG_WriteAngle(WriteDest(), G_FLOAT(OFS_PARM1));
+        MSG_WriteAngle(WriteDest(L), luaL_checknumber(L, 2));
+
+    return 0;
 }
-#endif
 
 int PF_WriteCoord(lua_State *L)
 {
@@ -1374,28 +1375,34 @@ int PF_WriteCoord(lua_State *L)
     return 0;
 }
 
-#if 0
-void PF_WriteString(void)
+int PF_WriteString(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
-        ClientReliableCheckBlock(cl, 1 + strlen(G_STRING(OFS_PARM1)));
-        ClientReliableWrite_String(cl, G_STRING(OFS_PARM1));
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
+        ClientReliableCheckBlock(cl, 1 + strlen(luaL_checkstring(L, 2)));
+        ClientReliableWrite_String(cl, (char *)luaL_checkstring(L, 2));
     } else
-        MSG_WriteString(WriteDest(), G_STRING(OFS_PARM1));
+        MSG_WriteString(WriteDest(L), (char *)luaL_checkstring(L, 2));
+
+    return 0;
 }
 
 
-void PF_WriteEntity(void)
+int PF_WriteEntity(lua_State *L)
 {
-    if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
-        client_t *cl = Write_GetClient();
+    edict_t **ed;
+
+    ed = luaL_checkudata(L, 2, "edict_t");
+
+    if (luaL_checknumber(L, 1) == MSG_ONE) {
+        client_t *cl = Write_GetClient(L);
         ClientReliableCheckBlock(cl, 2);
-        ClientReliableWrite_Short(cl, G_EDICTNUM(OFS_PARM1));
+        ClientReliableWrite_Short(cl, NUM_FOR_EDICT(*ed));
     } else
-        MSG_WriteShort(WriteDest(), G_EDICTNUM(OFS_PARM1));
+        MSG_WriteShort(WriteDest(L), NUM_FOR_EDICT(*ed));
+
+    return 0;
 }
-#endif
 
 //=============================================================================
 
@@ -1427,20 +1434,19 @@ int PF_makestatic(lua_State *L)
 
 //=============================================================================
 
-#if 0
 /*
 ==============
 PF_setspawnparms
 ==============
 */
-void PF_setspawnparms(void)
+int PF_setspawnparms(lua_State *L)
 {
-    edict_t *ent;
+    edict_t **ent;
     int i;
     client_t *client;
 
-    ent = G_EDICT(OFS_PARM0);
-    i = NUM_FOR_EDICT(ent);
+    ent = luaL_checkudata(L, 1, "edict_t");
+    i = NUM_FOR_EDICT(*ent);
     if (i < 1 || i > MAX_CLIENTS)
         PR_RunError("Entity is not a client");
 
@@ -1449,6 +1455,26 @@ void PF_setspawnparms(void)
 
     for (i = 0; i < NUM_SPAWN_PARMS; i++)
         (&pr_global_struct->parm1)[i] = client->spawn_parms[i];
+
+    // XXX: uh?
+    PUSH_GFLOAT(parm1);
+    PUSH_GFLOAT(parm2);
+    PUSH_GFLOAT(parm3);
+    PUSH_GFLOAT(parm4);
+    PUSH_GFLOAT(parm5);
+    PUSH_GFLOAT(parm6);
+    PUSH_GFLOAT(parm7);
+    PUSH_GFLOAT(parm8);
+    PUSH_GFLOAT(parm9);
+    PUSH_GFLOAT(parm10);
+    PUSH_GFLOAT(parm11);
+    PUSH_GFLOAT(parm12);
+    PUSH_GFLOAT(parm13);
+    PUSH_GFLOAT(parm14);
+    PUSH_GFLOAT(parm15);
+    PUSH_GFLOAT(parm16);
+
+    return 0;
 }
 
 /*
@@ -1456,18 +1482,20 @@ void PF_setspawnparms(void)
 PF_changelevel
 ==============
 */
-void PF_changelevel(void)
+int PF_changelevel(lua_State *L)
 {
     char *s;
     static int last_spawncount;
 
-// make sure we don't issue two changelevels
+    // make sure we don't issue two changelevels
     if (svs.spawncount == last_spawncount)
-        return;
+        return 0;
     last_spawncount = svs.spawncount;
 
-    s = G_STRING(OFS_PARM0);
+    s = (char *)luaL_checkstring(L, 1);
     Cbuf_AddText(va("map %s\n", s));
+
+    return 0;
 }
 
 
@@ -1478,20 +1506,20 @@ PF_logfrag
 logfrag (killer, killee)
 ==============
 */
-void PF_logfrag(void)
+int PF_logfrag(lua_State *L)
 {
-    edict_t *ent1, *ent2;
+    edict_t **ent1, **ent2;
     int e1, e2;
     char *s;
 
-    ent1 = G_EDICT(OFS_PARM0);
-    ent2 = G_EDICT(OFS_PARM1);
+    ent1 = luaL_checkudata(L, 1, "edict_t");
+    ent2 = luaL_checkudata(L, 2, "edict_t");
 
-    e1 = NUM_FOR_EDICT(ent1);
-    e2 = NUM_FOR_EDICT(ent2);
+    e1 = NUM_FOR_EDICT(*ent1);
+    e2 = NUM_FOR_EDICT(*ent2);
 
     if (e1 < 1 || e1 > MAX_CLIENTS || e2 < 1 || e2 > MAX_CLIENTS)
-        return;
+        return 0;
 
     s = va("\\%s\\%s\\\n", svs.clients[e1 - 1].name,
            svs.clients[e2 - 1].name);
@@ -1501,8 +1529,9 @@ void PF_logfrag(void)
         fprintf(sv_fraglogfile, s);
         fflush(sv_fraglogfile);
     }
+
+    return 0;
 }
-#endif
 
 /*
 ==============
@@ -1587,17 +1616,23 @@ void PR_InstallBuiltins(void)
     lua_register(L, "precache_model", PF_precache_model);
     lua_register(L, "precache_model2", PF_precache_model);
     lua_register(L, "find", PF_Find);
+    lua_register(L, "findradius", PF_findradius);
     lua_register(L, "setmodel", PF_setmodel);
     lua_register(L, "setsize", PF_setsize);
     lua_register(L, "remove", PF_Remove);
+    lua_register(L, "precache_file", PF_precache_file);
     lua_register(L, "precache_sound", PF_precache_sound);
     lua_register(L, "precache_sound2", PF_precache_sound);
     lua_register(L, "ambientsound", PF_ambientsound);
     lua_register(L, "makestatic", PF_makestatic);
+    lua_register(L, "setspawnparms", PF_setspawnparms);
+    lua_register(L, "changelevel", PF_changelevel);
+    lua_register(L, "logfrag", PF_logfrag);
     lua_register(L, "random", PF_random);
     lua_register(L, "spawn", PF_Spawn);
     lua_register(L, "setorigin", PF_setorigin);
     lua_register(L, "stuffcmd", PF_stuffcmd);
+    lua_register(L, "localcmd", PF_localcmd);
     lua_register(L, "cvar", PF_cvar);
     lua_register(L, "cvar_set", PF_cvar_set);
     lua_register(L, "lightstyle", PF_lightstyle);
@@ -1606,7 +1641,13 @@ void PR_InstallBuiltins(void)
     lua_register(L, "centerprint", PF_centerprint);
     lua_register(L, "sound", PF_sound);
     lua_register(L, "WriteByte", PF_WriteByte);
+    lua_register(L, "WriteChar", PF_WriteChar);
+    lua_register(L, "WriteShort", PF_WriteShort);
+    lua_register(L, "WriteLong", PF_WriteLong);
+    lua_register(L, "WriteAngle", PF_WriteAngle);
     lua_register(L, "WriteCoord", PF_WriteCoord);
+    lua_register(L, "WriteString", PF_WriteString);
+    lua_register(L, "WriteEntity", PF_WriteEntity);
     lua_register(L, "multicast", PF_multicast);
     lua_register(L, "droptofloor", PF_droptofloor);
     lua_register(L, "fabs", PF_fabs);
@@ -1616,6 +1657,16 @@ void PR_InstallBuiltins(void)
     lua_register(L, "infokey", PF_infokey);
     lua_register(L, "bprint", PF_bprint);
     lua_register(L, "sprint", PF_sprint);
+    lua_register(L, "error", PF_error);
+    lua_register(L, "vectoyaw", PF_vectoyaw);
+    lua_register(L, "traceline", PF_traceline);
+    lua_register(L, "break", PF_break);
+    lua_register(L, "checkclient", PF_checkclient);
+    lua_register(L, "walkmove", PF_walkmove);
+    lua_register(L, "rint", PF_rint);
+    lua_register(L, "checkbottom", PF_checkbottom);
+    lua_register(L, "nextent", PF_nextent);
+    lua_register(L, "aim", PF_aim);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);
