@@ -793,10 +793,17 @@ PR_ExecuteProgram
 */
 void PR_ExecuteProgram(func_t fnum)
 {
+    // if thinking without a valid function, we still get called
+    if (fnum == 0)
+        return;
+
+    if (fnum < 0)
+        SV_Error("PR_ExecuteProgram(%d) got invalid fnum, this is a bug.\n", fnum);
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, fnum);
 
     if (!lua_isfunction(L, -1))
-        SV_Error("PR_ExecuteProgram(%d) did not get a function");
+        SV_Error("PR_ExecuteProgram(%d) did not get a function, got '%s' instead", fnum, lua_typename(L, -1));
 
     // XXX: big hack because first frame is run before other edicts are initialized than world
     if (sv.state == ss_loading && EDICT_NUM(0)->ref == 0) {
