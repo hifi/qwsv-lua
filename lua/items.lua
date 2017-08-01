@@ -543,7 +543,7 @@ function weapon_touch()
     if tonumber(infokey(other,"w_switch")) == 0 then
         w_switch = 8
     else
-        w_switch = tonumber(infokey(other,"w_switch"))
+        w_switch = tonumber(infokey(other,"w_switch")) or 0
     end
     -- if the player was using his best weapon, change up to the new one if better
     stemp = self
@@ -1279,7 +1279,7 @@ function BackpackTouch()
     if tonumber(infokey(other,"b_switch")) == 0 then
         b_switch = 8
     else
-        b_switch = tonumber(infokey(other,"b_switch"))
+        b_switch = tonumber(infokey(other,"b_switch")) or 0
     end
 
     if other.classname ~= "player" then
