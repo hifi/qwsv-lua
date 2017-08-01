@@ -206,7 +206,7 @@ function trigger_secret()
     if not self.message then
         self.message = "You found a secret area!"
     end
-    if not self.sounds then
+    if self.sounds == 0 then
         self.sounds = 1
     end
 
