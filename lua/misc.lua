@@ -45,7 +45,7 @@ end
 local START_OFF = 1
 
 function light_use()
-    if (self.spawnflags & START_OFF) then
+    if (self.spawnflags & START_OFF) > 0 then
         lightstyle(self.style, "m")
         self.spawnflags = self.spawnflags - START_OFF
     else
@@ -70,7 +70,7 @@ function light()
     
     if self.style >= 32 then
         self.use = light_use
-        if self.spawnflags & START_OFF then
+        if (self.spawnflags & START_OFF) > 0 then
             lightstyle(self.style, "a")
         else
             lightstyle(self.style, "m")
@@ -89,7 +89,7 @@ Makes steady fluorescent humming sound
 function light_fluoro()
     if self.style >= 32 then
         self.use = light_use
-        if self.spawnflags & START_OFF then
+        if (self.spawnflags & START_OFF) > 0 then
             lightstyle(self.style, "a")
         else
             lightstyle(self.style, "m")
@@ -362,14 +362,14 @@ function LaunchLaser(org, vec)
 end
 
 function spikeshooter_use()
-    if self.spawnflags & SPAWNFLAG_LASER then
+    if (self.spawnflags & SPAWNFLAG_LASER) > 0 then
         sound (self, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM)
         LaunchLaser (self.origin, self.movedir)
     else
         sound (self, CHAN_VOICE, "weapons/spike2.wav", 1, ATTN_NORM)
         launch_spike (self.origin, self.movedir)
         newmis.velocity = self.movedir * 500
-        if self.spawnflags & SPAWNFLAG_SUPERSPIKE then
+        if (self.spawnflags & SPAWNFLAG_SUPERSPIKE) > 0 then
             newmis.touch = superspike_touch
         end
     end
@@ -390,7 +390,7 @@ Laser is only for REGISTERED.
 function trap_spikeshooter()
     SetMovedir()
     self.use = spikeshooter_use
-    if self.spawnflags & SPAWNFLAG_LASER then
+    if (self.spawnflags & SPAWNFLAG_LASER) > 0 then
         precache_model2 ("progs/laser.mdl")
         precache_sound2 ("enforcer/enfire.wav")
         precache_sound2 ("enforcer/enfstop.wav")
