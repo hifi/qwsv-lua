@@ -561,8 +561,12 @@ static int ED_mt_index(lua_State *L)
 
 #define SET_REF(s)  \
     if (strcmp(key, #s) == 0) { \
-        lua_pushvalue(L, 3); \
-        (*e)->v.s = luaL_ref(L, LUA_REGISTRYINDEX); \
+        if ((*e)->v.s) luaL_unref(L, LUA_REGISTRYINDEX, (*e)->v.s); \
+        (*e)->v.s = 0; \
+        if (!lua_isnil(L, 3)) { \
+            lua_pushvalue(L, 3); \
+            (*e)->v.s = luaL_ref(L, LUA_REGISTRYINDEX); \
+        } \
         return 0; \
     }
 
