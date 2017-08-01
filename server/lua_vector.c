@@ -34,7 +34,7 @@ static int PR_Vec3_Add(lua_State *L)
     c = PR_Vec3_New(L);
 
     VectorAdd(a,b,c);
-    
+
     return 1;
 };
 
@@ -47,7 +47,7 @@ static int PR_Vec3_Sub(lua_State *L)
     c = PR_Vec3_New(L);
 
     VectorSubtract(a,b,c);
-    
+
     return 1;
 };
 
@@ -57,7 +57,7 @@ static int PR_Vec3_Mul(lua_State *L)
     float s;
 
     int i_vec = 1;
-    int i_sec = 2; 
+    int i_sec = 2;
 
     if (!lua_isuserdata(L, 1)) {
         i_vec = 2;
@@ -123,7 +123,7 @@ static int PR_Vec3_Index(lua_State *L)
         case 'x': lua_pushnumber(L, v[0]); break;
         case 'y': lua_pushnumber(L, v[1]); break;
         case 'z': lua_pushnumber(L, v[2]); break;
-        default: luaL_error(L, "vec3_t can only have x/y/x");
+        default: luaL_error(L, "vec3_t can only have x/y/z");
     }
 
     return 1;
@@ -144,7 +144,7 @@ static int PR_Vec3_NewIndex(lua_State *L)
         case 'x': v[0] = value; break;
         case 'y': v[1] = value; break;
         case 'z': v[2] = value; break;
-        default: luaL_error(L, "vec3_t can only have x/y/x");
+        default: luaL_error(L, "vec3_t can only have x/y/z");
     }
 
     return 0;
