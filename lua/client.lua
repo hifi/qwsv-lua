@@ -493,6 +493,7 @@ function PutClientInServer()
     self.super_sound = 0
     self.dmgtime = 0
     self.swim_flag = 0
+    self.pain_finished = 0
 
     DecodeLevelParms ()
     
