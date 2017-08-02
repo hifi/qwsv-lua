@@ -231,72 +231,59 @@ Prints messages and opens key doors
 ================
 --]]
 function door_touch()
---[[
-    if (other.classname != "player")
-        return;
-    if (self.owner.attack_finished > time)
-        return;
+    if other.classname ~= "player" then
+        return
+    end
+    if self.owner.attack_finished > time then
+        return
+    end
 
-    self.owner.attack_finished = time + 2;
+    self.owner.attack_finished = time + 2
 
-    if (self.owner.message != "")
-    {
-        centerprint (other, self.owner.message);
-        sound (other, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
-    }
+    if self.owner.message and #self.owner.message > 0 then
+        centerprint (other, self.owner.message)
+        sound (other, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM)
+    end
     
-// key door stuff
-    if (!self.items)
-        return;
+    -- key door stuff
+    if self.items == 0 then
+        return
+    end
 
-// FIXME: blink key on player's status bar
-    if ( (self.items & other.items) != self.items )
-    {
-        if (self.owner.items == IT_KEY1)
-        {
-            if (world.worldtype == 2)
-            {
-                centerprint (other, "You need the silver keycard");
-                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-            }
-            else if (world.worldtype == 1)
-            {
-                centerprint (other, "You need the silver runekey");
-                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-            }
-            else if (world.worldtype == 0)
-            {
-                centerprint (other, "You need the silver key");
-                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-            }
-        }
+    -- FIXME: blink key on player's status bar
+    if (self.items & other.items) ~= self.items then
+        if self.owner.items == IT_KEY1 then
+            if world.worldtype == 2 then
+                centerprint (other, "You need the silver keycard")
+                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+            elseif world.worldtype == 1 then
+                centerprint (other, "You need the silver runekey")
+                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+            elseif world.worldtype == 0 then
+                centerprint (other, "You need the silver key")
+                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+            end
         else
-        {
-            if (world.worldtype == 2)
-            {
-                centerprint (other, "You need the gold keycard");
-                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-            }
-            else if (world.worldtype == 1)
-            {
-                centerprint (other, "You need the gold runekey");
-                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);                    
-            }
-            else if (world.worldtype == 0)
-            {
-                centerprint (other, "You need the gold key");
-                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-            }
-        }
-        return;
-    }
+            if world.worldtype == 2 then
+                centerprint (other, "You need the gold keycard")
+                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+            elseif world.worldtype == 1 then
+                centerprint (other, "You need the gold runekey")
+                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)                    
+            elseif world.worldtype == 0 then
+                centerprint (other, "You need the gold key")
+                sound (self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+            end
+        end
+        return
+    end
 
-    other.items = other.items - self.items;
-    self.touch = SUB_Null;
-    if (self.enemy)
-        self.enemy.touch = SUB_Null;    // get paired door
-    door_use ();
---]]
+    other.items = other.items - self.items
+    self.touch = SUB_Null
+    if self.enemy then
+        self.enemy.touch = SUB_Null -- get paired door
+    end
+    door_use ()
 end
 
 --[[
@@ -588,116 +575,105 @@ local SECRET_1ST_DOWN  = 4;  -- 1st move is down from arrow
 local SECRET_NO_SHOOT  = 8;  -- only opened by trigger
 local SECRET_YES_SHOOT = 16; -- shootable even if targeted
 
---[[
-void () fd_secret_use =
-{
-    local float temp;
+function fd_secret_use()
+    local temp
     
-    self.health = 10000;
+    self.health = 10000
 
-    // exit if still moving around...
-    if (self.origin != self.oldorigin)
-        return;
+    -- exit if still moving around...
+    if self.origin ~= self.oldorigin then
+        return
+    end
     
-    self.message = string_null;             // no more message
+    self.message = string_null -- no more message
 
-    SUB_UseTargets();                               // fire all targets / killtargets
+    SUB_UseTargets() -- fire all targets / killtargets
     
-    if (!(self.spawnflags & SECRET_NO_SHOOT))
-    {
-        self.th_pain = SUB_Null;
-        self.takedamage = DAMAGE_NO;
-    }
-    self.velocity = '0 0 0';
+    if (self.spawnflags & SECRET_NO_SHOOT) == 0 then
+        self.th_pain = SUB_Null
+        self.takedamage = DAMAGE_NO
+    end
+    self.velocity = vec3(0,0,0)
 
-    // Make a sound, wait a little...
-    
-    sound(self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
-    self.nextthink = self.ltime + 0.1;
+    -- Make a sound, wait a little...
+    sound(self, CHAN_VOICE, self.noise1, 1, ATTN_NORM)
+    self.nextthink = self.ltime + 0.1
 
-    temp = 1 - (self.spawnflags & SECRET_1ST_LEFT); // 1 or -1
-    makevectors(self.mangle);
+    temp = 1 - (self.spawnflags & SECRET_1ST_LEFT) -- 1 or -1
+    makevectors(self.mangle)
     
-    if (!self.t_width)
-    {
-        if (self.spawnflags & SECRET_1ST_DOWN)
-            self. t_width = fabs(v_up * self.size);
+    if not self.t_width or self.t_width == 0 then
+        if (self.spawnflags & SECRET_1ST_DOWN) > 0 then
+            self.t_width = fabs(v_up * self.size)
         else
-            self. t_width = fabs(v_right * self.size);
-    }
+            self.t_width = fabs(v_right * self.size)
+        end
+    end
         
-    if (!self.t_length)
-        self. t_length = fabs(v_forward * self.size);
+    if not self.t_length or self.t_length == 0 then
+        self.t_length = fabs(v_forward * self.size)
+    end
 
-    if (self.spawnflags & SECRET_1ST_DOWN)
-        self.dest1 = self.origin - v_up * self.t_width;
+    if (self.spawnflags & SECRET_1ST_DOWN) > 0 then
+        self.dest1 = self.origin - v_up * self.t_width
     else
-        self.dest1 = self.origin + v_right * (self.t_width * temp);
+        self.dest1 = self.origin + v_right * (self.t_width * temp)
+    end
         
-    self.dest2 = self.dest1 + v_forward * self.t_length;
-    SUB_CalcMove(self.dest1, self.speed, fd_secret_move1);
-    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
-};
+    self.dest2 = self.dest1 + v_forward * self.t_length
+    SUB_CalcMove(self.dest1, self.speed, fd_secret_move1)
+    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM)
+end
 
-// Wait after first movement...
-void () fd_secret_move1 = 
-{
-    self.nextthink = self.ltime + 1.0;
-    self.think = fd_secret_move2;
-    sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-};
+-- Wait after first movement...
+function fd_secret_move1()
+    self.nextthink = self.ltime + 1.0
+    self.think = fd_secret_move2
+    sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+end
 
-// Start moving sideways w/sound...
-void () fd_secret_move2 =
-{
-    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
-    SUB_CalcMove(self.dest2, self.speed, fd_secret_move3);
-};
+-- Start moving sideways w/sound...
+function fd_secret_move2()
+    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM)
+    SUB_CalcMove(self.dest2, self.speed, fd_secret_move3)
+end
 
-// Wait here until time to go back...
-void () fd_secret_move3 =
-{
-    sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-    if (!(self.spawnflags & SECRET_OPEN_ONCE))
-    {
-        self.nextthink = self.ltime + self.wait;
-        self.think = fd_secret_move4;
-    }
-};
+-- Wait here until time to go back...
+function fd_secret_move3()
+    sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+    if (self.spawnflags & SECRET_OPEN_ONCE) == 0 then
+        self.nextthink = self.ltime + self.wait
+        self.think = fd_secret_move4
+    end
+end
 
-// Move backward...
-void () fd_secret_move4 =
-{
-    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
-    SUB_CalcMove(self.dest1, self.speed, fd_secret_move5);          
-};
+-- Move backward...
+function fd_secret_move4()
+    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM)
+    SUB_CalcMove(self.dest1, self.speed, fd_secret_move5)
+end
 
-// Wait 1 second...
-void () fd_secret_move5 = 
-{
-    self.nextthink = self.ltime + 1.0;
-    self.think = fd_secret_move6;
-    sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-};
+-- Wait 1 second...
+function fd_secret_move5()
+    self.nextthink = self.ltime + 1.0
+    self.think = fd_secret_move6
+    sound(self, CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+end
 
-void () fd_secret_move6 =
-{
-    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
-    SUB_CalcMove(self.oldorigin, self.speed, fd_secret_done);
-};
+function fd_secret_move6()
+    sound(self, CHAN_VOICE, self.noise2, 1, ATTN_NORM)
+    SUB_CalcMove(self.oldorigin, self.speed, fd_secret_done)
+end
 
-void () fd_secret_done =
-{
-    if (!self.targetname || self.spawnflags&SECRET_YES_SHOOT)
-    {
-        self.health = 10000;
-        self.takedamage = DAMAGE_YES;
-        self.th_pain = fd_secret_use;   
-        self.th_die = fd_secret_use;
-    }
-    sound(self, CHAN_NO_PHS_ADD+CHAN_VOICE, self.noise3, 1, ATTN_NORM);
-};
---]]
+function fd_secret_done()
+    if not self.targetname or #self.targetname == 0 or (self.spawnflags & SECRET_YES_SHOOT) > 0 then
+        self.health = 10000
+        self.takedamage = DAMAGE_YES
+        self.th_pain = fd_secret_use
+        self.th_die = fd_secret_use
+    end
+    sound(self, CHAN_NO_PHS_ADD+CHAN_VOICE, self.noise3, 1, ATTN_NORM)
+end
 
 function secret_blocked()
     if time < self.attack_finished then
@@ -751,20 +727,23 @@ If a secret door has a targetname, it will only be opened by it's botton or trig
 function func_door_secret()
     if not self.sounds or self.sounds == 0 then
         self.sounds = 3
-    elseif self.sounds == 1 then
+    end
+    if self.sounds == 1 then
         precache_sound ("doors/latch2.wav")
         precache_sound ("doors/winch2.wav")
         precache_sound ("doors/drclos4.wav")
         self.noise1 = "doors/latch2.wav"
         self.noise2 = "doors/winch2.wav"
         self.noise3 = "doors/drclos4.wav"
-    elseif self.sounds == 2 then
+    end
+    if self.sounds == 2 then
         precache_sound ("doors/airdoor1.wav")
         precache_sound ("doors/airdoor2.wav")
         self.noise2 = "doors/airdoor1.wav"
         self.noise1 = "doors/airdoor2.wav"
         self.noise3 = "doors/airdoor2.wav"
-    elseif self.sounds == 3 then
+    end
+    if self.sounds == 3 then
         precache_sound ("doors/basesec1.wav")
         precache_sound ("doors/basesec2.wav")
         self.noise2 = "doors/basesec1.wav"
