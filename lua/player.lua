@@ -39,14 +39,15 @@ $cd /raid/quake/id1/models/player_4
 $origin 0 -6 24
 $base base
 $skin skin
-
-//
-// running
-//
-$frame axrun1 axrun2 axrun3 axrun4 axrun5 axrun6
-
-$frame rockrun1 rockrun2 rockrun3 rockrun4 rockrun5 rockrun6
 --]]
+
+--
+-- running
+--
+axrun1,axrun2,axrun3,axrun4,axrun5,axrun6 = 0,1,2,3,4,5
+
+rockrun1,rockrun2,rockrun3,rockrun4,rockrun5,rockrun6 = 0,1,2,3,4,5
+
 --
 -- standing
 --
@@ -113,7 +114,6 @@ PLAYER
 ==============================================================================
 ]]
 
-
 player_stand1 = ffunc(axstnd1, player_stand1, function()
     self.weaponframe = 0
 
@@ -137,46 +137,43 @@ player_stand1 = ffunc(axstnd1, player_stand1, function()
     self.walkframe = self.walkframe + 1
 end)
 
+player_run = ffunc(rockrun1, player_run, function()
+    self.weaponframe = 0
+
+    if self.velocity.x == 0 and self.velocity.y == 0 then
+        self.walkframe=0
+        player_stand1()
+        return
+    end
+
+    if self.weapon == IT_AXE then
+        if self.walkframe == 6 then
+            self.walkframe = 0
+        end
+        self.frame = axrun1 + self.walkframe
+    else
+        if self.walkframe == 6 then
+            self.walkframe = 0
+        end
+        self.frame = self.frame + self.walkframe
+    end
+
+    self.walkframe = self.walkframe + 1
+end)
+
+function muzzleflash()
+    WriteByte (MSG_MULTICAST, SVC_MUZZLEFLASH)
+    WriteEntity (MSG_MULTICAST, self)
+    multicast (self.origin, MULTICAST_PVS)
+end
+
+player_shot6 = ffunc(shotatt6, player_run,   function() self.weaponframe = 6 end)
+player_shot5 = ffunc(shotatt5, player_shot6, function() self.weaponframe = 5 end)
+player_shot4 = ffunc(shotatt4, player_shot5, function() self.weaponframe = 4 end)
+player_shot3 = ffunc(shotatt3, player_shot4, function() self.weaponframe = 3 end)
+player_shot2 = ffunc(shotatt2, player_shot3, function() self.weaponframe = 2 end)
+player_shot1 = ffunc(shotatt1, player_shot2, function() self.weaponframe = 1 muzzleflash() end)
 --[[
-void()  player_run =[   $rockrun1,      player_run      ]
-{
-  self.weaponframe=0;
-  if (!self.velocity_x && !self.velocity_y)
-  {
-    self.walkframe=0;
-    player_stand1();
-    return;
-  }
-
-  if (self.weapon == IT_AXE)
-  {
-    if (self.walkframe == 6)
-      self.walkframe = 0;
-    self.frame = $axrun1 + self.walkframe;
-  }
-  else
-  {
-    if (self.walkframe == 6)
-      self.walkframe = 0;
-    self.frame = self.frame + self.walkframe;
-  }
-  self.walkframe = self.walkframe + 1;
-};
-
-void()muzzleflash =
-{
-  WriteByte (MSG_MULTICAST, SVC_MUZZLEFLASH);
-  WriteEntity (MSG_MULTICAST, self);
-  multicast (self.origin, MULTICAST_PVS);
-};
-
-
-void()  player_shot1 =  [$shotatt1, player_shot2        ] {self.weaponframe=1;muzzleflash();};
-void()  player_shot2 =  [$shotatt2, player_shot3        ] {self.weaponframe=2;};
-void()  player_shot3 =  [$shotatt3, player_shot4        ] {self.weaponframe=3;};
-void()  player_shot4 =  [$shotatt4, player_shot5        ] {self.weaponframe=4;};
-void()  player_shot5 =  [$shotatt5, player_shot6        ] {self.weaponframe=5;};
-void()  player_shot6 =  [$shotatt6, player_run  ] {self.weaponframe=6;};
 
 void()  player_axe1 =   [$axatt1, player_axe2   ] {self.weaponframe=1;};
 void()  player_axe2 =   [$axatt2, player_axe3   ] {self.weaponframe=2;};

@@ -164,7 +164,6 @@ function spawn_touchblood(damage)
 end
 
 --[[
-/*
 ==============================================================================
 
 MULTI-DAMAGE
@@ -172,163 +171,155 @@ MULTI-DAMAGE
 Collects multiple small damages into a single damage
 
 ==============================================================================
-*/
+]]
 
-entity  multi_ent;
-float   multi_damage;
+local multi_ent
+local multi_damage
 
-vector  blood_org;
-float   blood_count;
+local blood_org
+local blood_count
 
-vector  puff_org;
-float   puff_count;
+local puff_org
+local puff_count
 
-void() ClearMultiDamage =
-{
-    multi_ent = world;
-    multi_damage = 0;
-    blood_count = 0;
-    puff_count = 0;
-};
+function ClearMultiDamage()
+    multi_ent = world
+    multi_damage = 0
+    blood_count = 0
+    puff_count = 0
+end
 
-void() ApplyMultiDamage =
-{
-    if (!multi_ent)
-        return;
-    T_Damage (multi_ent, self, self, multi_damage);
-};
+function ApplyMultiDamage()
+    if not multi_ent then
+        return
+    end
+    T_Damage (multi_ent, self, self, multi_damage)
+end
 
-void(entity hit, float damage) AddMultiDamage =
-{
-    if (!hit)
-        return;
+function AddMultiDamage(hit, damage)
+    if not hit then
+        return
+    end
 
-    if (hit != multi_ent)
-    {
-        ApplyMultiDamage ();
-        multi_damage = damage;
-        multi_ent = hit;
-    }
+    if hit ~= multi_ent then
+        ApplyMultiDamage ()
+        multi_damage = damage
+        multi_ent = hit
     else
-        multi_damage = multi_damage + damage;
-};
+        multi_damage = multi_damage + damage
+    end
+end
 
-void() Multi_Finish =
-{
-    if (puff_count)
-    {
-        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-        WriteByte (MSG_MULTICAST, TE_GUNSHOT);
-        WriteByte (MSG_MULTICAST, puff_count);
-        WriteCoord (MSG_MULTICAST, puff_org_x);
-        WriteCoord (MSG_MULTICAST, puff_org_y);
-        WriteCoord (MSG_MULTICAST, puff_org_z);
-        multicast (puff_org, MULTICAST_PVS);
-    }
+function Multi_Finish()
+    if puff_count > 0 then
+        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+        WriteByte (MSG_MULTICAST, TE_GUNSHOT)
+        WriteByte (MSG_MULTICAST, puff_count)
+        WriteCoord (MSG_MULTICAST, puff_org.x)
+        WriteCoord (MSG_MULTICAST, puff_org.y)
+        WriteCoord (MSG_MULTICAST, puff_org.z)
+        multicast (puff_org, MULTICAST_PVS)
+    end
 
-    if (blood_count)
-    {
-        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-        WriteByte (MSG_MULTICAST, TE_BLOOD);
-        WriteByte (MSG_MULTICAST, blood_count);
-        WriteCoord (MSG_MULTICAST, blood_org_x);
-        WriteCoord (MSG_MULTICAST, blood_org_y);
-        WriteCoord (MSG_MULTICAST, blood_org_z);
-        multicast (puff_org, MULTICAST_PVS);
-    }
-};
+    if blood_count > 0 then
+        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+        WriteByte (MSG_MULTICAST, TE_BLOOD)
+        WriteByte (MSG_MULTICAST, blood_count)
+        WriteCoord (MSG_MULTICAST, blood_org.x)
+        WriteCoord (MSG_MULTICAST, blood_org.y)
+        WriteCoord (MSG_MULTICAST, blood_org.z)
+        multicast (puff_org, MULTICAST_PVS)
+    end
+end
 
-/*
+--[[
 ==============================================================================
 BULLETS
 ==============================================================================
-*/
+]]
 
-/*
+--[[
 ================
 TraceAttack
 ================
-*/
-void(float damage, vector dir) TraceAttack =
-{
-    local   vector  vel, org;
+]]
+function TraceAttack(damage, dir)
+    local vel, org
 
-    vel = normalize(dir + v_up*crandom() + v_right*crandom());
-    vel = vel + 2*trace_plane_normal;
-    vel = vel * 200;
+    vel = normalize(dir + v_up*crandom() + v_right*crandom())
+    vel = vel + 2*trace_plane_normal
+    vel = vel * 200
 
-    org = trace_endpos - dir*4;
+    org = trace_endpos - dir*4
 
-    if (trace_ent.takedamage)
-    {
-        blood_count = blood_count + 1;
-        blood_org = org;
-        AddMultiDamage (trace_ent, damage);
-    }
+    if trace_ent.takedamage > 0 then
+        blood_count = blood_count + 1
+        blood_org = org
+        AddMultiDamage (trace_ent, damage)
     else
-    {
-        puff_count = puff_count + 1;
-    }
-};
+        puff_count = puff_count + 1
+    end
+end
 
-/*
+--[[
 ================
 FireBullets
 
 Used by shotgun, super shotgun, and enemy soldier firing
 Go to the trouble of combining multiple pellets into a single damage call.
 ================
-*/
-void(float shotcount, vector dir, vector spread) FireBullets =
-{
-    local   vector direction;
-    local   vector  src;
+]]
+function FireBullets(shotcount, dir, spread)
+    local direction
+    local src
 
-    makevectors(self.v_angle);
+    makevectors(self.v_angle)
 
-    src = self.origin + v_forward*10;
-    src_z = self.absmin_z + self.size_z * 0.7;
+    src = self.origin + v_forward*10
+    src.z = self.absmin.z + self.size.z * 0.7
 
-    ClearMultiDamage ();
+    ClearMultiDamage ()
 
-    traceline (src, src + dir*2048, FALSE, self);
-    puff_org = trace_endpos - dir*4;
+    traceline (src, src + dir*2048, FALSE, self)
+    puff_org = trace_endpos - dir*4
 
-    while (shotcount > 0)
-    {
-        direction = dir + crandom()*spread_x*v_right + crandom()*spread_y*v_up;
-        traceline (src, src + direction*2048, FALSE, self);
-        if (trace_fraction != 1.0)
-            TraceAttack (4, direction);
+    while shotcount > 0 do
+        direction = dir + crandom()*spread.x*v_right + crandom()*spread.y*v_up
+        traceline (src, src + direction*2048, FALSE, self)
+        if trace_fraction ~= 1.0 then
+            TraceAttack (4, direction)
+        end
 
-        shotcount = shotcount - 1;
-    }
-    ApplyMultiDamage ();
-    Multi_Finish ();
-};
+        shotcount = shotcount - 1
+    end
 
-/*
+    ApplyMultiDamage ()
+    Multi_Finish ()
+end
+
+--[[
 ================
 W_FireShotgun
 ================
-*/
-void() W_FireShotgun =
-{
-    local vector dir;
+]]
+function W_FireShotgun()
+    local dir
 
-    sound (self, CHAN_WEAPON, "weapons/guncock.wav", 1, ATTN_NORM);
+    sound (self, CHAN_WEAPON, "weapons/guncock.wav", 1, ATTN_NORM)
 
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_SMALLKICK);
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_SMALLKICK)
 
-    if (deathmatch != 4 )
-        self.currentammo = self.ammo_shells = self.ammo_shells - 1;
+    if deathmatch ~= 4 then
+        self.ammo_shells = self.ammo_shells - 1
+        self.currentammo = self.ammo_shells
+    end
 
-    dir = aim (self, 100000);
-    FireBullets (6, dir, '0.04 0.04 0');
-};
+    dir = aim (self, 100000)
+    FireBullets (6, dir, vec3(0.04,0.04,0))
+end
 
-
+--[[
 /*
 ================
 W_FireSuperShotgun

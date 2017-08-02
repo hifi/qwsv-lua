@@ -843,6 +843,15 @@ void PR_ExecuteProgram(func_t fnum)
     PUSH_GFLOAT(trace_inopen);
     PUSH_GFLOAT(trace_inwater);
     PUSH_GREF(msg_entity);
+    PUSH_GFLOAT(parm1);
+    PUSH_GFLOAT(parm2);
+    PUSH_GFLOAT(parm3);
+    PUSH_GFLOAT(parm4);
+    PUSH_GFLOAT(parm5);
+    PUSH_GFLOAT(parm6);
+    PUSH_GFLOAT(parm7);
+    PUSH_GFLOAT(parm8);
+    PUSH_GFLOAT(parm9);
 
     lua_call(L, 0, 0);
 

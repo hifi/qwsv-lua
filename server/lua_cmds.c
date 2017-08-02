@@ -1293,10 +1293,11 @@ sizebuf_t *WriteDest(lua_State *L)
 static client_t *Write_GetClient(lua_State *L)
 {
     int entnum;
-    edict_t *ent;
+    edict_t **ent;
 
-    ent = PROG_TO_EDICT(pr_global_struct->msg_entity);
-    entnum = NUM_FOR_EDICT(ent);
+    lua_getglobal(L, "msg_entity");
+    ent = luaL_checkudata(L, -1, "edict_t");
+    entnum = NUM_FOR_EDICT(*ent);
     if (entnum < 1 || entnum > MAX_CLIENTS)
         luaL_error(L, "WriteDest: not a client");
     return &svs.clients[entnum - 1];

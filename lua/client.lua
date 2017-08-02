@@ -37,8 +37,8 @@ local modelindex_eyes, modelindex_player
 
 local nextmap
 
-local intermission_running
-local intermission_exittime
+local intermission_running = 0
+local intermission_exittime = 0
 
 --[[
 QUAKED info_intermission (1 0.5 0.5) (-16 -16 -16) (16 16 16)
@@ -488,6 +488,7 @@ function PutClientInServer()
 
     -- added for lua compat
     self.walkframe = 0
+    self.jump_flag = 0
 
     DecodeLevelParms ()
     
@@ -685,23 +686,26 @@ void() NextLevel =
         o.nextthink = time + 0.1;
     }
 };
+--]]
 
-/*
+--[[
 ============
 CheckRules
 
 Exit deathmatch games upon conditions
 ============
-*/
-void() CheckRules =
-{       
-    if (timelimit && time >= timelimit)
-        NextLevel ();
+]]
+function CheckRules()
+    if timelimit > 0 and time >= timelimit then
+        NextLevel ()
+    end
     
-    if (fraglimit && self.frags >= fraglimit)
-        NextLevel ();
-};
+    if fraglimit > 0 and self.frags >= fraglimit then
+        NextLevel ()
+    end
+end
 
+--[[
 //============================================================================
 
 void() PlayerDeathThink =
@@ -737,44 +741,43 @@ void() PlayerDeathThink =
     self.button2 = 0;
     respawn();
 };
+--]]
 
-
-void() PlayerJump =
-{
-    local vector start, end;
-
-    if (self.flags & FL_WATERJUMP)
-        return;
+function PlayerJump()
+    if (self.flags & FL_WATERJUMP) > 0 then
+        return
+    end
     
-    if (self.waterlevel >= 2)
-    {
-// play swiming sound
-        if (self.swim_flag < time)
-        {
-            self.swim_flag = time + 1;
-            if (random() < 0.5)
-                sound (self, CHAN_BODY, "misc/water1.wav", 1, ATTN_NORM);
+    if self.waterlevel >= 2 then
+        -- play swiming sound
+        if self.swim_flag < time then
+            self.swim_flag = time + 1
+            if (random() < 0.5) then
+                sound (self, CHAN_BODY, "misc/water1.wav", 1, ATTN_NORM)
             else
-                sound (self, CHAN_BODY, "misc/water2.wav", 1, ATTN_NORM);
-        }
+                sound (self, CHAN_BODY, "misc/water2.wav", 1, ATTN_NORM)
+            end
+        end
 
-        return;
-    }
+        return
+    end
 
-    if (!(self.flags & FL_ONGROUND))
-        return;
+    if (self.flags & FL_ONGROUND) == 0 then
+        return
+    end
 
-    if ( !(self.flags & FL_JUMPRELEASED) )
-        return;         // don't pogo stick
+    if (self.flags & FL_JUMPRELEASED) == 0 then
+        return -- don't pogo stick
+    end
 
-    self.flags = self.flags - (self.flags & FL_JUMPRELEASED);       
-    self.button2 = 0;
+    self.flags = self.flags - (self.flags & FL_JUMPRELEASED)
+    self.button2 = 0
 
-// player jumping sound
-    sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
-};
+    -- player jumping sound
+    sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM)
+end
 
-
+--[[
 /*
 ===========
 WaterMove
@@ -889,66 +892,66 @@ void() CheckWaterJump =
         }
     }
 };
+--]]
 
-/*
+--[[
 ================
 PlayerPreThink
 
 Called every frame before physics are run
 ================
-*/
-void() PlayerPreThink =
-{
-    local   float   mspeed, aspeed;
-    local   float   r;
+]]
+function PlayerPreThink()
+    local mspeed, aspeed
+    local r
 
-    if (intermission_running)
-    {
-        IntermissionThink ();   // otherwise a button could be missed between
-        return;                                 // the think tics
-    }
+    if intermission_running > 0 then
+        IntermissionThink() -- otherwise a button could be missed between
+        return -- the think tics
+    end
 
-    if (self.view_ofs == '0 0 0')
-        return;         // intermission or finale
+    if self.view_ofs == vec3(0,0,0) then
+        return -- intermission or finale
+    end
 
-    makevectors (self.v_angle);             // is this still used
+    makevectors (self.v_angle) -- is this still used
 
-        self.deathtype = "";
+    self.deathtype = ""
 
-    CheckRules ();
-    WaterMove ();
-/*
+    CheckRules ()
+    WaterMove ()
+    --[[
     if (self.waterlevel == 2)
         CheckWaterJump ();
-*/
+    ]]
 
-    if (self.deadflag >= DEAD_DEAD)
-    {
-        PlayerDeathThink ();
-        return;
-    }
+    if self.deadflag >= DEAD_DEAD then
+        PlayerDeathThink ()
+        return
+    end
     
-    if (self.deadflag == DEAD_DYING)
-        return; // dying, so do nothing
+    if self.deadflag == DEAD_DYING then
+        return -- dying, so do nothing
+    end
 
-    if (self.button2)
-    {
-        PlayerJump ();
-    }
+    if self.button2 > 0 then
+        PlayerJump ()
     else
-        self.flags = self.flags | FL_JUMPRELEASED;
+        self.flags = self.flags | FL_JUMPRELEASED
+    end
 
-// teleporters can force a non-moving pause time        
-    if (time < self.pausetime)
-        self.velocity = '0 0 0';
+    -- teleporters can force a non-moving pause time        
+    if time < self.pausetime then
+        self.velocity = vec3(0,0,0)
+    end
 
-    if(time > self.attack_finished && self.currentammo == 0 && self.weapon != IT_AXE)
-    {
-        self.weapon = W_BestWeapon ();
-        W_SetCurrentAmmo ();
-    }
-};
-    
+    if time > self.attack_finished and self.currentammo == 0 and self.weapon ~= IT_AXE then
+        self.weapon = W_BestWeapon ()
+        W_SetCurrentAmmo ()
+    end
+end
+
+--[[
 /*
 ================
 CheckPowerups
@@ -1126,48 +1129,46 @@ void() CheckPowerups =
 
 };
 
+--]]
 
-/*
+--[[
 ================
 PlayerPostThink
 
 Called every frame after physics are run
 ================
-*/
-void() PlayerPostThink =
-{
-    local   float   mspeed, aspeed;
-    local   float   r;
+]]
+function PlayerPostThink()
+    local mspeed, aspeed
+    local r
 
-//dprint ("post think\n");
-    if (self.view_ofs == '0 0 0')
-        return;         // intermission or finale
-    if (self.deadflag)
-        return;
+    --dprint ("post think\n");
+    if self.view_ofs == vec3(0,0,0) then
+        return -- intermission or finale
+    end
+    if self.deadflag > 0 then
+        return
+    end
 
-// check to see if player landed and play landing sound 
-    if ((self.jump_flag < -300) && (self.flags & FL_ONGROUND) )
-    {
-        if (self.watertype == CONTENT_WATER)
-            sound (self, CHAN_BODY, "player/h2ojump.wav", 1, ATTN_NORM);
-        else if (self.jump_flag < -650)
-        {
-            self.deathtype = "falling";
-            T_Damage (self, world, world, 5); 
-            sound (self, CHAN_VOICE, "player/land2.wav", 1, ATTN_NORM);
-        }
+    -- check to see if player landed and play landing sound 
+    if (self.jump_flag < -300) and (self.flags & FL_ONGROUND) > 0 then
+        if self.watertype == CONTENT_WATER then
+            sound (self, CHAN_BODY, "player/h2ojump.wav", 1, ATTN_NORM)
+        elseif self.jump_flag < -650 then
+            self.deathtype = "falling"
+            T_Damage (self, world, world, 5) 
+            sound (self, CHAN_VOICE, "player/land2.wav", 1, ATTN_NORM)
         else
-            sound (self, CHAN_VOICE, "player/land.wav", 1, ATTN_NORM);
-    }
+            sound (self, CHAN_VOICE, "player/land.wav", 1, ATTN_NORM)
+        end
+    end
 
-    self.jump_flag = self.velocity_z;
+    self.jump_flag = self.velocity.z
 
-    CheckPowerups ();
+    CheckPowerups ()
 
-    W_WeaponFrame ();
-
-};
---]]
+    W_WeaponFrame ()
+end
 
 --[[
 ===========
