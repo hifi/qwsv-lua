@@ -99,13 +99,14 @@ $frame rockatt1 rockatt2 rockatt3 rockatt4 rockatt5 rockatt6
 
 $frame shotatt1 shotatt2 shotatt3 shotatt4 shotatt5 shotatt6
 
-$frame axatt1 axatt2 axatt3 axatt4 axatt5 axatt6
+--]]
+axatt1,axatt2,axatt3,axatt4,axatt5,axatt6 = 0,1,2,3,4,5
 
-$frame axattb1 axattb2 axattb3 axattb4 axattb5 axattb6
+axattb1,axattb2,axattb3,axattb4,axattb5,axattb6 = 0,1,2,3,4,5
 
-$frame axattc1 axattc2 axattc3 axattc4 axattc5 axattc6
+axattc1,axattc2,axattc3,axattc4,axattc5,axattc6 = 0,1,2,3,4,5
 
-$frame axattd1 axattd2 axattd3 axattd4 axattd5 axattd6
+axattd1,axattd2,axattd3,axattd4,axattd5,axattd6 = 0,1,2,3,4,5
 
 
 --[[
@@ -173,29 +174,29 @@ player_shot4 = ffunc(shotatt4, player_shot5, function() self.weaponframe = 4 end
 player_shot3 = ffunc(shotatt3, player_shot4, function() self.weaponframe = 3 end)
 player_shot2 = ffunc(shotatt2, player_shot3, function() self.weaponframe = 2 end)
 player_shot1 = ffunc(shotatt1, player_shot2, function() self.weaponframe = 1 muzzleflash() end)
+
+player_axe4 = ffunc(axatt4, player_run,  function() self.weaponframe=4 end)
+player_axe3 = ffunc(axatt3, player_axe4, function() self.weaponframe=3 W_FireAxe() end)
+player_axe2 = ffunc(axatt2, player_axe3, function() self.weaponframe=2 end)
+player_axe1 = ffunc(axatt1, player_axe2, function() self.weaponframe=1 end)
+
+player_axeb4 = ffunc(axattb4, player_run,   function() self.weaponframe = 8 end)
+player_axeb3 = ffunc(axattb3, player_axeb4, function() self.weaponframe = 7 W_FireAxe() end)
+player_axeb2 = ffunc(axattb2, player_axeb3, function() self.weaponframe = 6 end)
+player_axeb1 = ffunc(axattb1, player_axeb2, function() self.weaponframe = 5 end)
+
+player_axec4 = ffunc(axattc4, player_run,   function() self.weaponframe = 4 end)
+player_axec3 = ffunc(axattc3, player_axec4, function() self.weaponframe = 3 W_FireAxe() end)
+player_axec2 = ffunc(axattc2, player_axec3, function() self.weaponframe = 2 end)
+player_axec1 = ffunc(axattc1, player_axec2, function() self.weaponframe = 1 end)
+
+player_axed4 = ffunc(axattd4, player_run,   function() self.weaponframe = 8 end)
+player_axed3 = ffunc(axattd3, player_axed4, function() self.weaponframe = 7 W_FireAxe() end)
+player_axed2 = ffunc(axattd2, player_axed3, function() self.weaponframe = 6 end)
+player_axed1 = ffunc(axattd1, player_axed2, function() self.weaponframe = 5 end)
+
+
 --[[
-
-void()  player_axe1 =   [$axatt1, player_axe2   ] {self.weaponframe=1;};
-void()  player_axe2 =   [$axatt2, player_axe3   ] {self.weaponframe=2;};
-void()  player_axe3 =   [$axatt3, player_axe4   ] {self.weaponframe=3;W_FireAxe();};
-void()  player_axe4 =   [$axatt4, player_run    ] {self.weaponframe=4;};
-
-void()  player_axeb1 =  [$axattb1, player_axeb2 ] {self.weaponframe=5;};
-void()  player_axeb2 =  [$axattb2, player_axeb3 ] {self.weaponframe=6;};
-void()  player_axeb3 =  [$axattb3, player_axeb4 ] {self.weaponframe=7;W_FireAxe();};
-void()  player_axeb4 =  [$axattb4, player_run   ] {self.weaponframe=8;};
-
-void()  player_axec1 =  [$axattc1, player_axec2 ] {self.weaponframe=1;};
-void()  player_axec2 =  [$axattc2, player_axec3 ] {self.weaponframe=2;};
-void()  player_axec3 =  [$axattc3, player_axec4 ] {self.weaponframe=3;W_FireAxe();};
-void()  player_axec4 =  [$axattc4, player_run   ] {self.weaponframe=4;};
-
-void()  player_axed1 =  [$axattd1, player_axed2 ] {self.weaponframe=5;};
-void()  player_axed2 =  [$axattd2, player_axed3 ] {self.weaponframe=6;};
-void()  player_axed3 =  [$axattd3, player_axed4 ] {self.weaponframe=7;W_FireAxe();};
-void()  player_axed4 =  [$axattd4, player_run   ] {self.weaponframe=8;};
-
-
 //============================================================================
 
 void() player_nail1   =[$nailatt1, player_nail2  ]

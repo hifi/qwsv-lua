@@ -531,14 +531,14 @@ int PF_traceline(lua_State *L)
         pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
 
     // XXX: these really need to be return values
-    PUSH_GREF(trace_allsolid);
-    PUSH_GREF(trace_startsolid);
-    PUSH_GREF(trace_fraction);
-    PUSH_GREF(trace_inwater);
-    PUSH_GREF(trace_inopen);
+    PUSH_GFLOAT(trace_allsolid);
+    PUSH_GFLOAT(trace_startsolid);
+    PUSH_GFLOAT(trace_fraction);
+    PUSH_GFLOAT(trace_inwater);
+    PUSH_GFLOAT(trace_inopen);
     PUSH_GVEC3(trace_endpos);
     PUSH_GVEC3(trace_plane_normal);
-    PUSH_GREF(trace_plane_dist);
+    PUSH_GFLOAT(trace_plane_dist);
     PUSH_GREF(trace_ent);
 
     return 0;

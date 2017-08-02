@@ -46,51 +46,47 @@ function crandom()
 end
 
 --[[
-/*
 ================
 W_FireAxe
 ================
-*/
-void() W_FireAxe =
-{
-    local   vector  source;
-    local   vector  org;
+]]
+function W_FireAxe()
+    local source
+    local org
 
-    makevectors (self.v_angle);
-    source = self.origin + '0 0 16';
-    traceline (source, source + v_forward*64, FALSE, self);
-    if (trace_fraction == 1.0)
-        return;
+    makevectors (self.v_angle)
+    source = self.origin + vec3(0,0,16)
+    trace_fraction = 1337
+    traceline (source, source + v_forward*64, FALSE, self)
+    if trace_fraction == 1.0 then
+        return
+    end
 
-    org = trace_endpos - v_forward*4;
+    org = trace_endpos - v_forward*4
 
-    if (trace_ent.takedamage)
-    {
-        trace_ent.axhitme = 1;
-        SpawnBlood (org, 20);
-        if (deathmatch > 3)
-            T_Damage (trace_ent, self, self, 75);
+    if trace_ent.takedamage > 0 then
+        trace_ent.axhitme = 1
+        SpawnBlood (org, 20)
+        if deathmatch > 3 then
+            T_Damage (trace_ent, self, self, 75)
         else
-            T_Damage (trace_ent, self, self, 20);
-    }
+            T_Damage (trace_ent, self, self, 20)
+        end
     else
-    {       // hit wall
-        sound (self, CHAN_WEAPON, "player/axhit2.wav", 1, ATTN_NORM);
+        -- hit wall
+        sound (self, CHAN_WEAPON, "player/axhit2.wav", 1, ATTN_NORM)
 
-        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-        WriteByte (MSG_MULTICAST, TE_GUNSHOT);
-        WriteByte (MSG_MULTICAST, 3);
-        WriteCoord (MSG_MULTICAST, org_x);
-        WriteCoord (MSG_MULTICAST, org_y);
-        WriteCoord (MSG_MULTICAST, org_z);
-        multicast (org, MULTICAST_PVS);
-    }
-};
+        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+        WriteByte (MSG_MULTICAST, TE_GUNSHOT)
+        WriteByte (MSG_MULTICAST, 3)
+        WriteCoord (MSG_MULTICAST, org.x)
+        WriteCoord (MSG_MULTICAST, org.y)
+        WriteCoord (MSG_MULTICAST, org.z)
+        multicast (org, MULTICAST_PVS)
+    end
+end
 
-
-//============================================================================
-
---]]
+--============================================================================
 
 function wall_velocity()
     local vel
