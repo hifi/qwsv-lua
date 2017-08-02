@@ -25,6 +25,3 @@ require "triggers"
 require "plats"
 require "misc"
 require "server"
-
--- client.lua
-function WaterMove() end

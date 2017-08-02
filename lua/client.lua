@@ -486,11 +486,13 @@ function PutClientInServer()
     self.effects = 0
     self.invincible_time = 0
 
-    -- added for lua compat
+    -- fields from original defs that need a default value
     self.walkframe = 0
     self.jump_flag = 0
     self.super_time = 0
     self.super_sound = 0
+    self.dmgtime = 0
+    self.swim_flag = 0
 
     DecodeLevelParms ()
     
@@ -780,121 +782,82 @@ function PlayerJump()
 end
 
 --[[
-/*
 ===========
 WaterMove
 
 ============
-*/
-.float  dmgtime;
+]]
+function WaterMove()
+    if self.movetype == MOVETYPE_NOCLIP then
+        return
+    end
+    if self.health < 0 then
+        return
+    end
 
-void() WaterMove =
-{
-//dprint (ftos(self.waterlevel));
-    if (self.movetype == MOVETYPE_NOCLIP)
-        return;
-    if (self.health < 0)
-        return;
-
-    if (self.waterlevel != 3)
-    {
-        if (self.air_finished < time)
-            sound (self, CHAN_VOICE, "player/gasp2.wav", 1, ATTN_NORM);
-        else if (self.air_finished < time + 9)
-            sound (self, CHAN_VOICE, "player/gasp1.wav", 1, ATTN_NORM);
-        self.air_finished = time + 12;
-        self.dmg = 2;
-    }
-    else if (self.air_finished < time)
-    {       // drown!
-        if (self.pain_finished < time)
-        {
-            self.dmg = self.dmg + 2;
-            if (self.dmg > 15)
-                self.dmg = 10;
-            T_Damage (self, world, world, self.dmg);
-            self.pain_finished = time + 1;
-        }
-    }
+    if self.waterlevel ~= 3 then
+        if self.air_finished < time then
+            sound (self, CHAN_VOICE, "player/gasp2.wav", 1, ATTN_NORM)
+        elseif self.air_finished < time + 9 then
+            sound (self, CHAN_VOICE, "player/gasp1.wav", 1, ATTN_NORM)
+        end
+        self.air_finished = time + 12
+        self.dmg = 2
+    elseif self.air_finished < time then
+        -- drown!
+        if self.pain_finished < time then
+            self.dmg = self.dmg + 2
+            if self.dmg > 15 then
+                self.dmg = 10
+            end
+            T_Damage (self, world, world, self.dmg)
+            self.pain_finished = time + 1
+        end
+    end
     
-    if (!self.waterlevel)
-    {
-        if (self.flags & FL_INWATER)
-        {       
-            // play leave water sound
-            sound (self, CHAN_BODY, "misc/outwater.wav", 1, ATTN_NORM);
-            self.flags = self.flags - FL_INWATER;
-        }
-        return;
-    }
+    if self.waterlevel == 0 then
+        if (self.flags & FL_INWATER) > 0 then
+            -- play leave water sound
+            sound (self, CHAN_BODY, "misc/outwater.wav", 1, ATTN_NORM)
+            self.flags = self.flags - FL_INWATER
+        end
+        return
+    end
 
-    if (self.watertype == CONTENT_LAVA)
-    {       // do damage
-        if (self.dmgtime < time)
-        {
-            if (self.radsuit_finished > time)
-                self.dmgtime = time + 1;
+    if self.watertype == CONTENT_LAVA then
+        -- do damage
+        if self.dmgtime < time then
+            if self.radsuit_finished > time then
+                self.dmgtime = time + 1
             else
-                self.dmgtime = time + 0.2;
+                self.dmgtime = time + 0.2
+            end
 
-            T_Damage (self, world, world, 10*self.waterlevel);
-        }
-    }
-    else if (self.watertype == CONTENT_SLIME)
-    {       // do damage
-        if (self.dmgtime < time && self.radsuit_finished < time)
-        {
-            self.dmgtime = time + 1;
-            T_Damage (self, world, world, 4*self.waterlevel);
-        }
-    }
+            T_Damage (self, world, world, 10*self.waterlevel)
+        end
+    elseif self.watertype == CONTENT_SLIME then
+        -- do damage
+        if self.dmgtime < time and self.radsuit_finished < time then
+            self.dmgtime = time + 1
+            T_Damage (self, world, world, 4*self.waterlevel)
+        end
+    end
     
-    if ( !(self.flags & FL_INWATER) )
-    {       
+    if (self.flags & FL_INWATER) == 0 then
+        -- player enter water sound
 
-// player enter water sound
+        if self.watertype == CONTENT_LAVA then
+            sound (self, CHAN_BODY, "player/inlava.wav", 1, ATTN_NORM)
+        elseif self.watertype == CONTENT_WATER then
+            sound (self, CHAN_BODY, "player/inh2o.wav", 1, ATTN_NORM)
+        elseif self.watertype == CONTENT_SLIME then
+            sound (self, CHAN_BODY, "player/slimbrn2.wav", 1, ATTN_NORM)
+        end
 
-        if (self.watertype == CONTENT_LAVA)
-            sound (self, CHAN_BODY, "player/inlava.wav", 1, ATTN_NORM);
-        if (self.watertype == CONTENT_WATER)
-            sound (self, CHAN_BODY, "player/inh2o.wav", 1, ATTN_NORM);
-        if (self.watertype == CONTENT_SLIME)
-            sound (self, CHAN_BODY, "player/slimbrn2.wav", 1, ATTN_NORM);
-
-        self.flags = self.flags + FL_INWATER;
-        self.dmgtime = 0;
-    }       
-};
-
-void() CheckWaterJump =
-{
-    local vector start, end;
-
-// check for a jump-out-of-water
-    makevectors (self.angles);
-    start = self.origin;
-    start_z = start_z + 8; 
-    v_forward_z = 0;
-    normalize(v_forward);
-    end = start + v_forward*24;
-    traceline (start, end, TRUE, self);
-    if (trace_fraction < 1)
-    {       // solid at waist
-        start_z = start_z + self.maxs_z - 8;
-        end = start + v_forward*24;
-        self.movedir = trace_plane_normal * -50;
-        traceline (start, end, TRUE, self);
-        if (trace_fraction == 1)
-        {       // open at eye level
-            self.flags = self.flags | FL_WATERJUMP;
-            self.velocity_z = 225;
-            self.flags = self.flags - (self.flags & FL_JUMPRELEASED);
-            self.teleport_time = time + 2;  // safety net
-            return;
-        }
-    }
-};
---]]
+        self.flags = self.flags + FL_INWATER
+        self.dmgtime = 0
+    end
+end
 
 --[[
 ================
@@ -922,10 +885,6 @@ function PlayerPreThink()
 
     CheckRules ()
     WaterMove ()
-    --[[
-    if (self.waterlevel == 2)
-        CheckWaterJump ();
-    ]]
 
     if self.deadflag >= DEAD_DEAD then
         PlayerDeathThink ()
@@ -1181,26 +1140,24 @@ function ClientDisconnect()
 end
 
 --[[
-/*
 ===========
 ClientObituary
 
 called when a player dies
 ============
-*/
-
-void(entity targ, entity attacker) ClientObituary =
-{
-    local   float rnum;
-    local   string deathstring, deathstring2;
-    local   string s;
-    local   string  attackerteam, targteam;
+]]
+function ClientObituary(targ, attacker)
+    local rnum;
+    local deathstring, deathstring2;
+    local s;
+    local attackerteam, targteam;
 
     rnum = random();
-    //ZOID 12-13-96: self.team doesn't work in QW.  Use keys
+    --ZOID 12-13-96: self.team doesn't work in QW.  Use keys
     attackerteam = infokey(attacker, "team");
     targteam = infokey(targ, "team");
 
+    --[[
     if (targ.classname == "player")
     {
 
@@ -1481,5 +1438,5 @@ void(entity targ, entity attacker) ClientObituary =
             bprint (PRINT_MEDIUM," died\n");
         }
     }
-};
-]]
+    --]]
+end
