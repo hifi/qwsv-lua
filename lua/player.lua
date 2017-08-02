@@ -46,16 +46,17 @@ $skin skin
 $frame axrun1 axrun2 axrun3 axrun4 axrun5 axrun6
 
 $frame rockrun1 rockrun2 rockrun3 rockrun4 rockrun5 rockrun6
+--]]
+--
+-- standing
+--
+stand1,stand2,stand3,stand4,stand5 = 0,1,2,3,4
 
-//
-// standing
-//
-$frame stand1 stand2 stand3 stand4 stand5
-
-$frame axstnd1 axstnd2 axstnd3 axstnd4 axstnd5 axstnd6
-$frame axstnd7 axstnd8 axstnd9 axstnd10 axstnd11 axstnd12
+axstnd1,axstnd2,axstnd3,axstnd4,axstnd5,axstnd6 = 0,1,2,3,4,5
+axstnd7,axstnd8,axstnd9,axstnd10,axstnd11,axstnd12 = 0,1,2,3,4,5
 
 
+--[[
 //
 // pain
 //
@@ -106,43 +107,35 @@ $frame axattc1 axattc2 axattc3 axattc4 axattc5 axattc6
 $frame axattd1 axattd2 axattd3 axattd4 axattd5 axattd6
 
 
-/*
+--[[
 ==============================================================================
 PLAYER
 ==============================================================================
-*/
+]]
 
-void() player_run;
 
-void()  player_stand1 =[        $axstnd1,       player_stand1   ]
-{
-  self.weaponframe=0;
-  if (self.velocity_x || self.velocity_y)
-  {
-    self.walkframe=0;
-    player_run();
-    return;
-  }
+player_stand1 = ffunc(axstnd1, player_stand1, function()
+    self.weaponframe = 0
 
-  if (self.weapon == IT_AXE)
-  {
-    if (self.walkframe >= 12)
-      self.walkframe = 0;
-    self.frame = $axstnd1 + self.walkframe;
-  }
-  else
-  {
-    if (self.walkframe >= 5)
-      self.walkframe = 0;
-    self.frame = $stand1 + self.walkframe;
-  }
-  self.walkframe = self.walkframe + 1;
-};
-]]--
+    if self.velocity.x > 0 or self.velocity.y > 0 then
+        self.walkframe = 0
+        player_run()
+        return
+    end
 
--- stub method
-function player_run()
-end
+    if self.weapon == IT_AXE then
+        if self.walkframe >= 12 then
+            self.walkframe = 0
+        end
+        self.frame = axstnd1 + self.walkframe
+    else
+        if self.walkframe >= 5 then
+            self.walkframe = 0
+        end
+        self.frame = stand1 + self.walkframe
+    end
+    self.walkframe = self.walkframe + 1
+end)
 
 --[[
 void()  player_run =[   $rockrun1,      player_run      ]

@@ -847,6 +847,16 @@ void PR_ExecuteProgram(func_t fnum)
     lua_call(L, 0, 0);
 
     GET_GFLOAT(force_retouch);
+
+    GET_GFLOAT(parm1);
+    GET_GFLOAT(parm2);
+    GET_GFLOAT(parm3);
+    GET_GFLOAT(parm4);
+    GET_GFLOAT(parm5);
+    GET_GFLOAT(parm6);
+    GET_GFLOAT(parm7);
+    GET_GFLOAT(parm8);
+    GET_GFLOAT(parm9);
 }
 
 edict_t *EDICT_NUM(int n)

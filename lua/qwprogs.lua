@@ -1,9 +1,22 @@
+-- frame function wrapper
+function ffunc(frame, think, callback)
+    return function()
+        self.frame = frame
+        self.nextthink = time + 0.1
+        self.think = think
+        if callback then
+            callback()
+        end
+    end
+end
+
 require "defs"
 require "subs"
 require "combat"
 require "items"
 require "weapons"
 require "world"
+require "client"
 require "spectate"
 require "player"
 require "doors"
@@ -14,8 +27,8 @@ require "misc"
 require "server"
 
 -- client.qc
-function ClientObituary(a,b)
-end
+function player_run() end
+function ClientObituary(a,b) end
 
 function PlayerPreThink()
     -- dprint("PlayerPreThink()\n")
@@ -29,18 +42,11 @@ function ClientConnect()
     dprint ("ClientConnect()\n")
 end
 
-function ClientKill()
-    dprint ("ClientKill()\n")
-end
-
 function ClientDisconnect()
     dprint ("ClientDisconnect()\n");
 end
 
-function info_player_start()
-    dprint("info_player_start()\n")
-end
-
+--[[
 function PutClientInServer()
     dprint("PutClientInServer()\n");
 
@@ -65,11 +71,4 @@ function PutClientInServer()
     self.view_ofs = vec3(0, 0, 22)
     self.velocity = vec3(0, 0, 0)
 end
-
-function SetNewParms()
-    dprint("SetNewParms()\n");
-end
-
-function SetChangeParms()
-    dprint("SetChangeParms()\n");
-end
+--]]
