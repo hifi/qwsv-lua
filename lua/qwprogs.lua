@@ -13,10 +13,8 @@ require "plats"
 require "misc"
 require "server"
 
--- weapons.qc
-function W_Precache()
-end
-function SpawnBlood(org, damage)
+-- client.qc
+function ClientObituary(a,b)
 end
 
 function PlayerPreThink()
@@ -59,6 +57,7 @@ function PutClientInServer()
     self.origin = spawn_spot.origin + vec3(0, 0, 1)
     self.angles = spawn_spot.angles
     self.fixangle = TRUE
+    self.th_die = function() end
 
     setmodel (self, "progs/player.mdl")
     setsize (self, VEC_HULL_MIN, VEC_HULL_MAX)

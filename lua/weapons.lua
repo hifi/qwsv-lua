@@ -25,29 +25,27 @@
 
 ]]--
 
+-- called by worldspawn
+function W_Precache()
+    precache_sound ("weapons/r_exp3.wav")   -- new rocket explosion
+    precache_sound ("weapons/rocket1i.wav") -- spike gun
+    precache_sound ("weapons/sgun1.wav")
+    precache_sound ("weapons/guncock.wav")  -- player shotgun
+    precache_sound ("weapons/ric1.wav")     -- ricochet (used in c code)
+    precache_sound ("weapons/ric2.wav")     -- ricochet (used in c code)
+    precache_sound ("weapons/ric3.wav")     -- ricochet (used in c code)
+    precache_sound ("weapons/spike2.wav")   -- super spikes
+    precache_sound ("weapons/tink1.wav")    -- spikes tink (used in c code)
+    precache_sound ("weapons/grenade.wav")  -- grenade launcher
+    precache_sound ("weapons/bounce.wav")   -- grenade bounce
+    precache_sound ("weapons/shotgn2.wav")  -- super shotgun
+end
+
+function crandom()
+    return 2*(random() - 0.5)
+end
+
 --[[
-// called by worldspawn
-void() W_Precache =
-{
-    precache_sound ("weapons/r_exp3.wav");  // new rocket explosion
-    precache_sound ("weapons/rocket1i.wav");        // spike gun
-    precache_sound ("weapons/sgun1.wav");
-    precache_sound ("weapons/guncock.wav"); // player shotgun
-    precache_sound ("weapons/ric1.wav");    // ricochet (used in c code)
-    precache_sound ("weapons/ric2.wav");    // ricochet (used in c code)
-    precache_sound ("weapons/ric3.wav");    // ricochet (used in c code)
-    precache_sound ("weapons/spike2.wav");  // super spikes
-    precache_sound ("weapons/tink1.wav");   // spikes tink (used in c code)
-    precache_sound ("weapons/grenade.wav"); // grenade launcher
-    precache_sound ("weapons/bounce.wav");          // grenade bounce
-    precache_sound ("weapons/shotgn2.wav"); // super shotgun
-};
-
-float() crandom =
-{
-    return 2*(random() - 0.5);
-};
-
 /*
 ================
 W_FireAxe
@@ -92,20 +90,20 @@ void() W_FireAxe =
 
 //============================================================================
 
+--]]
 
-vector() wall_velocity =
-{
-    local vector    vel;
+function wall_velocity()
+    local vel
 
-    vel = normalize (self.velocity);
-    vel = normalize(vel + v_up*(random()- 0.5) + v_right*(random()- 0.5));
-    vel = vel + 2*trace_plane_normal;
-    vel = vel * 200;
+    vel = normalize (self.velocity)
+    vel = normalize(vel + v_up*(random()- 0.5) + v_right*(random()- 0.5))
+    vel = vel + 2*trace_plane_normal
+    vel = vel * 200
 
-    return vel;
-};
+    return vel
+end
 
-
+--[[
 /*
 ================
 SpawnMeatSpray
@@ -136,36 +134,36 @@ void(vector org, vector vel) SpawnMeatSpray =
     setsize (missile, '0 0 0', '0 0 0');
     setorigin (missile, org);
 };
+--]]
 
-/*
+--[[
 ================
 SpawnBlood
 ================
-*/
-void(vector org, float damage) SpawnBlood =
-{
-    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-    WriteByte (MSG_MULTICAST, TE_BLOOD);
-    WriteByte (MSG_MULTICAST, 1);
-    WriteCoord (MSG_MULTICAST, org_x);
-    WriteCoord (MSG_MULTICAST, org_y);
-    WriteCoord (MSG_MULTICAST, org_z);
-    multicast (org, MULTICAST_PVS);
-};
+]]--
+function SpawnBlood(org, damage)
+    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+    WriteByte (MSG_MULTICAST, TE_BLOOD)
+    WriteByte (MSG_MULTICAST, 1)
+    WriteCoord (MSG_MULTICAST, org.x)
+    WriteCoord (MSG_MULTICAST, org.y)
+    WriteCoord (MSG_MULTICAST, org.z)
+    multicast (org, MULTICAST_PVS)
+end
 
-/*
+--[[
 ================
 spawn_touchblood
 ================
-*/
-void(float damage) spawn_touchblood =
-{
-    local vector    vel;
+]]--
+function spawn_touchblood(damage)
+    local vel
 
-    vel = wall_velocity () * 0.2;
-    SpawnBlood (self.origin + vel*0.01, damage);
-};
+    vel = wall_velocity () * 0.2
+    SpawnBlood (self.origin + vel*0.01, damage)
+end
 
+--[[
 /*
 ==============================================================================
 
@@ -783,55 +781,54 @@ void(float ox) W_FireSpikes =
     WriteByte (MSG_ONE, SVC_SMALLKICK);
 };
 
+--]]
 
+function spike_touch()
+    local rand
 
-.float hit_z;
-void() spike_touch =
-{
-local float rand;
-    if (other == self.owner)
-        return;
+    if other == self.owner then
+        return
+    end
 
-    if (self.voided) {
-        return;
-    }
-    self.voided = 1;
+    if self.voided > 0 then
+        return
+    end
 
-    if (other.solid == SOLID_TRIGGER)
-        return; // trigger field, do nothing
+    self.voided = 1
 
-    if (pointcontents(self.origin) == CONTENT_SKY)
-    {
-        remove(self);
-        return;
-    }
+    if other.solid == SOLID_TRIGGER then
+        return -- trigger field, do nothing
+    end
 
-// hit something that bleeds
-    if (other.takedamage)
-    {
-        spawn_touchblood (9);
-        other.deathtype = "nail";
-        T_Damage (other, self, self.owner, 9);
-    }
+    if pointcontents(self.origin) == CONTENT_SKY then
+        remove(self)
+        return
+    end
+
+    -- hit something that bleeds
+    if other.takedamage > 0 then
+        spawn_touchblood (9)
+        other.deathtype = "nail"
+        T_Damage (other, self, self.owner, 9)
     else
-    {
-        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-        if (self.classname == "wizspike")
-            WriteByte (MSG_MULTICAST, TE_WIZSPIKE);
-        else if (self.classname == "knightspike")
-            WriteByte (MSG_MULTICAST, TE_KNIGHTSPIKE);
+        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+        if self.classname == "wizspike" then
+            WriteByte (MSG_MULTICAST, TE_WIZSPIKE)
+        elseif self.classname == "knightspike" then
+            WriteByte (MSG_MULTICAST, TE_KNIGHTSPIKE)
         else
-            WriteByte (MSG_MULTICAST, TE_SPIKE);
-        WriteCoord (MSG_MULTICAST, self.origin_x);
-        WriteCoord (MSG_MULTICAST, self.origin_y);
-        WriteCoord (MSG_MULTICAST, self.origin_z);
-        multicast (self.origin, MULTICAST_PHS);
-    }
+            WriteByte (MSG_MULTICAST, TE_SPIKE)
+        end
+        WriteCoord (MSG_MULTICAST, self.origin.x)
+        WriteCoord (MSG_MULTICAST, self.origin.y)
+        WriteCoord (MSG_MULTICAST, self.origin.z)
+        multicast (self.origin, MULTICAST_PHS)
+    end
 
-    remove(self);
+    remove(self)
+end
 
-};
-
+--[[
 void() superspike_touch =
 {
 local float rand;
@@ -954,197 +951,168 @@ function W_BestWeapon()
     return IT_AXE
 end
 
+function W_CheckNoAmmo()
+    if self.currentammo > 0 then
+        return true
+    end
+
+    if self.weapon == IT_AXE then
+        return true
+    end
+
+    self.weapon = W_BestWeapon ()
+
+    W_SetCurrentAmmo ()
+
+    -- drop the weapon down
+    return false
+end
+
 --[[
-float() W_CheckNoAmmo =
-{
-    if (self.currentammo > 0)
-        return TRUE;
-
-    if (self.weapon == IT_AXE)
-        return TRUE;
-
-    self.weapon = W_BestWeapon ();
-
-    W_SetCurrentAmmo ();
-
-// drop the weapon down
-    return FALSE;
-};
-
-/*
 ============
 W_Attack
 
 An attack impulse can be triggered now
 ============
 */
-void()  player_axe1;
-void()  player_axeb1;
-void()  player_axec1;
-void()  player_axed1;
-void()  player_shot1;
-void()  player_nail1;
-void()  player_light1;
-void()  player_rocket1;
+]]--
 
-void() W_Attack =
-{
-    local   float   r;
+function W_Attack()
+    local r
 
-    if (!W_CheckNoAmmo ())
-        return;
+    if not W_CheckNoAmmo () then
+        return
+    end
 
-    makevectors     (self.v_angle);                 // calculate forward angle for velocity
-    self.show_hostile = time + 1;   // wake monsters up
+    makevectors(self.v_angle) -- calculate forward angle for velocity
+    self.show_hostile = time + 1 -- wake monsters up
 
-    if (self.weapon == IT_AXE)
-    {
+    if self.weapon == IT_AXE then
         self.attack_finished = time + 0.5;
-        sound (self, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
+        sound (self, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM)
         r = random();
-        if (r < 0.25)
-            player_axe1 ();
-        else if (r<0.5)
-            player_axeb1 ();
-        else if (r<0.75)
-            player_axec1 ();
+        if r < 0.25 then
+            player_axe1 ()
+        elseif r < 0.5 then
+            player_axeb1 ()
+        elseif r < 0.75 then
+            player_axec1 ()
         else
-            player_axed1 ();
-    }
-    else if (self.weapon == IT_SHOTGUN)
-    {
-        player_shot1 ();
-        self.attack_finished = time + 0.5;
-        W_FireShotgun ();
-    }
-    else if (self.weapon == IT_SUPER_SHOTGUN)
-    {
-        player_shot1 ();
-        self.attack_finished = time + 0.7;
-        W_FireSuperShotgun ();
-    }
-    else if (self.weapon == IT_NAILGUN)
-    {
-        player_nail1 ();
-    }
-    else if (self.weapon == IT_SUPER_NAILGUN)
-    {
-        player_nail1 ();
-    }
-    else if (self.weapon == IT_GRENADE_LAUNCHER)
-    {
-        player_rocket1();
-        self.attack_finished = time + 0.6;
-        W_FireGrenade();
-    }
-    else if (self.weapon == IT_ROCKET_LAUNCHER)
-    {
-        player_rocket1();
-        self.attack_finished = time + 0.8;
-        W_FireRocket();
-    }
-    else if (self.weapon == IT_LIGHTNING)
-    {
-        self.attack_finished = time + 0.1;
-        sound (self, CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM);
-        player_light1();
-    }
-};
+            player_axed1 ()
+        end
+    elseif self.weapon == IT_SHOTGUN then
+        player_shot1 ()
+        self.attack_finished = time + 0.5
+        W_FireShotgun ()
+    elseif self.weapon == IT_SUPER_SHOTGUN then
+        player_shot1 ()
+        self.attack_finished = time + 0.7
+        W_FireSuperShotgun ()
+    elseif self.weapon == IT_NAILGUN then
+        player_nail1 ()
+    elseif self.weapon == IT_SUPER_NAILGUN then
+        player_nail1 ()
+    elseif self.weapon == IT_GRENADE_LAUNCHER then
+        player_rocket1()
+        self.attack_finished = time + 0.6
+        W_FireGrenade()
+    elseif self.weapon == IT_ROCKET_LAUNCHER then
+        player_rocket1()
+        self.attack_finished = time + 0.8
+        W_FireRocket()
+    elseif self.weapon == IT_LIGHTNING then
+        self.attack_finished = time + 0.1
+        sound (self, CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM)
+        player_light1()
+    end
+end
 
-/*
+--[[
 ============
 W_ChangeWeapon
 
 ============
-*/
-void() W_ChangeWeapon =
-{
-    local   float   it, am, fl;
+]]--
+function W_ChangeWeapon()
+    local it, am, fl
 
-    it = self.items;
-    am = 0;
+    it = self.items
+    am = 0
 
-    if (self.impulse == 1)
-    {
-        fl = IT_AXE;
-    }
-    else if (self.impulse == 2)
-    {
-        fl = IT_SHOTGUN;
-        if (self.ammo_shells < 1)
-            am = 1;
-    }
-    else if (self.impulse == 3)
-    {
-        fl = IT_SUPER_SHOTGUN;
-        if (self.ammo_shells < 2)
-            am = 1;
-    }
-    else if (self.impulse == 4)
-    {
-        fl = IT_NAILGUN;
-        if (self.ammo_nails < 1)
-            am = 1;
-    }
-    else if (self.impulse == 5)
-    {
-        fl = IT_SUPER_NAILGUN;
-        if (self.ammo_nails < 2)
-            am = 1;
-    }
-    else if (self.impulse == 6)
-    {
-        fl = IT_GRENADE_LAUNCHER;
-        if (self.ammo_rockets < 1)
-            am = 1;
-    }
-    else if (self.impulse == 7)
-    {
-        fl = IT_ROCKET_LAUNCHER;
-        if (self.ammo_rockets < 1)
-            am = 1;
-    }
-    else if (self.impulse == 8)
-    {
+    if self.impulse == 1 then
+        fl = IT_AXE
+    elseif self.impulse == 2 then
+        fl = IT_SHOTGUN
+        if self.ammo_shells < 1 then
+            am = 1
+        end
+    elseif self.impulse == 3 then
+        fl = IT_SUPER_SHOTGUN
+        if self.ammo_shells < 2 then
+            am = 1
+        end
+    elseif self.impulse == 4 then
+        fl = IT_NAILGUN
+        if self.ammo_nails < 1 then
+            am = 1
+        end
+    elseif self.impulse == 5 then
+        fl = IT_SUPER_NAILGUN
+        if self.ammo_nails < 2 then
+            am = 1
+        end
+    elseif self.impulse == 6 then
+        fl = IT_GRENADE_LAUNCHER
+        if self.ammo_rockets < 1 then
+            am = 1
+        end
+    elseif self.impulse == 7 then
+        fl = IT_ROCKET_LAUNCHER
+        if self.ammo_rockets < 1 then
+            am = 1
+        end
+    elseif self.impulse == 8 then
         fl = IT_LIGHTNING;
-        if (self.ammo_cells < 1)
-            am = 1;
-    }
+        if self.ammo_cells < 1 then
+            am = 1
+        end
+    end
 
-    self.impulse = 0;
+    self.impulse = 0
 
-    if (!(self.items & fl))
-    {       // don't have the weapon or the ammo
-        sprint (self, PRINT_HIGH, "no weapon.\n");
-        return;
-    }
+    if (self.items & fl) == 0 then
+        -- don't have the weapon or the ammo
+        sprint (self, PRINT_HIGH, "no weapon.\n")
+        return
+    end
 
-    if (am)
-    {       // don't have the ammo
-        sprint (self, PRINT_HIGH, "not enough ammo.\n");
-        return;
-    }
+    if am == 1 then
+        -- don't have the ammo
+        sprint (self, PRINT_HIGH, "not enough ammo.\n")
+        return
+    end
 
-//
-// set weapon, set ammo
-//
-    self.weapon = fl;
-    W_SetCurrentAmmo ();
-};
+    --
+    -- set weapon, set ammo
+    --
+    self.weapon = fl
+    W_SetCurrentAmmo ()
+end
 
-/*
+--[[
 ============
 CheatCommand
 ============
-*/
-void() CheatCommand =
-{
-//      if (deathmatch || coop)
-        return;
+]]--
+function CheatCommand()
+    if true then -- if (deathmatch || coop)
+        -- this is disabled in the qw code with above if
+        return
+    end
 
-    self.ammo_rockets = 100;
-    self.ammo_nails = 200;
-    self.ammo_shells = 100;
+    self.ammo_rockets = 100
+    self.ammo_nails = 200
+    self.ammo_shells = 100
     self.items = self.items |
         IT_AXE |
         IT_SHOTGUN |
@@ -1153,242 +1121,212 @@ void() CheatCommand =
         IT_SUPER_NAILGUN |
         IT_GRENADE_LAUNCHER |
         IT_ROCKET_LAUNCHER |
-        IT_KEY1 | IT_KEY2;
+        IT_KEY1 | IT_KEY2
 
-    self.ammo_cells = 200;
-    self.items = self.items | IT_LIGHTNING;
+    self.ammo_cells = 200
+    self.items = self.items | IT_LIGHTNING
 
-    self.weapon = IT_ROCKET_LAUNCHER;
-    self.impulse = 0;
-    W_SetCurrentAmmo ();
-};
+    self.weapon = IT_ROCKET_LAUNCHER
+    self.impulse = 0
+    W_SetCurrentAmmo ()
+end
 
-/*
+--[[
 ============
 CycleWeaponCommand
 
 Go to the next weapon with ammo
 ============
-*/
-void() CycleWeaponCommand =
-{
-    local   float   it, am;
+]]--
+function CycleWeaponCommand()
+    local it, am
 
-    it = self.items;
-    self.impulse = 0;
+    it = self.items
+    self.impulse = 0
 
-    while (1)
-    {
-        am = 0;
+    while true do
+        am = 0
 
-        if (self.weapon == IT_LIGHTNING)
-        {
-            self.weapon = IT_AXE;
-        }
-        else if (self.weapon == IT_AXE)
-        {
-            self.weapon = IT_SHOTGUN;
-            if (self.ammo_shells < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_SHOTGUN)
-        {
+        if self.weapon == IT_LIGHTNING then
+            self.weapon = IT_AXE
+        elseif self.weapon == IT_AXE then
+            self.weapon = IT_SHOTGUN
+            if self.ammo_shells < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_SHOTGUN then
             self.weapon = IT_SUPER_SHOTGUN;
-            if (self.ammo_shells < 2)
-                am = 1;
-        }
-        else if (self.weapon == IT_SUPER_SHOTGUN)
-        {
+            if self.ammo_shells < 2 then
+                am = 1
+            end
+        elseif self.weapon == IT_SUPER_SHOTGUN then
             self.weapon = IT_NAILGUN;
-            if (self.ammo_nails < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_NAILGUN)
-        {
-            self.weapon = IT_SUPER_NAILGUN;
-            if (self.ammo_nails < 2)
-                am = 1;
-        }
-        else if (self.weapon == IT_SUPER_NAILGUN)
-        {
-            self.weapon = IT_GRENADE_LAUNCHER;
-            if (self.ammo_rockets < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_GRENADE_LAUNCHER)
-        {
-            self.weapon = IT_ROCKET_LAUNCHER;
-            if (self.ammo_rockets < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_ROCKET_LAUNCHER)
-        {
-            self.weapon = IT_LIGHTNING;
-            if (self.ammo_cells < 1)
-                am = 1;
-        }
+            if self.ammo_nails < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_NAILGUN then
+            self.weapon = IT_SUPER_NAILGUN
+            if self.ammo_nails < 2 then
+                am = 1
+            end
+        elseif self.weapon == IT_SUPER_NAILGUN then
+            self.weapon = IT_GRENADE_LAUNCHER
+            if self.ammo_rockets < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_GRENADE_LAUNCHER then
+            self.weapon = IT_ROCKET_LAUNCHER
+            if self.ammo_rockets < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_ROCKET_LAUNCHER then
+            self.weapon = IT_LIGHTNING
+            if self.ammo_cells < 1 then
+                am = 1
+            end
+        end
 
-        if ( (self.items & self.weapon) && am == 0)
-        {
-            W_SetCurrentAmmo ();
-            return;
-        }
-    }
+        if (self.items & self.weapon) > 0 and am == 0 then
+            W_SetCurrentAmmo ()
+            return
+        end
+    end
+end
 
-};
-
-
-/*
+--[[
 ============
 CycleWeaponReverseCommand
 
 Go to the prev weapon with ammo
 ============
-*/
-void() CycleWeaponReverseCommand =
-{
-    local   float   it, am;
+]]--
+function CycleWeaponReverseCommand()
+    local it, am
 
-    it = self.items;
-    self.impulse = 0;
+    it = self.items
+    self.impulse = 0
 
-    while (1)
-    {
-        am = 0;
+    while true do
+        am = 0
 
-        if (self.weapon == IT_LIGHTNING)
-        {
-            self.weapon = IT_ROCKET_LAUNCHER;
-            if (self.ammo_rockets < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_ROCKET_LAUNCHER)
-        {
-            self.weapon = IT_GRENADE_LAUNCHER;
-            if (self.ammo_rockets < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_GRENADE_LAUNCHER)
-        {
-            self.weapon = IT_SUPER_NAILGUN;
-            if (self.ammo_nails < 2)
-                am = 1;
-        }
-        else if (self.weapon == IT_SUPER_NAILGUN)
-        {
-            self.weapon = IT_NAILGUN;
-            if (self.ammo_nails < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_NAILGUN)
-        {
-            self.weapon = IT_SUPER_SHOTGUN;
-            if (self.ammo_shells < 2)
-                am = 1;
-        }
-        else if (self.weapon == IT_SUPER_SHOTGUN)
-        {
+        if self.weapon == IT_LIGHTNING then
+            self.weapon = IT_ROCKET_LAUNCHER
+            if self.ammo_rockets < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_ROCKET_LAUNCHER then
+            self.weapon = IT_GRENADE_LAUNCHER
+            if self.ammo_rockets < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_GRENADE_LAUNCHER then
+            self.weapon = IT_SUPER_NAILGUN
+            if self.ammo_nails < 2 then
+                am = 1
+            end
+        elseif self.weapon == IT_SUPER_NAILGUN then
+            self.weapon = IT_NAILGUN
+            if self.ammo_nails < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_NAILGUN then
+            self.weapon = IT_SUPER_SHOTGUN
+            if self.ammo_shells < 2 then
+                am = 1
+            end
+        elseif self.weapon == IT_SUPER_SHOTGUN then
             self.weapon = IT_SHOTGUN;
-            if (self.ammo_shells < 1)
-                am = 1;
-        }
-        else if (self.weapon == IT_SHOTGUN)
-        {
-            self.weapon = IT_AXE;
-        }
-        else if (self.weapon == IT_AXE)
-        {
-            self.weapon = IT_LIGHTNING;
-            if (self.ammo_cells < 1)
-                am = 1;
-        }
+            if self.ammo_shells < 1 then
+                am = 1
+            end
+        elseif self.weapon == IT_SHOTGUN then
+            self.weapon = IT_AXE
+        elseif self.weapon == IT_AXE then
+            self.weapon = IT_LIGHTNING
+            if self.ammo_cells < 1 then
+                am = 1
+            end
+        end
 
-        if ( (it & self.weapon) && am == 0)
-        {
-            W_SetCurrentAmmo ();
-            return;
-        }
-    }
+        if (it & self.weapon) > 0 and am == 0 then
+            W_SetCurrentAmmo ()
+            return
+        end
+    end
+end
 
-};
-
-
-/*
+--[[
 ============
 ServerflagsCommand
 
 Just for development
 ============
-*/
-void() ServerflagsCommand =
-{
-    serverflags = serverflags * 2 + 1;
-};
+]]--
+function ServerflagsCommand()
+    serverflags = serverflags * 2 + 1
+end
 
 
-/*
+--[[
 ============
 ImpulseCommands
 
 ============
-*/
-void() ImpulseCommands =
-{
-    if (self.impulse >= 1 && self.impulse <= 8)
-        W_ChangeWeapon ();
+]]--
+function ImpulseCommands()
+    if self.impulse >= 1 and self.impulse <= 8 then
+        W_ChangeWeapon ()
+    end
 
-    if (self.impulse == 9)
-        CheatCommand ();
-    if (self.impulse == 10)
-        CycleWeaponCommand ();
-    if (self.impulse == 11)
-        ServerflagsCommand ();
-    if (self.impulse == 12)
-        CycleWeaponReverseCommand ();
+    if self.impulse == 9 then
+        CheatCommand ()
+    end
+    if self.impulse == 10 then
+        CycleWeaponCommand ()
+    end
+    if self.impulse == 11 then
+        ServerflagsCommand ()
+    end
+    if self.impulse == 12 then
+        CycleWeaponReverseCommand ()
+    end
 
-    self.impulse = 0;
-};
+    self.impulse = 0
+end
 
-/*
+--[[
 ============
 W_WeaponFrame
 
 Called every frame so impulse events can be handled as well as possible
 ============
-*/
-void() W_WeaponFrame =
-{
-    if (time < self.attack_finished)
-        return;
+]]--
+function W_WeaponFrame()
+    if time < self.attack_finished then
+        return
+    end
 
-    ImpulseCommands ();
+    ImpulseCommands ()
 
-// check for attack
-    if (self.button0)
-    {
-        SuperDamageSound ();
-        W_Attack ();
-    }
-};
+    -- check for attack
+    if self.button0 > 0 then
+        SuperDamageSound ()
+        W_Attack ()
+    end
+end
 
-/*
+--[[
 ========
 SuperDamageSound
 
 Plays sound if needed
 ========
-*/
-void() SuperDamageSound =
-{
-    if (self.super_damage_finished > time)
-    {
-        if (self.super_sound < time)
-        {
-            self.super_sound = time + 1;
-            sound (self, CHAN_BODY, "items/damage3.wav", 1, ATTN_NORM);
-        }
-    }
-    return;
-};
-
-]]--
+--]]
+function SuperDamageSound()
+    if self.super_damage_finished > time then
+        if self.super_sound < time then
+            self.super_sound = time + 1
+            sound (self, CHAN_BODY, "items/damage3.wav", 1, ATTN_NORM)
+        end
+    end
+end
