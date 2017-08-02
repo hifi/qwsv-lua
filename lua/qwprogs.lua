@@ -28,4 +28,3 @@ require "server"
 
 -- client.lua
 function WaterMove() end
-function CheckPowerups() end
