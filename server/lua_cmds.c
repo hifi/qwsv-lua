@@ -114,7 +114,7 @@ int PF_setorigin(lua_State *L)
     edict_t **e;
     vec_t *org;
 
-    e = lua_touserdata(L, 1);
+    e = luaL_checkudata(L, 1, "edict_t");
     org = PR_Vec3_ToVec(L, 2);
     VectorCopy(org, (*e)->v.origin);
     SV_LinkEdict(*e, false);
@@ -136,7 +136,7 @@ int PF_setsize(lua_State *L)
     edict_t **e;
     vec_t *min, *max;
 
-    e = lua_touserdata(L, 1);
+    e = luaL_checkudata(L, 1, "edict_t");
     min = PR_Vec3_ToVec(L, 2);
     max = PR_Vec3_ToVec(L, 3);
 
@@ -812,7 +812,7 @@ int PF_Remove(lua_State *L)
 {
     edict_t **ed;
 
-    ed = lua_touserdata(L, 1);
+    ed = luaL_checkudata(L, 1, "edict_t");
     ED_Free(*ed);
     return 0;
 }

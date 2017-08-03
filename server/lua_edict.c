@@ -456,7 +456,7 @@ static int ED_mt_index(lua_State *L)
     edict_t **e;
     const char *key;
 
-    e = lua_touserdata(L, 1);
+    e = luaL_checkudata(L, 1, "edict_t");
     key = lua_tostring(L, 2);
 
     // first handle C fields
@@ -575,7 +575,7 @@ static int ED_mt_newindex(lua_State *L)
     edict_t **e;
     const char *key;
 
-    e = lua_touserdata(L, 1);
+    e = luaL_checkudata(L, 1, "edict_t");
     key = lua_tostring(L, 2);
 
     // first handle C fields
@@ -933,7 +933,7 @@ edict_t *PROG_TO_EDICT(int ref)
         return NULL;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
-    e = lua_touserdata(L, -1);
+    e = luaL_checkudata(L, -1, "edict_t");
 
     lua_pop(L, 1);
 
