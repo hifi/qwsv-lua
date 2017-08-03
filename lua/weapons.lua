@@ -100,37 +100,34 @@ function wall_velocity()
 end
 
 --[[
-/*
 ================
 SpawnMeatSpray
 ================
-*/
-void(vector org, vector vel) SpawnMeatSpray =
-{
-    local   entity missile;
-    local   vector  org;
+]]
+function SpawnMeatSpray(org, vel)
+    local missile
+    local org
 
-    missile = spawn ();
-    missile.owner = self;
-    missile.movetype = MOVETYPE_BOUNCE;
-    missile.solid = SOLID_NOT;
+    missile = spawn ()
+    missile.owner = self
+    missile.movetype = MOVETYPE_BOUNCE
+    missile.solid = SOLID_NOT
 
-    makevectors (self.angles);
+    makevectors (self.angles)
 
-    missile.velocity = vel;
-    missile.velocity_z = missile.velocity_z + 250 + 50*random();
+    missile.velocity = vel
+    missile.velocity.z = missile.velocity.z + 250 + 50*random()
 
-    missile.avelocity = '3000 1000 2000';
+    missile.avelocity = vec3(3000,1000,2000)
 
-// set missile duration
-    missile.nextthink = time + 1;
-    missile.think = SUB_Remove;
+    -- set missile duration
+    missile.nextthink = time + 1
+    missile.think = SUB_Remove
 
-    setmodel (missile, "progs/zom_gib.mdl");
-    setsize (missile, '0 0 0', '0 0 0');
-    setorigin (missile, org);
-};
---]]
+    setmodel (missile, "progs/zom_gib.mdl")
+    setsize (missile, vec3(0,0,0), vec3(0,0,0))
+    setorigin (missile, org)
+end
 
 --[[
 ================
@@ -316,379 +313,336 @@ function W_FireShotgun()
 end
 
 --[[
-/*
 ================
 W_FireSuperShotgun
 ================
-*/
-void() W_FireSuperShotgun =
-{
-    local vector dir;
+]]
+function W_FireSuperShotgun()
+    local dir
 
-    if (self.currentammo == 1)
-    {
-        W_FireShotgun ();
-        return;
-    }
+    if self.currentammo == 1 then
+        W_FireShotgun ()
+        return
+    end
 
-    sound (self ,CHAN_WEAPON, "weapons/shotgn2.wav", 1, ATTN_NORM);
+    sound (self ,CHAN_WEAPON, "weapons/shotgn2.wav", 1, ATTN_NORM)
 
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_BIGKICK);
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_BIGKICK)
 
-    if (deathmatch != 4)
-        self.currentammo = self.ammo_shells = self.ammo_shells - 2;
-    dir = aim (self, 100000);
-    FireBullets (14, dir, '0.14 0.08 0');
-};
+    if deathmatch ~= 4 then
+        self.ammo_shells = self.ammo_shells - 2
+        self.currentammo = self.ammo_shells
+    end
+    dir = aim (self, 100000)
+    FireBullets (14, dir, vec3(0.14,0.08,0))
+end
 
-
-/*
+--[[
 ==============================================================================
 
 ROCKETS
 
 ==============================================================================
-*/
+]]
 
-void() T_MissileTouch =
-{
-    local float     damg;
+function T_MissileTouch()
+    local damg
 
-//  if (deathmatch == 4)
-//  {
-//  if ( ((other.weapon == 32) || (other.weapon == 16)))
-//      {
-//          if (random() < 0.1)
-//          {
-//              if (other != world)
-//              {
-//  //              bprint (PRINT_HIGH, "Got here\n");
-//                  other.deathtype = "blaze";
-//                  T_Damage (other, self, self.owner, 1000 );
-//                  T_RadiusDamage (self, self.owner, 1000, other);
-//              }
-//          }
-//      }
-//  }
+    if other == self.owner then
+        return -- don't explode on owner
+    end
 
-    if (other == self.owner)
-        return;         // don't explode on owner
+    if self.voided > 0 then
+        return
+    end
 
-    if (self.voided) {
-        return;
-    }
-    self.voided = 1;
+    self.voided = 1
 
-    if (pointcontents(self.origin) == CONTENT_SKY)
-    {
-        remove(self);
-        return;
-    }
+    if pointcontents(self.origin) == CONTENT_SKY then
+        remove(self)
+        return
+    end
 
-    damg = 100 + random()*20;
+    damg = 100 + random()*20
 
-    if (other.health)
-    {
-        other.deathtype = "rocket";
-        T_Damage (other, self, self.owner, damg );
-    }
+    if other.health > 0 then
+        other.deathtype = "rocket"
+        T_Damage (other, self, self.owner, damg )
+    end
 
-    // don't do radius damage to the other, because all the damage
-    // was done in the impact
+    -- don't do radius damage to the other, because all the damage
+    -- was done in the impact
+    T_RadiusDamage (self, self.owner, 120, other, "rocket")
+
+    self.origin = self.origin - 8 * normalize(self.velocity)
+
+    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+    WriteByte (MSG_MULTICAST, TE_EXPLOSION)
+    WriteCoord (MSG_MULTICAST, self.origin.x)
+    WriteCoord (MSG_MULTICAST, self.origin.y)
+    WriteCoord (MSG_MULTICAST, self.origin.z)
+    multicast (self.origin, MULTICAST_PHS)
+
+    remove(self)
+end
 
 
-    T_RadiusDamage (self, self.owner, 120, other, "rocket");
-
-//  sound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
-    self.origin = self.origin - 8 * normalize(self.velocity);
-
-    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-    WriteByte (MSG_MULTICAST, TE_EXPLOSION);
-    WriteCoord (MSG_MULTICAST, self.origin_x);
-    WriteCoord (MSG_MULTICAST, self.origin_y);
-    WriteCoord (MSG_MULTICAST, self.origin_z);
-    multicast (self.origin, MULTICAST_PHS);
-
-    remove(self);
-};
-
-
-
-/*
+--[[
 ================
 W_FireRocket
 ================
-*/
-void() W_FireRocket =
-{
-    if (deathmatch != 4)
-        self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
+]]
+function W_FireRocket()
+    if deathmatch ~= 4 then
+        self.ammo_rockets = self.ammo_rockets - 1
+        self.currentammo = self.ammo_rockets
+    end
 
-    sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
+    sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM)
 
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_SMALLKICK);
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_SMALLKICK)
 
-    newmis = spawn ();
-    newmis.owner = self;
-    newmis.movetype = MOVETYPE_FLYMISSILE;
-    newmis.solid = SOLID_BBOX;
+    newmis = spawn ()
+    newmis.owner = self
+    newmis.movetype = MOVETYPE_FLYMISSILE
+    newmis.solid = SOLID_BBOX
 
-// set newmis speed
+    -- set newmis speed
+    makevectors (self.v_angle)
+    newmis.velocity = aim(self, 1000)
+    newmis.velocity = newmis.velocity * 1000
+    newmis.angles = vectoangles(newmis.velocity)
 
-    makevectors (self.v_angle);
-    newmis.velocity = aim(self, 1000);
-    newmis.velocity = newmis.velocity * 1000;
-    newmis.angles = vectoangles(newmis.velocity);
+    newmis.touch = T_MissileTouch
+    newmis.voided = 0
 
-    newmis.touch = T_MissileTouch;
-    newmis.voided = 0;
+    -- set newmis duration
+    newmis.nextthink = time + 5
+    newmis.think = SUB_Remove
+    newmis.classname = "rocket"
 
-// set newmis duration
-    newmis.nextthink = time + 5;
-    newmis.think = SUB_Remove;
-    newmis.classname = "rocket";
+    setmodel (newmis, "progs/missile.mdl")
+    setsize (newmis, vec3(0,0,0), vec3(0,0,0))
+    setorigin (newmis, self.origin + v_forward*8 + vec3(0,0,16))
+end
 
-    setmodel (newmis, "progs/missile.mdl");
-    setsize (newmis, '0 0 0', '0 0 0');
-    setorigin (newmis, self.origin + v_forward*8 + '0 0 16');
-};
-
-/*
+--[[
 ===============================================================================
 LIGHTNING
 ===============================================================================
-*/
+]]
 
-void(entity from, float damage) LightningHit =
-{
-    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-    WriteByte (MSG_MULTICAST, TE_LIGHTNINGBLOOD);
-    WriteCoord (MSG_MULTICAST, trace_endpos_x);
-    WriteCoord (MSG_MULTICAST, trace_endpos_y);
-    WriteCoord (MSG_MULTICAST, trace_endpos_z);
-    multicast (trace_endpos, MULTICAST_PVS);
+function LightningHit(from, damage)
+    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+    WriteByte (MSG_MULTICAST, TE_LIGHTNINGBLOOD)
+    WriteCoord (MSG_MULTICAST, trace_endpos.x)
+    WriteCoord (MSG_MULTICAST, trace_endpos.y)
+    WriteCoord (MSG_MULTICAST, trace_endpos.z)
+    multicast (trace_endpos, MULTICAST_PVS)
 
-    T_Damage (trace_ent, from, from, damage);
-};
+    T_Damage (trace_ent, from, from, damage)
+end
 
-/*
+--[[
 =================
 LightningDamage
 =================
-*/
-void(vector p1, vector p2, entity from, float damage) LightningDamage =
-{
-    local entity            e1, e2;
-    local vector            f;
+]]
+function LightningDamage(p1, p2, from, damage)
+    local e1,e2
+    local f
 
-    f = p2 - p1;
-    normalize (f);
-    f_x = 0 - f_y;
-    f_y = f_x;
-    f_z = 0;
-    f = f*16;
+    f = p2 - p1
+    normalize (f)
+    f.x = 0 - f.y
+    f.y = f.x
+    f.z = 0
+    f = f*16
 
-    e1 = e2 = world;
+    e1 = world
+    e2 = world
 
-    traceline (p1, p2, FALSE, self);
+    traceline (p1, p2, FALSE, self)
 
-    if (trace_ent.takedamage)
-    {
-        LightningHit (from, damage);
-        if (self.classname == "player")
-        {
-            if (other.classname == "player")
-                trace_ent.velocity_z = trace_ent.velocity_z + 400;
-        }
-    }
-    e1 = trace_ent;
+    if trace_ent.takedamage > 0 then
+        LightningHit (from, damage)
+        if self.classname == "player" then
+            if other.classname == "player" then
+                trace_ent.velocity.z = trace_ent.velocity.z + 400
+            end
+        end
+    end
+    e1 = trace_ent
 
-    traceline (p1 + f, p2 + f, FALSE, self);
-    if (trace_ent != e1 && trace_ent.takedamage)
-    {
-        LightningHit (from, damage);
-    }
-    e2 = trace_ent;
+    traceline (p1 + f, p2 + f, FALSE, self)
+    if trace_ent ~= e1 and trace_ent.takedamage > 0 then
+        LightningHit (from, damage)
+    end
+    e2 = trace_ent
 
-    traceline (p1 - f, p2 - f, FALSE, self);
-    if (trace_ent != e1 && trace_ent != e2 && trace_ent.takedamage)
-    {
-        LightningHit (from, damage);
-    }
-};
+    traceline (p1 - f, p2 - f, FALSE, self)
+    if trace_ent ~= e1 and trace_ent ~= e2 and trace_ent.takedamage > 0 then
+        LightningHit (from, damage)
+    end
+end
 
+function W_FireLightning()
+    local org
+    local cells
 
-void() W_FireLightning =
-{
-    local   vector          org;
-    local   float           cells;
+    if self.ammo_cells < 1 then
+        self.weapon = W_BestWeapon ()
+        W_SetCurrentAmmo ()
+        return
+    end
 
-    if (self.ammo_cells < 1)
-    {
-        self.weapon = W_BestWeapon ();
-        W_SetCurrentAmmo ();
-        return;
-    }
-
-// explode if under water
-    if (self.waterlevel > 1)
-    {
-        if (deathmatch > 3)
-        {
-            if (random() <= 0.5)
-            {
-                self.deathtype = "selfwater";
-                T_Damage (self, self, self.owner, 4000 );
-            }
+    -- explode if under water
+    if self.waterlevel > 1 then
+        if deathmatch > 3 then
+            if random() <= 0.5 then
+                self.deathtype = "selfwater"
+                T_Damage (self, self, self.owner, 4000)
             else
-            {
-                cells = self.ammo_cells;
-                self.ammo_cells = 0;
-                W_SetCurrentAmmo ();
-                T_RadiusDamage (self, self, 35*cells, world, "");
-                return;
-            }
-        }
+                cells = self.ammo_cells
+                self.ammo_cells = 0
+                W_SetCurrentAmmo ()
+                T_RadiusDamage (self, self, 35*cells, world, "")
+                return
+            end
         else
-        {
-            cells = self.ammo_cells;
-            self.ammo_cells = 0;
-            W_SetCurrentAmmo ();
-            T_RadiusDamage (self, self, 35*cells, world,"");
-            return;
-        }
-    }
+            cells = self.ammo_cells
+            self.ammo_cells = 0
+            W_SetCurrentAmmo ()
+            T_RadiusDamage (self, self, 35*cells, world,"")
+            return
+        end
+    end
 
-    if (self.t_width < time)
-    {
-        sound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM);
-        self.t_width = time + 0.6;
-    }
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_SMALLKICK);
+    if self.t_width < time then
+        sound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM)
+        self.t_width = time + 0.6
+    end
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_SMALLKICK)
 
-    if (deathmatch != 4)
-        self.currentammo = self.ammo_cells = self.ammo_cells - 1;
+    if deathmatch ~= 4 then
+        self.ammo_cells = self.ammo_cells - 1
+        self.currentammo = self.ammo_cells
+    end
 
-    org = self.origin + '0 0 16';
+    org = self.origin + vec3(0,0,16)
 
-    traceline (org, org + v_forward*600, TRUE, self);
+    traceline (org, org + v_forward*600, TRUE, self)
 
-    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-    WriteByte (MSG_MULTICAST, TE_LIGHTNING2);
-    WriteEntity (MSG_MULTICAST, self);
-    WriteCoord (MSG_MULTICAST, org_x);
-    WriteCoord (MSG_MULTICAST, org_y);
-    WriteCoord (MSG_MULTICAST, org_z);
-    WriteCoord (MSG_MULTICAST, trace_endpos_x);
-    WriteCoord (MSG_MULTICAST, trace_endpos_y);
-    WriteCoord (MSG_MULTICAST, trace_endpos_z);
-    multicast (org, MULTICAST_PHS);
+    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+    WriteByte (MSG_MULTICAST, TE_LIGHTNING2)
+    WriteEntity (MSG_MULTICAST, self)
+    WriteCoord (MSG_MULTICAST, org.x)
+    WriteCoord (MSG_MULTICAST, org.y)
+    WriteCoord (MSG_MULTICAST, org.z)
+    WriteCoord (MSG_MULTICAST, trace_endpos.x)
+    WriteCoord (MSG_MULTICAST, trace_endpos.y)
+    WriteCoord (MSG_MULTICAST, trace_endpos.z)
+    multicast (org, MULTICAST_PHS)
 
-    LightningDamage (self.origin, trace_endpos + v_forward*4, self, 30);
-};
-
-
-//=============================================================================
+    LightningDamage (self.origin, trace_endpos + v_forward*4, self, 30)
+end
 
 
-void() GrenadeExplode =
-{
-    if (self.voided) {
-        return;
-    }
-    self.voided = 1;
+--=============================================================================
 
-    T_RadiusDamage (self, self.owner, 120, world, "grenade");
 
-    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-    WriteByte (MSG_MULTICAST, TE_EXPLOSION);
-    WriteCoord (MSG_MULTICAST, self.origin_x);
-    WriteCoord (MSG_MULTICAST, self.origin_y);
-    WriteCoord (MSG_MULTICAST, self.origin_z);
-    multicast (self.origin, MULTICAST_PHS);
+function GrenadeExplode()
+    if self.voided > 0 then
+        return
+    end
+    self.voided = 1
 
-    remove (self);
-};
+    T_RadiusDamage (self, self.owner, 120, world, "grenade")
 
-void() GrenadeTouch =
-{
-    if (other == self.owner)
-        return;         // don't explode on owner
-    if (other.takedamage == DAMAGE_AIM)
-    {
-        GrenadeExplode();
-        return;
-    }
-    sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);  // bounce sound
-    if (self.velocity == '0 0 0')
-        self.avelocity = '0 0 0';
-};
+    WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+    WriteByte (MSG_MULTICAST, TE_EXPLOSION)
+    WriteCoord (MSG_MULTICAST, self.origin.x)
+    WriteCoord (MSG_MULTICAST, self.origin.y)
+    WriteCoord (MSG_MULTICAST, self.origin.z)
+    multicast (self.origin, MULTICAST_PHS)
 
-/*
+    remove (self)
+end
+
+function GrenadeTouch()
+    if other == self.owner then
+        return -- don't explode on owner
+    end
+    if other.takedamage == DAMAGE_AIM then
+        GrenadeExplode()
+        return
+    end
+    sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM) -- bounce sound
+    if self.velocity == vec3(0,0,0) then
+        self.avelocity = vec3(0,0,0)
+    end
+end
+
+--[[
 ================
 W_FireGrenade
 ================
-*/
-void() W_FireGrenade =
-{
-    if (deathmatch != 4)
-        self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
+]]
+function W_FireGrenade()
+    if deathmatch ~= 4 then
+        self.ammo_rockets = self.ammo_rockets - 1
+        self.currentammo = self.ammo_rockets
+    end
 
-    sound (self, CHAN_WEAPON, "weapons/grenade.wav", 1, ATTN_NORM);
+    sound (self, CHAN_WEAPON, "weapons/grenade.wav", 1, ATTN_NORM)
 
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_SMALLKICK);
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_SMALLKICK)
 
-    newmis = spawn ();
-    newmis.voided=0;
-    newmis.owner = self;
-    newmis.movetype = MOVETYPE_BOUNCE;
-    newmis.solid = SOLID_BBOX;
-    newmis.classname = "grenade";
+    newmis = spawn ()
+    newmis.voided = 0
+    newmis.owner = self
+    newmis.movetype = MOVETYPE_BOUNCE
+    newmis.solid = SOLID_BBOX
+    newmis.classname = "grenade"
 
-// set newmis speed
+    -- set newmis speed
+    makevectors (self.v_angle)
 
-    makevectors (self.v_angle);
-
-    if (self.v_angle_x)
-        newmis.velocity = v_forward*600 + v_up * 200 + crandom()*v_right*10 + crandom()*v_up*10;
+    if self.v_angle.x > 0 then
+        newmis.velocity = v_forward*600 + v_up * 200 + crandom()*v_right*10 + crandom()*v_up*10
     else
-    {
-        newmis.velocity = aim(self, 10000);
-        newmis.velocity = newmis.velocity * 600;
-        newmis.velocity_z = 200;
-    }
+        newmis.velocity = aim(self, 10000)
+        newmis.velocity = newmis.velocity * 600
+        newmis.velocity.z = 200
+    end
 
-    newmis.avelocity = '300 300 300';
+    newmis.avelocity = vec3(300,300,300)
 
-    newmis.angles = vectoangles(newmis.velocity);
+    newmis.angles = vectoangles(newmis.velocity)
 
-    newmis.touch = GrenadeTouch;
+    newmis.touch = GrenadeTouch
 
-// set newmis duration
-    if (deathmatch == 4)
-    {
-        newmis.nextthink = time + 2.5;
-        self.attack_finished = time + 1.1;
-//      self.health = self.health - 1;
-        T_Damage (self, self, self.owner, 10 );
-    }
+    -- set newmis duration
+    if deathmatch == 4 then
+        newmis.nextthink = time + 2.5
+        self.attack_finished = time + 1.1
+        T_Damage (self, self, self.owner, 10)
     else
-        newmis.nextthink = time + 2.5;
+        newmis.nextthink = time + 2.5
+    end
 
-    newmis.think = GrenadeExplode;
+    newmis.think = GrenadeExplode
 
-    setmodel (newmis, "progs/grenade.mdl");
-    setsize (newmis, '0 0 0', '0 0 0');
-    setorigin (newmis, self.origin);
-};
+    setmodel (newmis, "progs/grenade.mdl")
+    setsize (newmis, vec3(0,0,0), vec3(0,0,0))
+    setorigin (newmis, self.origin)
+end
 
-
-//=============================================================================
-]]--
+--=============================================================================
 
 --[[
 ===============
@@ -718,57 +672,54 @@ function launch_spike(org, dir)
     newmis.velocity = dir * 1000
 end
 
---[[
-void() W_FireSuperSpikes =
-{
-    local vector    dir;
-    local entity    old;
+function W_FireSuperSpikes()
+    local dir
+    local old
 
-    sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM);
-    self.attack_finished = time + 0.2;
-    if (deathmatch != 4)
-        self.currentammo = self.ammo_nails = self.ammo_nails - 2;
-    dir = aim (self, 1000);
-    launch_spike (self.origin + '0 0 16', dir);
-    newmis.touch = superspike_touch;
-    setmodel (newmis, "progs/s_spike.mdl");
-    setsize (newmis, VEC_ORIGIN, VEC_ORIGIN);
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_SMALLKICK);
-};
+    sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM)
+    self.attack_finished = time + 0.2
+    if deathmatch ~= 4 then
+        self.ammo_nails = self.ammo_nails - 2
+        self.currentammo = self.ammo_nails
+    end
+    dir = aim (self, 1000)
+    launch_spike (self.origin + vec3(0,0,16), dir)
+    newmis.touch = superspike_touch
+    setmodel (newmis, "progs/s_spike.mdl")
+    setsize (newmis, VEC_ORIGIN, VEC_ORIGIN)
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_SMALLKICK)
+end
 
-void(float ox) W_FireSpikes =
-{
-    local vector    dir;
-    local entity    old;
+function W_FireSpikes(ox)
+    local dir
+    local old
 
-    makevectors (self.v_angle);
+    makevectors (self.v_angle)
 
-    if (self.ammo_nails >= 2 && self.weapon == IT_SUPER_NAILGUN)
-    {
-        W_FireSuperSpikes ();
-        return;
-    }
+    if self.ammo_nails >= 2 and self.weapon == IT_SUPER_NAILGUN then
+        W_FireSuperSpikes ()
+        return
+    end
 
-    if (self.ammo_nails < 1)
-    {
-        self.weapon = W_BestWeapon ();
-        W_SetCurrentAmmo ();
-        return;
-    }
+    if self.ammo_nails < 1 then
+        self.weapon = W_BestWeapon ()
+        W_SetCurrentAmmo ()
+        return
+    end
 
-    sound (self, CHAN_WEAPON, "weapons/rocket1i.wav", 1, ATTN_NORM);
-    self.attack_finished = time + 0.2;
-    if (deathmatch != 4)
-        self.currentammo = self.ammo_nails = self.ammo_nails - 1;
-    dir = aim (self, 1000);
-    launch_spike (self.origin + '0 0 16' + v_right*ox, dir);
+    sound (self, CHAN_WEAPON, "weapons/rocket1i.wav", 1, ATTN_NORM)
+    self.attack_finished = time + 0.2
+    if deathmatch ~= 4 then
+        self.ammo_nails = self.ammo_nails - 1
+        self.currentammo  = self.ammo_nails
+    end
+    dir = aim (self, 1000)
+    launch_spike (self.origin + '0 0 16' + v_right*ox, dir)
 
-    msg_entity = self;
-    WriteByte (MSG_ONE, SVC_SMALLKICK);
-};
-
---]]
+    msg_entity = self
+    WriteByte (MSG_ONE, SVC_SMALLKICK)
+end
 
 function spike_touch()
     local rand
@@ -815,49 +766,44 @@ function spike_touch()
     remove(self)
 end
 
---[[
-void() superspike_touch =
-{
-local float rand;
-    if (other == self.owner)
-        return;
+function superspike_touch()
+    local rand
 
-    if (self.voided) {
-        return;
-    }
-    self.voided = 1;
+    if other == self.owner then
+        return
+    end
+
+    if self.voided > 0 then
+        return
+    end
+    self.voided = 1
 
 
-    if (other.solid == SOLID_TRIGGER)
-        return; // trigger field, do nothing
+    if other.solid == SOLID_TRIGGER then
+        return -- trigger field, do nothing
+    end
 
-    if (pointcontents(self.origin) == CONTENT_SKY)
-    {
-        remove(self);
-        return;
-    }
+    if pointcontents(self.origin) == CONTENT_SKY then
+        remove(self)
+        return
+    end
 
-// hit something that bleeds
-    if (other.takedamage)
-    {
-        spawn_touchblood (18);
-        other.deathtype = "supernail";
-        T_Damage (other, self, self.owner, 18);
-    }
+    -- hit something that bleeds
+    if other.takedamage > 0 then
+        spawn_touchblood (18)
+        other.deathtype = "supernail"
+        T_Damage (other, self, self.owner, 18)
     else
-    {
-        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-        WriteByte (MSG_MULTICAST, TE_SUPERSPIKE);
-        WriteCoord (MSG_MULTICAST, self.origin_x);
-        WriteCoord (MSG_MULTICAST, self.origin_y);
-        WriteCoord (MSG_MULTICAST, self.origin_z);
-        multicast (self.origin, MULTICAST_PHS);
-    }
+        WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
+        WriteByte (MSG_MULTICAST, TE_SUPERSPIKE)
+        WriteCoord (MSG_MULTICAST, self.origin.x)
+        WriteCoord (MSG_MULTICAST, self.origin.y)
+        WriteCoord (MSG_MULTICAST, self.origin.z)
+        multicast (self.origin, MULTICAST_PHS)
+    end
 
-    remove(self);
-
-};
-]]--
+    remove(self)
+end
 
 --[[
 ===============================================================================
@@ -912,9 +858,9 @@ function W_SetCurrentAmmo()
         self.weaponframe = 0
         self.items = self.items | IT_CELLS
     else
-        self.currentammo = 0;
-        self.weaponmodel = "";
-        self.weaponframe = 0;
+        self.currentammo = 0
+        self.weaponmodel = ""
+        self.weaponframe = 0
     end
 end
 
@@ -975,9 +921,9 @@ function W_Attack()
     self.show_hostile = time + 1 -- wake monsters up
 
     if self.weapon == IT_AXE then
-        self.attack_finished = time + 0.5;
+        self.attack_finished = time + 0.5
         sound (self, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM)
-        r = random();
+        r = random()
         if r < 0.25 then
             player_axe1 ()
         elseif r < 0.5 then
@@ -1059,7 +1005,7 @@ function W_ChangeWeapon()
             am = 1
         end
     elseif self.impulse == 8 then
-        fl = IT_LIGHTNING;
+        fl = IT_LIGHTNING
         if self.ammo_cells < 1 then
             am = 1
         end
@@ -1142,12 +1088,12 @@ function CycleWeaponCommand()
                 am = 1
             end
         elseif self.weapon == IT_SHOTGUN then
-            self.weapon = IT_SUPER_SHOTGUN;
+            self.weapon = IT_SUPER_SHOTGUN
             if self.ammo_shells < 2 then
                 am = 1
             end
         elseif self.weapon == IT_SUPER_SHOTGUN then
-            self.weapon = IT_NAILGUN;
+            self.weapon = IT_NAILGUN
             if self.ammo_nails < 1 then
                 am = 1
             end
@@ -1222,7 +1168,7 @@ function CycleWeaponReverseCommand()
                 am = 1
             end
         elseif self.weapon == IT_SUPER_SHOTGUN then
-            self.weapon = IT_SHOTGUN;
+            self.weapon = IT_SHOTGUN
             if self.ammo_shells < 1 then
                 am = 1
             end
