@@ -279,7 +279,7 @@ function health_touch()
     local s
 
     if deathmatch == 4 then
-        if other.invincible_time > 0 then
+        if other.invincible_time and other.invincible_time > 0 then
             return
         end
     end

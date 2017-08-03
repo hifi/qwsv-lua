@@ -473,7 +473,7 @@ function PutClientInServer()
 
     if deathmatch == 4 then
         self.ammo_shells = 0
-        if stof(infokey(world, "axe")) == 0 then
+        if (tonumber(infokey(world, "axe")) or 0) == 0 then
             self.ammo_nails = 255
             self.ammo_shells = 255
             self.ammo_rockets = 255
