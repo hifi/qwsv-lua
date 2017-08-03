@@ -424,6 +424,7 @@ function PutClientInServer()
     self.swim_flag = 0
     self.pain_finished = 0
     self.invisible_sound = 0
+    self.invincible_sound = 0
 
     DecodeLevelParms ()
     
