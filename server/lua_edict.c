@@ -570,9 +570,19 @@ static int ED_mt_index(lua_State *L)
         return 0; \
     }
 
+#define SET_EDICT(s)  \
+    if (strcmp(key, #s) == 0) { \
+        (*e)->v.s = 0; \
+        if (!lua_isnil(L, 3)) { \
+            e2 = luaL_checkudata(L, 3, "edict_t"); \
+            (*e)->v.s = (*e2)->ref; \
+        } \
+        return 0; \
+    }
+
 static int ED_mt_newindex(lua_State *L)
 {
-    edict_t **e;
+    edict_t **e, **e2;
     const char *key;
 
     e = luaL_checkudata(L, 1, "edict_t");
@@ -604,7 +614,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_REF(think);
     SET_REF(blocked);
     SET_FLOAT(nextthink);
-    SET_REF(groundentity);
+    SET_EDICT(groundentity);
     SET_FLOAT(health);
     SET_FLOAT(frags);
     SET_FLOAT(weapon);
@@ -617,7 +627,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_FLOAT(ammo_cells);
     SET_FLOAT(items);
     SET_FLOAT(takedamage);
-    SET_REF(chain);
+    SET_EDICT(chain);
     SET_FLOAT(deadflag);
     SET_VEC3(view_ofs);
     SET_FLOAT(button0);
@@ -627,7 +637,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_FLOAT(fixangle);
     SET_VEC3(v_angle);
     SET_REF(netname);
-    SET_REF(enemy);
+    SET_EDICT(enemy);
     SET_FLOAT(flags);
     SET_FLOAT(colormap);
     SET_FLOAT(team);
@@ -639,15 +649,15 @@ static int ED_mt_newindex(lua_State *L)
     SET_FLOAT(watertype);
     SET_FLOAT(ideal_yaw);
     SET_FLOAT(yaw_speed);
-    SET_REF(aiment);
-    SET_REF(goalentity);
+    SET_EDICT(aiment);
+    SET_EDICT(goalentity);
     SET_FLOAT(spawnflags);
-    SET_REF(target);
+    SET_EDICT(target);
     SET_REF(targetname);
     SET_FLOAT(dmg_take);
     SET_FLOAT(dmg_save);
-    SET_REF(dmg_inflictor);
-    SET_REF(owner);
+    SET_EDICT(dmg_inflictor);
+    SET_EDICT(owner);
     SET_VEC3(movedir);
     SET_REF(message);
     SET_FLOAT(sounds);
