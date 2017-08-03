@@ -3,7 +3,8 @@ function ffunc(frame, think, callback)
     return function()
         self.frame = frame
         self.nextthink = time + 0.1
-        self.think = think
+        self.think = _G[think] -- sorry
+
         if callback then
             callback()
         end

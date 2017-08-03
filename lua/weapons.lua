@@ -520,7 +520,7 @@ function W_FireLightning()
         end
     end
 
-    if self.t_width < time then
+    if not self.t_width or self.t_width < time then
         sound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM)
         self.t_width = time + 0.6
     end

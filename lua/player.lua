@@ -25,21 +25,12 @@
 ]]--
 
 --[[
-void() bubble_bob;
-
-/*
 ==============================================================================
 
 PLAYER
 
 ==============================================================================
-*/
-
-$cd /raid/quake/id1/models/player_4
-$origin 0 -6 24
-$base base
-$skin skin
---]]
+]]
 
 --
 -- running
@@ -56,50 +47,47 @@ stand1,stand2,stand3,stand4,stand5 = 0,1,2,3,4
 axstnd1,axstnd2,axstnd3,axstnd4,axstnd5,axstnd6 = 0,1,2,3,4,5
 axstnd7,axstnd8,axstnd9,axstnd10,axstnd11,axstnd12 = 0,1,2,3,4,5
 
+--
+-- pain
+--
+axpain1,axpain2,axpain3,axpain4,axpain5,axpain6 = 0,1,2,3,4,5
 
---[[
-//
-// pain
-//
-$frame axpain1 axpain2 axpain3 axpain4 axpain5 axpain6
-
-$frame pain1 pain2 pain3 pain4 pain5 pain6
+pain1,pain2,pain3,pain4,pain5,pain6 = 0,1,2,3,4,5
 
 
-//
-// death
-//
+--
+-- death
+--
 
-$frame axdeth1 axdeth2 axdeth3 axdeth4 axdeth5 axdeth6
-$frame axdeth7 axdeth8 axdeth9
+axdeth1,axdeth2,axdeth3,axdeth4,axdeth5,axdeth6 = 0,1,2,3,4,5
+axdeth7,axdeth8,axdeth9 = 0,1,2
 
-$frame deatha1 deatha2 deatha3 deatha4 deatha5 deatha6 deatha7 deatha8
-$frame deatha9 deatha10 deatha11
+deatha1,deatha2,deatha3,deatha4,deatha5,deatha6,deatha7,deatha8 = 0,1,2,3,4,5,6,7
+deatha9,deatha10,deatha11 = 0,1,2
 
-$frame deathb1 deathb2 deathb3 deathb4 deathb5 deathb6 deathb7 deathb8
-$frame deathb9
+deathb1,deathb2,deathb3,deathb4,deathb5,deathb6,deathb7,deathb8 = 0,1,2,3,4,5,6,7
+deathb9 = 0
 
-$frame deathc1 deathc2 deathc3 deathc4 deathc5 deathc6 deathc7 deathc8
-$frame deathc9 deathc10 deathc11 deathc12 deathc13 deathc14 deathc15
+deathc1,deathc2,deathc3,deathc4,deathc5,deathc6,deathc7,deathc8 = 0,1,2,3,4,5,6,7
+deathc9,deathc10,deathc11,deathc12,deathc13,deathc14,deathc15 = 0,1,2,3,4,5,6,7
 
-$frame deathd1 deathd2 deathd3 deathd4 deathd5 deathd6 deathd7
-$frame deathd8 deathd9
+deathd1,deathd2,deathd3,deathd4,deathd5,deathd6,deathd7 = 0,1,2,3,4,5,6
+deathd8,deathd9 = 0,1
 
-$frame deathe1 deathe2 deathe3 deathe4 deathe5 deathe6 deathe7
-$frame deathe8 deathe9
+deathe1,deathe2,deathe3,deathe4,deathe5,deathe6,deathe7 = 0,1,2,3,4,5,6
+deathe8,deathe9 = 0,1
 
-//
-// attacks
-//
-$frame nailatt1 nailatt2
+--
+-- attacks
+--
+nailatt1,nailatt2 = 0,1
 
-$frame light1 light2
+light1,light2 = 0,1
 
-$frame rockatt1 rockatt2 rockatt3 rockatt4 rockatt5 rockatt6
+rockatt1,rockatt2,rockatt3,rockatt4,rockatt5,rockatt6 = 0,1,2,3,4,5
 
-$frame shotatt1 shotatt2 shotatt3 shotatt4 shotatt5 shotatt6
+shotatt1,shotatt2,shotatt3,shotatt4,shotatt5,shotatt6 = 0,1,2,3,4,5
 
---]]
 axatt1,axatt2,axatt3,axatt4,axatt5,axatt6 = 0,1,2,3,4,5
 
 axattb1,axattb2,axattb3,axattb4,axattb5,axattb6 = 0,1,2,3,4,5
@@ -115,7 +103,7 @@ PLAYER
 ==============================================================================
 ]]
 
-player_stand1 = ffunc(axstnd1, player_stand1, function()
+player_stand1 = ffunc(axstnd1, "player_stand1", function()
     self.weaponframe = 0
 
     if self.velocity.x > 0 or self.velocity.y > 0 then
@@ -138,7 +126,7 @@ player_stand1 = ffunc(axstnd1, player_stand1, function()
     self.walkframe = self.walkframe + 1
 end)
 
-player_run = ffunc(rockrun1, player_run, function()
+player_run = ffunc(rockrun1, "player_run", function()
     self.weaponframe = 0
 
     if self.velocity.x == 0 and self.velocity.y == 0 then
@@ -168,105 +156,124 @@ function muzzleflash()
     multicast (self.origin, MULTICAST_PVS)
 end
 
-player_shot6 = ffunc(shotatt6, player_run,   function() self.weaponframe = 6 end)
-player_shot5 = ffunc(shotatt5, player_shot6, function() self.weaponframe = 5 end)
-player_shot4 = ffunc(shotatt4, player_shot5, function() self.weaponframe = 4 end)
-player_shot3 = ffunc(shotatt3, player_shot4, function() self.weaponframe = 3 end)
-player_shot2 = ffunc(shotatt2, player_shot3, function() self.weaponframe = 2 end)
-player_shot1 = ffunc(shotatt1, player_shot2, function() self.weaponframe = 1 muzzleflash() end)
+player_shot1 = ffunc(shotatt1, "player_shot2", function() self.weaponframe = 1 muzzleflash() end)
+player_shot2 = ffunc(shotatt2, "player_shot3", function() self.weaponframe = 2 end)
+player_shot3 = ffunc(shotatt3, "player_shot4", function() self.weaponframe = 3 end)
+player_shot4 = ffunc(shotatt4, "player_shot5", function() self.weaponframe = 4 end)
+player_shot5 = ffunc(shotatt5, "player_shot6", function() self.weaponframe = 5 end)
+player_shot6 = ffunc(shotatt6, "player_run",   function() self.weaponframe = 6 end)
 
-player_axe4 = ffunc(axatt4, player_run,  function() self.weaponframe=4 end)
-player_axe3 = ffunc(axatt3, player_axe4, function() self.weaponframe=3 W_FireAxe() end)
-player_axe2 = ffunc(axatt2, player_axe3, function() self.weaponframe=2 end)
-player_axe1 = ffunc(axatt1, player_axe2, function() self.weaponframe=1 end)
+player_axe1 = ffunc(axatt1, "player_axe2", function() self.weaponframe=1 end)
+player_axe2 = ffunc(axatt2, "player_axe3", function() self.weaponframe=2 end)
+player_axe3 = ffunc(axatt3, "player_axe4", function() self.weaponframe=3 W_FireAxe() end)
+player_axe4 = ffunc(axatt4, "player_run",  function() self.weaponframe=4 end)
 
-player_axeb4 = ffunc(axattb4, player_run,   function() self.weaponframe = 8 end)
-player_axeb3 = ffunc(axattb3, player_axeb4, function() self.weaponframe = 7 W_FireAxe() end)
-player_axeb2 = ffunc(axattb2, player_axeb3, function() self.weaponframe = 6 end)
-player_axeb1 = ffunc(axattb1, player_axeb2, function() self.weaponframe = 5 end)
+player_axeb4 = ffunc(axattb4, "player_run",   function() self.weaponframe = 8 end)
+player_axeb3 = ffunc(axattb3, "player_axeb4", function() self.weaponframe = 7 W_FireAxe() end)
+player_axeb2 = ffunc(axattb2, "player_axeb3", function() self.weaponframe = 6 end)
+player_axeb1 = ffunc(axattb1, "player_axeb2", function() self.weaponframe = 5 end)
 
-player_axec4 = ffunc(axattc4, player_run,   function() self.weaponframe = 4 end)
-player_axec3 = ffunc(axattc3, player_axec4, function() self.weaponframe = 3 W_FireAxe() end)
-player_axec2 = ffunc(axattc2, player_axec3, function() self.weaponframe = 2 end)
-player_axec1 = ffunc(axattc1, player_axec2, function() self.weaponframe = 1 end)
+player_axec1 = ffunc(axattc1, "player_axec2", function() self.weaponframe = 1 end)
+player_axec2 = ffunc(axattc2, "player_axec3", function() self.weaponframe = 2 end)
+player_axec3 = ffunc(axattc3, "player_axec4", function() self.weaponframe = 3 W_FireAxe() end)
+player_axec4 = ffunc(axattc4, "player_run",   function() self.weaponframe = 4 end)
 
-player_axed4 = ffunc(axattd4, player_run,   function() self.weaponframe = 8 end)
-player_axed3 = ffunc(axattd3, player_axed4, function() self.weaponframe = 7 W_FireAxe() end)
-player_axed2 = ffunc(axattd2, player_axed3, function() self.weaponframe = 6 end)
-player_axed1 = ffunc(axattd1, player_axed2, function() self.weaponframe = 5 end)
+player_axed1 = ffunc(axattd1, "player_axed2", function() self.weaponframe = 5 end)
+player_axed2 = ffunc(axattd2, "player_axed3", function() self.weaponframe = 6 end)
+player_axed3 = ffunc(axattd3, "player_axed4", function() self.weaponframe = 7 W_FireAxe() end)
+player_axed4 = ffunc(axattd4, "player_run",   function() self.weaponframe = 8 end)
 
+
+--============================================================================
+
+player_nail1 = ffunc(nailatt1, "player_nail2", function()
+    muzzleflash()
+
+    if self.button0 == 0 or intermission_running > 0 or self.impulse > 0 then
+        player_run ()
+        return
+    end
+
+    self.weaponframe = self.weaponframe + 1
+
+    if self.weaponframe == 9 then
+        self.weaponframe = 1
+    end
+
+    SuperDamageSound()
+    W_FireSpikes (4)
+    self.attack_finished = time + 0.2
+end)
+
+player_nail2 = ffunc(nailatt2, "player_nail1", function()
+    muzzleflash()
+
+    if self.button0 == 0 or intermission_running > 0 or self.impulse > 0 then
+        player_run ()
+        return
+    end
+
+    self.weaponframe = self.weaponframe + 1
+
+    if self.weaponframe == 9 then
+        self.weaponframe = 1
+    end
+
+    SuperDamageSound()
+    W_FireSpikes (-4)
+    self.attack_finished = time + 0.2
+end)
+
+--============================================================================
+
+player_light1 = ffunc(light1, "player_light2", function()
+    muzzleflash()
+
+    if self.button0 == 0 or intermission_running > 0 then
+        player_run ()
+        return
+    end
+
+    self.weaponframe = self.weaponframe + 1
+
+    if self.weaponframe == 5 then
+        self.weaponframe = 1
+    end
+
+    SuperDamageSound()
+    W_FireLightning()
+    self.attack_finished = time + 0.2
+end)
+
+player_light2  = ffunc(light2, "player_light1", function()
+    muzzleflash()
+
+    if self.button0 == 0 or intermission_running > 0 then
+        player_run ()
+        return
+    end
+
+    self.weaponframe = self.weaponframe + 1
+
+    if self.weaponframe == 5 then
+        self.weaponframe = 1
+    end
+
+    SuperDamageSound()
+    W_FireLightning()
+    self.attack_finished = time + 0.2
+end)
+
+--============================================================================
+
+player_rocket1 = ffunc(rockatt1, "player_rocket2", function() self.weaponframe = 1 muzzleflash() end)
+player_rocket2 = ffunc(rockatt2, "player_rocket3", function() self.weaponframe = 2 end)
+player_rocket3 = ffunc(rockatt3, "player_rocket4", function() self.weaponframe = 3 end)
+player_rocket4 = ffunc(rockatt4, "player_rocket5", function() self.weaponframe = 4 end)
+player_rocket5 = ffunc(rockatt5, "player_rocket6", function() self.weaponframe = 5 end)
+player_rocket6 = ffunc(rockatt6, "player_run", function() self.weaponframe = 6 end)
 
 --[[
-//============================================================================
-
-void() player_nail1   =[$nailatt1, player_nail2  ]
-{
-  muzzleflash();
-
-  if (!self.button0 || intermission_running || self.impulse)
-    {player_run ();return;}
-  self.weaponframe = self.weaponframe + 1;
-  if (self.weaponframe == 9)
-    self.weaponframe = 1;
-  SuperDamageSound();
-  W_FireSpikes (4);
-  self.attack_finished = time + 0.2;
-};
-void() player_nail2   =[$nailatt2, player_nail1  ]
-{
-  muzzleflash();
-
-  if (!self.button0 || intermission_running || self.impulse)
-    {player_run ();return;}
-  self.weaponframe = self.weaponframe + 1;
-  if (self.weaponframe == 9)
-    self.weaponframe = 1;
-  SuperDamageSound();
-  W_FireSpikes (-4);
-  self.attack_finished = time + 0.2;
-};
-
-//============================================================================
-
-void() player_light1   =[$light1, player_light2  ]
-{
-  muzzleflash();
-
-  if (!self.button0 || intermission_running)
-    {player_run ();return;}
-  self.weaponframe = self.weaponframe + 1;
-  if (self.weaponframe == 5)
-    self.weaponframe = 1;
-  SuperDamageSound();
-  W_FireLightning();
-  self.attack_finished = time + 0.2;
-};
-void() player_light2   =[$light2, player_light1  ]
-{
-  muzzleflash();
-
-  if (!self.button0 || intermission_running)
-    {player_run ();return;}
-  self.weaponframe = self.weaponframe + 1;
-  if (self.weaponframe == 5)
-    self.weaponframe = 1;
-  SuperDamageSound();
-  W_FireLightning();
-  self.attack_finished = time + 0.2;
-};
-
-//============================================================================
-
-
-void() player_rocket1   =[$rockatt1, player_rocket2  ] {self.weaponframe=1;
-  muzzleflash();};
-void() player_rocket2   =[$rockatt2, player_rocket3  ] {self.weaponframe=2;};
-void() player_rocket3   =[$rockatt3, player_rocket4  ] {self.weaponframe=3;};
-void() player_rocket4   =[$rockatt4, player_rocket5  ] {self.weaponframe=4;};
-void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
-void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
-void(float num_bubbles) DeathBubbles;
-
 void() PainSound =
 {
 local float             rs;

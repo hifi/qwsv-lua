@@ -37,7 +37,7 @@ local modelindex_eyes, modelindex_player
 
 local nextmap
 
-local intermission_running = 0
+intermission_running = 0 -- used in player.lua
 local intermission_exittime = 0
 
 --[[
@@ -423,6 +423,7 @@ function PutClientInServer()
     self.dmgtime = 0
     self.swim_flag = 0
     self.pain_finished = 0
+    self.invisible_sound = 0
 
     DecodeLevelParms ()
     
