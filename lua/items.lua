@@ -935,6 +935,65 @@ function item_cells()
 end
 
 --[[
+QUAKED item_weapon (0 .5 .8) (0 0 0) (32 32 32) shotgun rocket spikes big
+DO NOT USE THIS!!!! IT WILL BE REMOVED!
+]]
+
+local WEAPON_SHOTGUN = 1
+local WEAPON_ROCKET = 2
+local WEAPON_SPIKES = 4
+local WEAPON_BIG = 8
+
+function item_weapon()
+    self.touch = ammo_touch
+
+    if (self.spawnflags & WEAPON_SHOTGUN) > 0 then
+        if (self.spawnflags & WEAPON_BIG) > 0 then
+            precache_model ("maps/b_shell1.bsp")
+            setmodel (self, "maps/b_shell1.bsp")
+            self.aflag = 40
+        else
+            precache_model ("maps/b_shell0.bsp")
+            setmodel (self, "maps/b_shell0.bsp")
+            self.aflag = 20
+        end
+        self.weapon = 1
+        self.netname = "shells"
+    end
+
+    if (self.spawnflags & WEAPON_SPIKES) > 0 then
+        if (self.spawnflags & WEAPON_BIG) > 0 then
+            precache_model ("maps/b_nail1.bsp")
+            setmodel (self, "maps/b_nail1.bsp")
+            self.aflag = 40
+        else
+            precache_model ("maps/b_nail0.bsp")
+            setmodel (self, "maps/b_nail0.bsp")
+            self.aflag = 20
+        end
+        self.weapon = 2
+        self.netname = "spikes"
+    end
+
+    if (self.spawnflags & WEAPON_ROCKET) > 0 then
+        if (self.spawnflags & WEAPON_BIG) > 0 then
+            precache_model ("maps/b_rock1.bsp")
+            setmodel (self, "maps/b_rock1.bsp")
+            self.aflag = 10
+        else
+            precache_model ("maps/b_rock0.bsp")
+            setmodel (self, "maps/b_rock0.bsp")
+            self.aflag = 5
+        end
+        self.weapon = 3
+        self.netname = "rockets"
+    end
+
+    setsize (self, vec3(0,0,0), vec3(32,32,56))
+    StartItem ()
+end
+
+--[[
 ===============================================================================
 
 KEYS
