@@ -652,7 +652,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_EDICT(aiment);
     SET_EDICT(goalentity);
     SET_FLOAT(spawnflags);
-    SET_EDICT(target);
+    SET_REF(target);
     SET_REF(targetname);
     SET_FLOAT(dmg_take);
     SET_FLOAT(dmg_save);
