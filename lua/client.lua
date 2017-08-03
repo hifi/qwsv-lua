@@ -139,7 +139,7 @@ function FindIntermission()
     end
 
     -- then look for the start position
-    spot = find (world, classname, "info_player_start")
+    spot = find (world, "classname", "info_player_start")
     if spot then
         return spot
     end
@@ -363,10 +363,10 @@ function SelectSpawnPoint()
         -- ack, they are all full, just pick one at random
         -- bprint (PRINT_HIGH, "Ackk! All spots are full. Selecting random spawn spot\n");
         totalspots = rint((random() * totalspots))
-        spot = find (world, classname, "info_player_deathmatch")
+        spot = find (world, "classname", "info_player_deathmatch")
         while totalspots > 0 do
             totalspots = totalspots - 1
-            spot = find (spot, classname, "info_player_deathmatch")
+            spot = find (spot, "classname", "info_player_deathmatch")
         end
         return spot
     end
@@ -592,7 +592,7 @@ function NextLevel()
         o.map = mapname
     else
         -- find a trigger changelevel
-        o = find(world, classname, "trigger_changelevel")
+        o = find(world, "classname", "trigger_changelevel")
         if not o or mapname == "start" then
             -- go back to same map if no trigger_changelevel
             o = spawn()

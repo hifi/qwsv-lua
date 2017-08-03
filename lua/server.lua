@@ -88,7 +88,7 @@ function t_movetarget()
     end
 
     --dprint ("t_movetarget\n");
-    self.movetarget = find (world, targetname, other.target)
+    self.movetarget = find (world, "targetname", other.target)
     self.goalentity = self.movetarget
     self.ideal_yaw = vectoyaw(self.goalentity.origin - self.origin)
     if not self.movetarget or self.movetarget == 0 then
