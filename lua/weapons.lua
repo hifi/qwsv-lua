@@ -715,7 +715,7 @@ function W_FireSpikes(ox)
         self.currentammo  = self.ammo_nails
     end
     dir = aim (self, 1000)
-    launch_spike (self.origin + '0 0 16' + v_right*ox, dir)
+    launch_spike (self.origin + vec3(0,0,16) + v_right*ox, dir)
 
     msg_entity = self
     WriteByte (MSG_ONE, SVC_SMALLKICK)
