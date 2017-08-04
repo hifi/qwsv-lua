@@ -461,19 +461,19 @@ function VelocityForDamage(dm)
     if #damage_inflictor.velocity > 0 then
         v = 0.5 * damage_inflictor.velocity
         v = v + (25 * normalize(self.origin-damage_inflictor.origin))
-        v_z = 100 + 240 * random()
-        v_x = v_x + (200 * crandom())
-        v_y = v_y + (200 * crandom())
+        v.z = 100 + 240 * random()
+        v.x = v.x + (200 * crandom())
+        v.y = v.y + (200 * crandom())
         --dprint ("Velocity gib\n")
     else
-        v_x = 100 * crandom()
-        v_y = 100 * crandom()
-        v_z = 200 + 100 * random()
+        v.x = 100 * crandom()
+        v.y = 100 * crandom()
+        v.z = 200 + 100 * random()
     end
 
-    --v_x = 100 * crandom()
-    --v_y = 100 * crandom()
-    --v_z = 200 + 100 * random()
+    --v.x = 100 * crandom()
+    --v.y = 100 * crandom()
+    --v.z = 200 + 100 * random()
 
     if dm > -50 then
         --dprint ("level 1\n")
@@ -498,9 +498,9 @@ function ThrowGib(gibname, dm)
     new.velocity = VelocityForDamage (dm)
     new.movetype = MOVETYPE_BOUNCE
     new.solid = SOLID_NOT
-    new.avelocity_x = random()*600
-    new.avelocity_y = random()*600
-    new.avelocity_z = random()*600
+    new.avelocity.x = random()*600
+    new.avelocity.y = random()*600
+    new.avelocity.z = random()*600
     new.think = SUB_Remove
     new.ltime = time
     new.nextthink = time + 10 + random()*10
@@ -518,7 +518,7 @@ function ThrowHead(gibname, dm)
     self.view_ofs = vec3(0,0,8)
     setsize(self, vec3(-16,-16,0), vec3(16,16,56))
     self.velocity = VelocityForDamage (dm)
-    self.origin_z = self.origin_z - 24
+    self.origin.z = self.origin.z - 24
     self.flags = self.flags - (self.flags & FL_ONGROUND)
     self.avelocity = crandom() * '0 600 0'
 end
@@ -599,8 +599,8 @@ function PlayerDie()
 
     DeathSound()
 
-    self.angles_x = 0
-    self.angles_z = 0
+    self.angles.x = 0
+    self.angles.z = 0
 
     if self.weapon == IT_AXE then
         player_die_ax1 ()
