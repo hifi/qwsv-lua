@@ -520,7 +520,7 @@ function ThrowHead(gibname, dm)
     self.velocity = VelocityForDamage (dm)
     self.origin.z = self.origin.z - 24
     self.flags = self.flags - (self.flags & FL_ONGROUND)
-    self.avelocity = crandom() * '0 600 0'
+    self.avelocity = crandom() * vec3(0,600,0)
 end
 
 function GibPlayer()
