@@ -458,7 +458,7 @@ end
 function VelocityForDamage(dm)
     local v
 
-    if vlen(damage_inflictor.velocity) > 0 then
+    if #damage_inflictor.velocity > 0 then
         v = 0.5 * damage_inflictor.velocity
         v = v + (25 * normalize(self.origin-damage_inflictor.origin))
         v_z = 100 + 240 * random()
