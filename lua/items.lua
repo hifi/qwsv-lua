@@ -637,8 +637,7 @@ function weapon_touch()
         return
     end
 
-    -- TODO: Determine whether this logic is correct; always true?!
-    if deathmatch ~= 3 or deathmatch ~=5 then
+    if deathmatch ~= 3 and deathmatch ~=5 then
         -- remove it in single player, or setup for respawning in deathmatch
         self.model = string_null
         self.solid = SOLID_NOT
