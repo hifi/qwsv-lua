@@ -424,7 +424,7 @@ function teleport_touch()
         end
         other.velocity = v_forward * 300
     end
-    other.flags = other.flags - other.flags & FL_ONGROUND
+    other.flags = other.flags - (other.flags & FL_ONGROUND)
 end
 
 --[[
