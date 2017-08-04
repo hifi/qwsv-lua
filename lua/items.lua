@@ -132,7 +132,7 @@ function r_touch()
     -- do the apropriate action
     other.invisible_time = 1
     other.invisible_finished = self.cnt
-    s = ftos(rint(other.invisible_finished - time))
+    s = tostring(rint(other.invisible_finished - time))
     bprint(PRINT_LOW, other.netname)
     bprint(PRINT_LOW, " recovered a Ring with ")
     bprint(PRINT_LOW, s)
@@ -1410,7 +1410,7 @@ function BackpackTouch()
             sprint(other, PRINT_LOW, ", ")
         end
         acount = 1
-        s = ftos(self.ammo_shells)
+        s = tostring(self.ammo_shells)
         sprint(other, PRINT_LOW, s)
         sprint(other, PRINT_LOW, " shells")
     end
@@ -1419,7 +1419,7 @@ function BackpackTouch()
             sprint(other, PRINT_LOW, ", ")
         end
         acount = 1
-        s = ftos(self.ammo_nails)
+        s = tostring(self.ammo_nails)
         sprint(other, PRINT_LOW, s)
         sprint(other, PRINT_LOW, " nails")
     end
@@ -1428,7 +1428,7 @@ function BackpackTouch()
             sprint(other, PRINT_LOW, ", ")
         end
         acount = 1
-        s = ftos(self.ammo_rockets)
+        s = tostring(self.ammo_rockets)
         sprint(other, PRINT_LOW, s)
         sprint(other, PRINT_LOW, " rockets")
     end
@@ -1437,7 +1437,7 @@ function BackpackTouch()
             sprint(other, PRINT_LOW, ", ")
         end
         acount = 1
-        s = ftos(self.ammo_cells)
+        s = tostring(self.ammo_cells)
         sprint(other, PRINT_LOW, s)
         sprint(other,PRINT_LOW, " cells")
     end
