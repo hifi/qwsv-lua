@@ -466,6 +466,7 @@ function VelocityForDamage(dm)
         v.y = v.y + (200 * crandom())
         --dprint ("Velocity gib\n")
     else
+        v = vec3(0,0,0)
         v.x = 100 * crandom()
         v.y = 100 * crandom()
         v.z = 200 + 100 * random()
