@@ -94,9 +94,9 @@ function DropQuad(timeleft)
     item = spawn()
     item.origin = self.origin
 
-    item.velocity_z = 300
-    item.velocity_x = -100 + (random() * 200)
-    item.velocity_y = -100 + (random() * 200)
+    item.velocity.z = 300
+    item.velocity.x = -100 + (random() * 200)
+    item.velocity.y = -100 + (random() * 200)
 
     item.flags = FL_ITEM
     item.solid = SOLID_TRIGGER
@@ -148,9 +148,9 @@ function DropRing()
     item = spawn()
     item.origin = self.origin
 
-    item.velocity_z = 300
-    item.velocity_x = -100 + (random() * 200)
-    item.velocity_y = -100 + (random() * 200)
+    item.velocity.z = 300
+    item.velocity.x = -100 + (random() * 200)
+    item.velocity.y = -100 + (random() * 200)
 
     item.flags = FL_ITEM
     item.solid = SOLID_TRIGGER
@@ -1510,9 +1510,9 @@ function DropBackpack()
     item.ammo_rockets = self.ammo_rockets
     item.ammo_cells = self.ammo_cells
 
-    item.velocity_z = 300
-    item.velocity_x = -100 + (random() * 200)
-    item.velocity_y = -100 + (random() * 200)
+    item.velocity.z = 300
+    item.velocity.x = -100 + (random() * 200)
+    item.velocity.y = -100 + (random() * 200)
 
     item.flags = FL_ITEM
     item.solid = SOLID_TRIGGER
