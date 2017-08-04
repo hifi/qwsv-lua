@@ -55,11 +55,11 @@ function SetChangeParms()
         SetNewParms ()
         return;
     end
- 
+
     -- remove items
-    self.items = self.items - (self.items & 
+    self.items = self.items - (self.items &
     (IT_KEY1 | IT_KEY2 | IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD) )
-    
+
     -- cap super health
     if self.health > 100 then
         self.health = 100
@@ -100,7 +100,7 @@ function DecodeLevelParms()
             SetNewParms () -- take away all stuff on starting new episode
         end
     end
-    
+
     self.items = parm1
     self.health = parm2
     self.armorvalue = parm3
@@ -143,7 +143,7 @@ function FindIntermission()
     if spot then
         return spot
     end
-    
+
     objerror ("FindIntermission: no spot")
 end
 
@@ -181,7 +181,7 @@ function IntermissionThink()
     if self.button0 == 0 and self.button1 == 0 and self.button2 == 0 then
         return
     end
-    
+
     GotoNextMap ()
 end
 
@@ -197,7 +197,7 @@ function execute_changelevel()
     local pos
 
     intermission_running = 1
-    
+
     -- enforce a wait time before allowing changelevel
     intermission_exittime = time + 5
 
@@ -214,7 +214,7 @@ function execute_changelevel()
     WriteAngle (MSG_ALL, pos.mangle.x)
     WriteAngle (MSG_ALL, pos.mangle.y)
     WriteAngle (MSG_ALL, pos.mangle.z)
-    
+
     other = find (world, "classname", "player")
     while other and other ~= world do
         other.takedamage = DAMAGE_NO
@@ -241,7 +241,7 @@ function changelevel_touch()
 
     bprint (PRINT_HIGH, other.netname)
     bprint (PRINT_HIGH," exited the level\n")
-    
+
     nextmap = self.map
 
     SUB_UseTargets ()
@@ -262,7 +262,7 @@ function trigger_changelevel()
     if not self.map or #self.map == 0 then
         objerror ("chagnelevel trigger doesn't have map")
     end
-    
+
     InitTrigger ()
     self.touch = changelevel_touch
 end
@@ -281,7 +281,7 @@ function respawn()
     CopyToBodyQue (self)
     -- set default spawn parms
     SetNewParms ()
-    -- respawn              
+    -- respawn
     PutClientInServer ()
 end
 
@@ -329,7 +329,7 @@ function SelectSpawnPoint()
     if spot then
         return spot
     end
-        
+
     -- choose a info_player_deathmatch point
     -- ok, find all spots that don't have players nearby
 
@@ -337,7 +337,6 @@ function SelectSpawnPoint()
     spot = find (world, "classname", "info_player_deathmatch")
     while spot do
         totalspots = totalspots + 1
-
         thing = findradius(spot.origin, 84)
         pcount = 0
 
@@ -370,12 +369,12 @@ function SelectSpawnPoint()
         end
         return spot
     end
-        
+
     -- We now have the number of spots available on the map in numspots
     -- Generate a random number between 1 and numspots
 
     numspots = numspots - 1
-    
+
     numspots = rint((random() * numspots ) )
 
     spot = spots
@@ -427,17 +426,17 @@ function PutClientInServer()
     self.invincible_sound = 0
 
     DecodeLevelParms ()
-    
+
     W_SetCurrentAmmo ()
 
     self.attack_finished = time
     self.th_pain = player_pain
     self.th_die = PlayerDie
-    
+
     self.deadflag = DEAD_NO
     -- paustime is set by teleporters to keep the player from moving a while
     self.pausetime = 0
-    
+
     spot = SelectSpawnPoint ()
 
     self.origin = spot.origin + vec3(0,0,1)
@@ -452,7 +451,7 @@ function PutClientInServer()
     modelindex_player = self.modelindex
 
     setsize (self, VEC_HULL_MIN, VEC_HULL_MAX)
-    
+
     self.view_ofs = vec3(0,0,22)
 
     -- Mod - Xian (May.20.97)
@@ -461,7 +460,7 @@ function PutClientInServer()
     self.velocity = vec3(0,0,0)
 
     player_stand1 ()
-    
+
     makevectors(self.angles)
     spawn_tfog (self.origin + v_forward*20)
 
@@ -587,7 +586,7 @@ function NextLevel()
             mapname = "e4m1"
             serverflags = serverflags - 7
         end
- 
+
         o = spawn()
         o.map = mapname
     else
@@ -619,7 +618,7 @@ function CheckRules()
     if timelimit > 0 and time >= timelimit then
         NextLevel ()
     end
-    
+
     if fraglimit > 0 and self.frags >= fraglimit then
         NextLevel ()
     end
@@ -636,7 +635,7 @@ function PlayerDeathThink()
         forward = forward - 20
         if forward <= 0 then
             self.velocity = vec3(0,0,0)
-        else    
+        else
             self.velocity = forward * normalize(self.velocity)
         end
     end
@@ -665,7 +664,7 @@ function PlayerJump()
     if (self.flags & FL_WATERJUMP) > 0 then
         return
     end
-    
+
     if self.waterlevel >= 2 then
         -- play swiming sound
         if self.swim_flag < time then
@@ -728,7 +727,7 @@ function WaterMove()
             self.pain_finished = time + 1
         end
     end
-    
+
     if self.waterlevel == 0 then
         if (self.flags & FL_INWATER) > 0 then
             -- play leave water sound
@@ -756,7 +755,7 @@ function WaterMove()
             T_Damage (self, world, world, 4*self.waterlevel)
         end
     end
-    
+
     if (self.flags & FL_INWATER) == 0 then
         -- player enter water sound
 
@@ -804,7 +803,7 @@ function PlayerPreThink()
         PlayerDeathThink ()
         return
     end
-    
+
     if self.deadflag == DEAD_DYING then
         return -- dying, so do nothing
     end
@@ -815,7 +814,7 @@ function PlayerPreThink()
         self.flags = self.flags | FL_JUMPRELEASED
     end
 
-    -- teleporters can force a non-moving pause time        
+    -- teleporters can force a non-moving pause time
     if time < self.pausetime then
         self.velocity = vec3(0,0,0)
     end
@@ -853,7 +852,7 @@ function CheckPowerups()
                 sound (self, CHAN_AUTO, "items/inv2.wav", 1, ATTN_NORM)
                 self.invisible_time = time + 1
             end
-            
+
             if self.invisible_time < time then
                 self.invisible_time = time + 1
                 stuffcmd (self, "bf\n")
@@ -866,7 +865,7 @@ function CheckPowerups()
             self.invisible_finished = 0
             self.invisible_time = 0
         end
-        
+
         -- use the eyes
         self.frame = 0
         self.modelindex = modelindex_eyes
@@ -885,13 +884,13 @@ function CheckPowerups()
                 sound (self, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NORM)
                 self.invincible_time = time + 1
             end
-            
+
             if self.invincible_time < time then
                 self.invincible_time = time + 1
                 stuffcmd (self, "bf\n")
             end
         end
-        
+
         if self.invincible_finished < time then
             -- just stopped
             self.items = self.items - IT_INVULNERABILITY
@@ -922,7 +921,7 @@ function CheckPowerups()
                 sound (self, CHAN_AUTO, "items/damage2.wav", 1, ATTN_NORM)
                 self.super_time = time + 1
             end
-            
+
             if self.super_time < time then
                 self.super_time = time + 1
                 stuffcmd (self, "bf\n")
@@ -951,7 +950,7 @@ function CheckPowerups()
         end
     end
 
-    -- suit 
+    -- suit
     if self.radsuit_finished > 0 then
         self.air_finished = time + 12 -- don't drown
 
@@ -963,7 +962,7 @@ function CheckPowerups()
                 sound (self, CHAN_AUTO, "items/suit2.wav", 1, ATTN_NORM)
                 self.rad_time = time + 1
             end
-            
+
             if self.rad_time < time then
                 self.rad_time = time + 1
                 stuffcmd (self, "bf\n")
@@ -998,13 +997,13 @@ function PlayerPostThink()
         return
     end
 
-    -- check to see if player landed and play landing sound 
+    -- check to see if player landed and play landing sound
     if (self.jump_flag < -300) and (self.flags & FL_ONGROUND) > 0 then
         if self.watertype == CONTENT_WATER then
             sound (self, CHAN_BODY, "player/h2ojump.wav", 1, ATTN_NORM)
         elseif self.jump_flag < -650 then
             self.deathtype = "falling"
-            T_Damage (self, world, world, 5) 
+            T_Damage (self, world, world, 5)
             sound (self, CHAN_VOICE, "player/land2.wav", 1, ATTN_NORM)
         else
             sound (self, CHAN_VOICE, "player/land.wav", 1, ATTN_NORM)
@@ -1028,7 +1027,7 @@ called when a player connects to a server
 function ClientConnect()
     bprint (PRINT_HIGH, self.netname)
     bprint (PRINT_HIGH, " entered the game\n")
-    
+
     -- a client connecting during an intermission can cause problems
     if intermission_running > 0 then
         GotoNextMap ()
@@ -1112,7 +1111,7 @@ function ClientObituary(targ, attacker)
             logfrag (targ, targ)
             return
         end
-    
+
         if targ.deathtype == "squish" then
             if teamplay > 0 and targteam == attackerteam and attackerteam ~= "" and targ ~= attacker then
                 logfrag (attacker, attacker)
