@@ -1047,7 +1047,7 @@ function ClientDisconnect()
     -- let everyone else know
     bprint (PRINT_HIGH, self.netname)
         bprint (PRINT_HIGH, " left the game with ")
-        bprint (PRINT_HIGH, tostring(self.frags))
+        bprint (PRINT_HIGH, tostring(math.floor(self.frags)))
         bprint (PRINT_HIGH, " frags\n")
     sound (self, CHAN_BODY, "player/tornoff2.wav", 1, ATTN_NONE)
     set_suicide_frame ()
