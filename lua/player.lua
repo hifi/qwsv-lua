@@ -1,27 +1,27 @@
 --[[
-  player.qc
+    player.qc
 
-  player functions/definitions
+    player functions/definitions
 
-  Copyright (C) 1996-1997  Id Software, Inc.
+    Copyright (C) 1996-1997    Id Software, Inc.
 
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  as published by the Free Software Foundation; either version 2
-  of the License, or (at your option) any later version.
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-  See the GNU General Public License for more details.
+    See the GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to:
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to:
 
-    Free Software Foundation, Inc.
-    59 Temple Place - Suite 330
-    Boston, MA  02111-1307, USA
+        Free Software Foundation, Inc.
+        59 Temple Place - Suite 330
+        Boston, MA    02111-1307, USA
 ]]--
 
 --[[
@@ -273,469 +273,434 @@ player_rocket4 = ffunc(rockatt4, "player_rocket5", function() self.weaponframe =
 player_rocket5 = ffunc(rockatt5, "player_rocket6", function() self.weaponframe = 5 end)
 player_rocket6 = ffunc(rockatt6, "player_run", function() self.weaponframe = 6 end)
 
---[[
-void() PainSound =
-{
-local float             rs;
+function PainSound()
+    local rs
 
-  if (self.health < 0)
-    return;
+    if self.health < 0 then
+        return
+    end
 
-  if (damage_attacker.classname == "teledeath")
-  {
-    sound (self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE);
-    return;
-  }
+    if damage_attacker.classname == "teledeath" then
+        sound (self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE)
+        return
+    end
 
-// water pain sounds
-  if (self.watertype == CONTENT_WATER && self.waterlevel == 3)
-  {
-    DeathBubbles(1);
-    if (random() > 0.5)
-      sound (self, CHAN_VOICE, "player/drown1.wav", 1, ATTN_NORM);
+    -- water pain sounds
+    if self.watertype == CONTENT_WATER and self.waterlevel == 3 then
+        DeathBubbles(1)
+        if random() > 0.5 then
+            sound (self, CHAN_VOICE, "player/drown1.wav", 1, ATTN_NORM)
+        else
+            sound (self, CHAN_VOICE, "player/drown2.wav", 1, ATTN_NORM)
+        end
+        return
+    end
+
+    -- slime pain sounds
+    if self.watertype == CONTENT_SLIME then
+        -- FIX ME: put in some steam here
+        if random() > 0.5 then
+            sound (self, CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM)
+        else
+            sound (self, CHAN_VOICE, "player/lburn2.wav", 1, ATTN_NORM)
+        end
+        return
+    end
+
+    if self.watertype == CONTENT_LAVA then
+        if random() > 0.5 then
+            sound (self, CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM)
+        else
+            sound (self, CHAN_VOICE, "player/lburn2.wav", 1, ATTN_NORM)
+        end
+        return
+    end
+
+    if self.pain_finished > time then
+        self.axhitme = 0
+        return
+    end
+    self.pain_finished = time + 0.5
+
+    -- don't make multiple pain sounds right after each other
+
+    -- ax pain sound
+    if self.axhitme == 1 then
+        self.axhitme = 0
+        sound (self, CHAN_VOICE, "player/axhit1.wav", 1, ATTN_NORM)
+        return
+    end
+
+    rs = rint((random() * 5) + 1)
+
+    self.noise = ""
+    if rs == 1 then
+        self.noise = "player/pain1.wav"
+    elseif rs == 2 then
+        self.noise = "player/pain2.wav"
+    elseif rs == 3 then
+        self.noise = "player/pain3.wav"
+    elseif rs == 4 then
+        self.noise = "player/pain4.wav"
+    elseif rs == 5 then
+        self.noise = "player/pain5.wav"
     else
-      sound (self, CHAN_VOICE, "player/drown2.wav", 1, ATTN_NORM);
-    return;
-  }
+        self.noise = "player/pain6.wav"
+    end
 
-// slime pain sounds
-  if (self.watertype == CONTENT_SLIME)
-  {
-// FIX ME       put in some steam here
-    if (random() > 0.5)
-      sound (self, CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM);
+    sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM)
+    return
+end
+
+player_pain1 = ffunc(pain1, "player_pain2", function() PainSound() self.weaponframe=0 end)
+player_pain2 = ffunc(pain2, "player_pain3", function() end)
+player_pain3 = ffunc(pain3, "player_pain4", function() end)
+player_pain4 = ffunc(pain4, "player_pain5", function() end)
+player_pain5 = ffunc(pain5, "player_pain6", function() end)
+player_pain6 = ffunc(pain6, "player_run", function() end)
+
+player_axpain1 = ffunc(axpain1, "player_axpain2", function() PainSound() self.weaponframe=0 end)
+player_axpain2 = ffunc(axpain2, "player_axpain3", function() end)
+player_axpain3 = ffunc(axpain3, "player_axpain4", function() end)
+player_axpain4 = ffunc(axpain4, "player_axpain5", function() end)
+player_axpain5 = ffunc(axpain5, "player_axpain6", function() end)
+player_axpain6 = ffunc(axpain6, "player_run", function() end)
+
+function player_pain()
+    if self.weaponframe > 0 then
+        return
+    end
+
+    if self.invisible_finished > time then
+        return -- eyes don't have pain frames
+    end
+
+    if self.weapon == IT_AXE then
+        player_axpain1()
     else
-      sound (self, CHAN_VOICE, "player/lburn2.wav", 1, ATTN_NORM);
-    return;
-  }
+        player_pain1()
+    end
+end
 
-  if (self.watertype == CONTENT_LAVA)
-  {
-    if (random() > 0.5)
-      sound (self, CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM);
+function DeathBubblesSpawn()
+    local bubble
+
+    if self.owner.waterlevel ~= 3 then
+        return
+    end
+    bubble = spawn()
+    setmodel(bubble, "progs/s_bubble.spr")
+    setorigin(bubble, self.owner.origin + vec3(0,0,24))
+    bubble.movetype = MOVETYPE_NOCLIP
+    bubble.solid = SOLID_NOT
+    bubble.velocity = vec3(0,0,15)
+    bubble.nextthink = time + 0.5
+    bubble.think = bubble_bob
+    bubble.classname = "bubble"
+    bubble.frame = 0
+    bubble.cnt = 0
+    setsize(bubble, vec3(-8,-8,-8), vec3(8,8,8))
+    self.nextthink = time + 0.1
+    self.think = DeathBubblesSpawn
+    self.air_finished = self.air_finished + 1
+    if self.air_finished >= self.bubble_count then
+        remove(self)
+    end
+end
+
+function DeathBubbles(num_bubbles)
+    local bubble_spawner
+
+    bubble_spawner = spawn()
+    setorigin(bubble_spawner, self.origin)
+    bubble_spawner.movetype = MOVETYPE_NONE
+    bubble_spawner.solid = SOLID_NOT
+    bubble_spawner.nextthink = time + 0.1
+    bubble_spawner.think = DeathBubblesSpawn
+    bubble_spawner.air_finished = 0
+    bubble_spawner.owner = self
+    bubble_spawner.bubble_count = num_bubbles
+end
+
+function DeathSound()
+    local rs
+
+    -- water death sounds
+    if self.waterlevel == 3 then
+        DeathBubbles(5)
+        sound(self, CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE)
+        return
+    end
+
+    rs = rint((random() * 4) + 1)
+    if rs == 1 then
+        self.noise = "player/death1.wav"
+    elseif rs == 2 then
+        self.noise = "player/death2.wav"
+    elseif rs == 3 then
+        self.noise = "player/death3.wav"
+    elseif rs == 4 then
+        self.noise = "player/death4.wav"
+    elseif rs == 5 then
+        self.noise = "player/death5.wav"
+    end
+
+    sound(self, CHAN_VOICE, self.noise, 1, ATTN_NONE)
+end
+
+
+function PlayerDead()
+    self.nextthink = -1
+    -- allow respawn after a certain time
+    self.deadflag = DEAD_DEAD
+end
+
+function VelocityForDamage(dm)
+    local v
+
+    if vlen(damage_inflictor.velocity) > 0 then
+        v = 0.5 * damage_inflictor.velocity
+        v = v + (25 * normalize(self.origin-damage_inflictor.origin))
+        v_z = 100 + 240 * random()
+        v_x = v_x + (200 * crandom())
+        v_y = v_y + (200 * crandom())
+        --dprint ("Velocity gib\n")
     else
-      sound (self, CHAN_VOICE, "player/lburn2.wav", 1, ATTN_NORM);
-    return;
-  }
+        v_x = 100 * crandom()
+        v_y = 100 * crandom()
+        v_z = 200 + 100 * random()
+    end
 
-  if (self.pain_finished > time)
-  {
-    self.axhitme = 0;
-    return;
-  }
-  self.pain_finished = time + 0.5;
+    --v_x = 100 * crandom()
+    --v_y = 100 * crandom()
+    --v_z = 200 + 100 * random()
 
-// don't make multiple pain sounds right after each other
+    if dm > -50 then
+        --dprint ("level 1\n")
+        v = v * 0.7
+    elseif dm > -200 then
+        --dprint ("level 3\n")
+        v = v * 2
+    else
+        v = v * 10
+    end
 
-// ax pain sound
-  if (self.axhitme == 1)
-  {
-    self.axhitme = 0;
-    sound (self, CHAN_VOICE, "player/axhit1.wav", 1, ATTN_NORM);
-    return;
-  }
+    return v
+end
 
+function ThrowGib(gibname, dm)
+    local new
 
-  rs = rint((random() * 5) + 1);
+    new = spawn()
+    new.origin = self.origin
+    setmodel(new, gibname)
+    setsize(new, vec3(0,0,0), vec3(0,0,0))
+    new.velocity = VelocityForDamage (dm)
+    new.movetype = MOVETYPE_BOUNCE
+    new.solid = SOLID_NOT
+    new.avelocity_x = random()*600
+    new.avelocity_y = random()*600
+    new.avelocity_z = random()*600
+    new.think = SUB_Remove
+    new.ltime = time
+    new.nextthink = time + 10 + random()*10
+    new.frame = 0
+    new.flags = 0
+end
 
-  self.noise = "";
-  if (rs == 1)
-    self.noise = "player/pain1.wav";
-  else if (rs == 2)
-    self.noise = "player/pain2.wav";
-  else if (rs == 3)
-    self.noise = "player/pain3.wav";
-  else if (rs == 4)
-    self.noise = "player/pain4.wav";
-  else if (rs == 5)
-    self.noise = "player/pain5.wav";
-  else
-    self.noise = "player/pain6.wav";
+function ThrowHead(gibname, dm)
+    setmodel(self, gibname)
+    self.frame = 0
+    self.nextthink = -1
+    self.movetype = MOVETYPE_BOUNCE
+    self.takedamage = DAMAGE_NO
+    self.solid = SOLID_NOT
+    self.view_ofs = vec3(0,0,8)
+    setsize(self, vec3(-16,-16,0), vec3(16,16,56))
+    self.velocity = VelocityForDamage (dm)
+    self.origin_z = self.origin_z - 24
+    self.flags = self.flags - (self.flags & FL_ONGROUND)
+    self.avelocity = crandom() * '0 600 0'
+end
 
-  sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM);
-  return;
-};
+function GibPlayer()
+    ThrowHead("progs/h_player.mdl", self.health)
+    ThrowGib("progs/gib1.mdl", self.health)
+    ThrowGib("progs/gib2.mdl", self.health)
+    ThrowGib("progs/gib3.mdl", self.health)
 
-void()  player_pain1 =  [       $pain1, player_pain2    ] {PainSound();self.weaponframe=0;};
-void()  player_pain2 =  [       $pain2, player_pain3    ] {};
-void()  player_pain3 =  [       $pain3, player_pain4    ] {};
-void()  player_pain4 =  [       $pain4, player_pain5    ] {};
-void()  player_pain5 =  [       $pain5, player_pain6    ] {};
-void()  player_pain6 =  [       $pain6, player_run      ] {};
+    self.deadflag = DEAD_DEAD
 
-void()  player_axpain1 =        [       $axpain1,       player_axpain2  ] {PainSound();self.weaponframe=0;};
-void()  player_axpain2 =        [       $axpain2,       player_axpain3  ] {};
-void()  player_axpain3 =        [       $axpain3,       player_axpain4  ] {};
-void()  player_axpain4 =        [       $axpain4,       player_axpain5  ] {};
-void()  player_axpain5 =        [       $axpain5,       player_axpain6  ] {};
-void()  player_axpain6 =        [       $axpain6,       player_run      ] {};
+    if damage_attacker.classname == "teledeath" then
+        sound(self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE)
+        return
+    elseif damage_attacker.classname == "teledeath2" then
+        sound(self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE)
+        return
+    end
 
-void() player_pain =
-{
-  if (self.weaponframe)
-    return;
+    if random() < 0.5 then
+        sound(self, CHAN_VOICE, "player/gib.wav", 1, ATTN_NONE)
+    else
+        sound(self, CHAN_VOICE, "player/udeath.wav", 1, ATTN_NONE)
+    end
+end
 
-  if (self.invisible_finished > time)
-    return;         // eyes don't have pain frames
+function PlayerDie()
+    local i
+    local s
 
-  if (self.weapon == IT_AXE)
-    player_axpain1 ();
-  else
-    player_pain1 ();
-};
+    self.items = self.items - (self.items & IT_INVISIBILITY)
 
-void() player_diea1;
-void() player_dieb1;
-void() player_diec1;
-void() player_died1;
-void() player_diee1;
-void() player_die_ax1;
+    if tonumber(infokey(world,"dq")) ~= 0 and self.super_damage_finished > 0 then
+        DropQuad(self.super_damage_finished - time)
+        bprint(PRINT_LOW, self.netname)
+        if deathmatch == 4 then
+            bprint(PRINT_LOW, " lost an OctaPower with ")
+        else
+            bprint(PRINT_LOW, " lost a quad with ")
+        end
+        s = tostring(rint(self.super_damage_finished - time))
+        bprint(PRINT_LOW, s)
+        bprint(PRINT_LOW, " seconds remaining\n")
+    end
 
-void() DeathBubblesSpawn =
-{
-local entity    bubble;
-  if (self.owner.waterlevel != 3)
-    return;
-  bubble = spawn();
-  setmodel (bubble, "progs/s_bubble.spr");
-  setorigin (bubble, self.owner.origin + '0 0 24');
-  bubble.movetype = MOVETYPE_NOCLIP;
-  bubble.solid = SOLID_NOT;
-  bubble.velocity = '0 0 15';
-  bubble.nextthink = time + 0.5;
-  bubble.think = bubble_bob;
-  bubble.classname = "bubble";
-  bubble.frame = 0;
-  bubble.cnt = 0;
-  setsize (bubble, '-8 -8 -8', '8 8 8');
-  self.nextthink = time + 0.1;
-  self.think = DeathBubblesSpawn;
-  self.air_finished = self.air_finished + 1;
-  if (self.air_finished >= self.bubble_count)
-    remove(self);
-};
+    if tonumber(infokey(world,"dr")) ~= 0 and self.invisible_finished > 0 then
+        bprint(PRINT_LOW, self.netname)
+        bprint(PRINT_LOW, " lost a ring with ")
+        s = tostring(rint(self.invisible_finished - time))
+        bprint(PRINT_LOW, s)
+        bprint(PRINT_LOW, " seconds remaining\n")
+        DropRing(self.invisible_finished - time)
+    end
 
-void(float num_bubbles) DeathBubbles =
-{
-local entity    bubble_spawner;
+    self.invisible_finished = 0 -- don't die as eyes
+    self.invincible_finished = 0
+    self.super_damage_finished = 0
+    self.radsuit_finished = 0
+    self.modelindex = modelindex_player -- don't use eyes
 
-  bubble_spawner = spawn();
-  setorigin (bubble_spawner, self.origin);
-  bubble_spawner.movetype = MOVETYPE_NONE;
-  bubble_spawner.solid = SOLID_NOT;
-  bubble_spawner.nextthink = time + 0.1;
-  bubble_spawner.think = DeathBubblesSpawn;
-  bubble_spawner.air_finished = 0;
-  bubble_spawner.owner = self;
-  bubble_spawner.bubble_count = num_bubbles;
-  return;
-};
+    DropBackpack()
 
+    self.weaponmodel = ""
+    self.view_ofs = vec3(0,0,-8)
+    self.deadflag = DEAD_DYING
+    self.solid = SOLID_NOT
+    self.flags = self.flags - (self.flags & FL_ONGROUND)
+    self.movetype = MOVETYPE_TOSS
+    if self.velocity.z < 10 then
+        self.velocity.z = self.velocity.z + random()*300
+    end
 
-void() DeathSound =
-{
-local float             rs;
+    if self.health < -40 then
+        GibPlayer()
+        return
+    end
 
-  // water death sounds
-  if (self.waterlevel == 3)
-  {
-    DeathBubbles(5);
-    sound (self, CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE);
-    return;
-  }
+    DeathSound()
 
-  rs = rint ((random() * 4) + 1);
-  if (rs == 1)
-    self.noise = "player/death1.wav";
-  if (rs == 2)
-    self.noise = "player/death2.wav";
-  if (rs == 3)
-    self.noise = "player/death3.wav";
-  if (rs == 4)
-    self.noise = "player/death4.wav";
-  if (rs == 5)
-    self.noise = "player/death5.wav";
+    self.angles_x = 0
+    self.angles_z = 0
 
-  sound (self, CHAN_VOICE, self.noise, 1, ATTN_NONE);
-  return;
-};
+    if self.weapon == IT_AXE then
+        player_die_ax1 ()
+        return
+    end
 
+    i = cvar("temp1")
+    if not i or i ~= 0 then
+        i = 1 + floor(random()*6)
+    end
 
-void() PlayerDead =
-{
-  self.nextthink = -1;
-// allow respawn after a certain time
-  self.deadflag = DEAD_DEAD;
-};
+    if i == 1 then
+        player_diea1()
+    elseif i == 2 then
+        player_dieb1()
+    elseif i == 3 then
+        player_diec1()
+    elseif i == 4 then
+        player_died1()
+    else
+        player_diee1()
+    end
+end
 
-vector(float dm) VelocityForDamage =
-{
-  local vector v;
+function set_suicide_frame()
+    -- used by kill command and disconnect commands
+    if self.model ~= "progs/player.mdl" then
+        return; -- already gibbed
+    end
+    self.frame = deatha11
+    self.solid = SOLID_NOT
+    self.movetype = MOVETYPE_TOSS
+    self.deadflag = DEAD_DEAD
+    self.nextthink = -1
+end
 
-  if (vlen(damage_inflictor.velocity)>0)
-  {
-    v = 0.5 * damage_inflictor.velocity;
-    v = v + (25 * normalize(self.origin-damage_inflictor.origin));
-    v_z = 100 + 240 * random();
-    v_x = v_x + (200 * crandom());
-    v_y = v_y + (200 * crandom());
-    //dprint ("Velocity gib\n");
-  }
-  else
-  {
-    v_x = 100 * crandom();
-    v_y = 100 * crandom();
-    v_z = 200 + 100 * random();
-  }
+player_diea1 = ffunc(deatha1, "player_diea2", function() end)
+player_diea2 = ffunc(deatha2, "player_diea3", function() end)
+player_diea3 = ffunc(deatha3, "player_diea4", function() end)
+player_diea4 = ffunc(deatha4, "player_diea5", function() end)
+player_diea5 = ffunc(deatha5, "player_diea6", function() end)
+player_diea6 = ffunc(deatha6, "player_diea7", function() end)
+player_diea7 = ffunc(deatha7, "player_diea8", function() end)
+player_diea8 = ffunc(deatha8, "player_diea9", function() end)
+player_diea9 = ffunc(deatha9, "player_diea10", function() end)
+player_diea10 = ffunc(deatha10, "player_diea11", function() end)
+player_diea11 = ffunc(deatha11, "player_diea11", function() PlayerDead() end)
 
-  //v_x = 100 * crandom();
-  //v_y = 100 * crandom();
-  //v_z = 200 + 100 * random();
+player_dieb1 = ffunc(deathb1, "player_dieb2", function() end)
+player_dieb2 = ffunc(deathb2, "player_dieb3", function() end)
+player_dieb3 = ffunc(deathb3, "player_dieb4", function() end)
+player_dieb4 = ffunc(deathb4, "player_dieb5", function() end)
+player_dieb5 = ffunc(deathb5, "player_dieb6", function() end)
+player_dieb6 = ffunc(deathb6, "player_dieb7", function() end)
+player_dieb7 = ffunc(deathb7, "player_dieb8", function() end)
+player_dieb8 = ffunc(deathb8, "player_dieb9", function() end)
+player_dieb9 = ffunc(deathb9, "player_dieb9", function() PlayerDead() end)
 
-  if (dm > -50)
-  {
-  //      dprint ("level 1\n");
-    v = v * 0.7;
-  }
-  else if (dm > -200)
-  {
-  //      dprint ("level 3\n");
-    v = v * 2;
-  }
-  else
-    v = v * 10;
+player_diec1 = ffunc(deathc1, "player_diec2", function() end)
+player_diec2 = ffunc(deathc2, "player_diec3", function() end)
+player_diec3 = ffunc(deathc3, "player_diec4", function() end)
+player_diec4 = ffunc(deathc4, "player_diec5", function() end)
+player_diec5 = ffunc(deathc5, "player_diec6", function() end)
+player_diec6 = ffunc(deathc6, "player_diec7", function() end)
+player_diec7 = ffunc(deathc7, "player_diec8", function() end)
+player_diec8 = ffunc(deathc8, "player_diec9", function() end)
+player_diec9 = ffunc(deathc9, "player_diec10", function() end)
+player_diec10 = ffunc(deathc10, "player_diec11", function() end)
+player_diec11 = ffunc(deathc11, "player_diec12", function() end)
+player_diec12 = ffunc(deathc12, "player_diec13", function() end)
+player_diec13 = ffunc(deathc13, "player_diec14", function() end)
+player_diec14 = ffunc(deathc14, "player_diec15", function() end)
+player_diec15 = ffunc(deathc15, "player_diec15", function() PlayerDead() end)
 
-  return v;
-};
+player_died1 = ffunc(deathd1, "player_died2", function() end)
+player_died2 = ffunc(deathd2, "player_died3", function() end)
+player_died3 = ffunc(deathd3, "player_died4", function() end)
+player_died4 = ffunc(deathd4, "player_died5", function() end)
+player_died5 = ffunc(deathd5, "player_died6", function() end)
+player_died6 = ffunc(deathd6, "player_died7", function() end)
+player_died7 = ffunc(deathd7, "player_died8", function() end)
+player_died8 = ffunc(deathd8, "player_died9", function() end)
+player_died9 = ffunc(deathd9, "player_died9", function() PlayerDead() end)
 
-void(string gibname, float dm) ThrowGib =
-{
-  local   entity new;
+player_diee1 = ffunc(deathe1, "player_diee2", function() end)
+player_diee2 = ffunc(deathe2, "player_diee3", function() end)
+player_diee3 = ffunc(deathe3, "player_diee4", function() end)
+player_diee4 = ffunc(deathe4, "player_diee5", function() end)
+player_diee5 = ffunc(deathe5, "player_diee6", function() end)
+player_diee6 = ffunc(deathe6, "player_diee7", function() end)
+player_diee7 = ffunc(deathe7, "player_diee8", function() end)
+player_diee8 = ffunc(deathe8, "player_diee9", function() end)
+player_diee9 = ffunc(deathe9, "player_diee9", function() PlayerDead() end)
 
-  new = spawn();
-  new.origin = self.origin;
-  setmodel (new, gibname);
-  setsize (new, '0 0 0', '0 0 0');
-  new.velocity = VelocityForDamage (dm);
-  new.movetype = MOVETYPE_BOUNCE;
-  new.solid = SOLID_NOT;
-  new.avelocity_x = random()*600;
-  new.avelocity_y = random()*600;
-  new.avelocity_z = random()*600;
-  new.think = SUB_Remove;
-  new.ltime = time;
-  new.nextthink = time + 10 + random()*10;
-  new.frame = 0;
-  new.flags = 0;
-};
-
-void(string gibname, float dm) ThrowHead =
-{
-  setmodel (self, gibname);
-  self.frame = 0;
-  self.nextthink = -1;
-  self.movetype = MOVETYPE_BOUNCE;
-  self.takedamage = DAMAGE_NO;
-  self.solid = SOLID_NOT;
-  self.view_ofs = '0 0 8';
-  setsize (self, '-16 -16 0', '16 16 56');
-  self.velocity = VelocityForDamage (dm);
-  self.origin_z = self.origin_z - 24;
-  self.flags = self.flags - (self.flags & FL_ONGROUND);
-  self.avelocity = crandom() * '0 600 0';
-};
-
-
-void() GibPlayer =
-{
-  ThrowHead ("progs/h_player.mdl", self.health);
-  ThrowGib ("progs/gib1.mdl", self.health);
-  ThrowGib ("progs/gib2.mdl", self.health);
-  ThrowGib ("progs/gib3.mdl", self.health);
-
-  self.deadflag = DEAD_DEAD;
-
-  if (damage_attacker.classname == "teledeath")
-  {
-    sound (self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE);
-    return;
-  }
-
-  if (damage_attacker.classname == "teledeath2")
-  {
-    sound (self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE);
-    return;
-  }
-
-  if (random() < 0.5)
-    sound (self, CHAN_VOICE, "player/gib.wav", 1, ATTN_NONE);
-  else
-    sound (self, CHAN_VOICE, "player/udeath.wav", 1, ATTN_NONE);
-};
-
-void() PlayerDie =
-{
-  local   float   i;
-  local string  s;
-  self.items = self.items - (self.items & IT_INVISIBILITY);
-
-  if ((stof(infokey(world,"dq"))) != 0)
-  {
-    if (self.super_damage_finished > 0)
-    {
-      DropQuad (self.super_damage_finished - time);
-      bprint (PRINT_LOW, self.netname);
-      if (deathmatch == 4)
-        bprint (PRINT_LOW, " lost an OctaPower with ");
-      else
-        bprint (PRINT_LOW, " lost a quad with ");
-      s = ftos(rint(self.super_damage_finished - time));
-      bprint (PRINT_LOW, s);
-      bprint (PRINT_LOW, " seconds remaining\n");
-    }
-  }
-
-  if ((stof(infokey(world,"dr"))) != 0)
-  {
-    if (self.invisible_finished > 0)
-    {
-      bprint (PRINT_LOW, self.netname);
-      bprint (PRINT_LOW, " lost a ring with ");
-      s = ftos(rint(self.invisible_finished - time));
-      bprint (PRINT_LOW, s);
-      bprint (PRINT_LOW, " seconds remaining\n");
-      DropRing (self.invisible_finished - time);
-    }
-  }
-
-  self.invisible_finished = 0;    // don't die as eyes
-  self.invincible_finished = 0;
-  self.super_damage_finished = 0;
-  self.radsuit_finished = 0;
-  self.modelindex = modelindex_player;    // don't use eyes
-
-  DropBackpack();
-
-  self.weaponmodel="";
-  self.view_ofs = '0 0 -8';
-  self.deadflag = DEAD_DYING;
-  self.solid = SOLID_NOT;
-  self.flags = self.flags - (self.flags & FL_ONGROUND);
-  self.movetype = MOVETYPE_TOSS;
-  if (self.velocity_z < 10)
-    self.velocity_z = self.velocity_z + random()*300;
-
-  if (self.health < -40)
-  {
-    GibPlayer ();
-    return;
-  }
-
-  DeathSound();
-
-  self.angles_x = 0;
-  self.angles_z = 0;
-
-  if (self.weapon == IT_AXE)
-  {
-    player_die_ax1 ();
-    return;
-  }
-
-  i = cvar("temp1");
-  if (!i)
-    i = 1 + floor(random()*6);
-
-  if (i == 1)
-    player_diea1();
-  else if (i == 2)
-    player_dieb1();
-  else if (i == 3)
-    player_diec1();
-  else if (i == 4)
-    player_died1();
-  else
-    player_diee1();
-
-};
-
-void() set_suicide_frame =
-{       // used by klill command and diconnect command
-  if (self.model != "progs/player.mdl")
-    return; // allready gibbed
-  self.frame = $deatha11;
-  self.solid = SOLID_NOT;
-  self.movetype = MOVETYPE_TOSS;
-  self.deadflag = DEAD_DEAD;
-  self.nextthink = -1;
-};
-
-
-void()  player_diea1    =       [       $deatha1,       player_diea2    ] {};
-void()  player_diea2    =       [       $deatha2,       player_diea3    ] {};
-void()  player_diea3    =       [       $deatha3,       player_diea4    ] {};
-void()  player_diea4    =       [       $deatha4,       player_diea5    ] {};
-void()  player_diea5    =       [       $deatha5,       player_diea6    ] {};
-void()  player_diea6    =       [       $deatha6,       player_diea7    ] {};
-void()  player_diea7    =       [       $deatha7,       player_diea8    ] {};
-void()  player_diea8    =       [       $deatha8,       player_diea9    ] {};
-void()  player_diea9    =       [       $deatha9,       player_diea10   ] {};
-void()  player_diea10   =       [       $deatha10,      player_diea11   ] {};
-void()  player_diea11   =       [       $deatha11,      player_diea11 ] {PlayerDead();};
-
-void()  player_dieb1    =       [       $deathb1,       player_dieb2    ] {};
-void()  player_dieb2    =       [       $deathb2,       player_dieb3    ] {};
-void()  player_dieb3    =       [       $deathb3,       player_dieb4    ] {};
-void()  player_dieb4    =       [       $deathb4,       player_dieb5    ] {};
-void()  player_dieb5    =       [       $deathb5,       player_dieb6    ] {};
-void()  player_dieb6    =       [       $deathb6,       player_dieb7    ] {};
-void()  player_dieb7    =       [       $deathb7,       player_dieb8    ] {};
-void()  player_dieb8    =       [       $deathb8,       player_dieb9    ] {};
-void()  player_dieb9    =       [       $deathb9,       player_dieb9    ] {PlayerDead();};
-
-void()  player_diec1    =       [       $deathc1,       player_diec2    ] {};
-void()  player_diec2    =       [       $deathc2,       player_diec3    ] {};
-void()  player_diec3    =       [       $deathc3,       player_diec4    ] {};
-void()  player_diec4    =       [       $deathc4,       player_diec5    ] {};
-void()  player_diec5    =       [       $deathc5,       player_diec6    ] {};
-void()  player_diec6    =       [       $deathc6,       player_diec7    ] {};
-void()  player_diec7    =       [       $deathc7,       player_diec8    ] {};
-void()  player_diec8    =       [       $deathc8,       player_diec9    ] {};
-void()  player_diec9    =       [       $deathc9,       player_diec10   ] {};
-void()  player_diec10   =       [       $deathc10,      player_diec11   ] {};
-void()  player_diec11   =       [       $deathc11,      player_diec12   ] {};
-void()  player_diec12   =       [       $deathc12,      player_diec13   ] {};
-void()  player_diec13   =       [       $deathc13,      player_diec14   ] {};
-void()  player_diec14   =       [       $deathc14,      player_diec15   ] {};
-void()  player_diec15   =       [       $deathc15,      player_diec15 ] {PlayerDead();};
-
-void()  player_died1    =       [       $deathd1,       player_died2    ] {};
-void()  player_died2    =       [       $deathd2,       player_died3    ] {};
-void()  player_died3    =       [       $deathd3,       player_died4    ] {};
-void()  player_died4    =       [       $deathd4,       player_died5    ] {};
-void()  player_died5    =       [       $deathd5,       player_died6    ] {};
-void()  player_died6    =       [       $deathd6,       player_died7    ] {};
-void()  player_died7    =       [       $deathd7,       player_died8    ] {};
-void()  player_died8    =       [       $deathd8,       player_died9    ] {};
-void()  player_died9    =       [       $deathd9,       player_died9    ] {PlayerDead();};
-
-void()  player_diee1    =       [       $deathe1,       player_diee2    ] {};
-void()  player_diee2    =       [       $deathe2,       player_diee3    ] {};
-void()  player_diee3    =       [       $deathe3,       player_diee4    ] {};
-void()  player_diee4    =       [       $deathe4,       player_diee5    ] {};
-void()  player_diee5    =       [       $deathe5,       player_diee6    ] {};
-void()  player_diee6    =       [       $deathe6,       player_diee7    ] {};
-void()  player_diee7    =       [       $deathe7,       player_diee8    ] {};
-void()  player_diee8    =       [       $deathe8,       player_diee9    ] {};
-void()  player_diee9    =       [       $deathe9,       player_diee9    ] {PlayerDead();};
-
-void()  player_die_ax1  =       [       $axdeth1,       player_die_ax2  ] {};
-void()  player_die_ax2  =       [       $axdeth2,       player_die_ax3  ] {};
-void()  player_die_ax3  =       [       $axdeth3,       player_die_ax4  ] {};
-void()  player_die_ax4  =       [       $axdeth4,       player_die_ax5  ] {};
-void()  player_die_ax5  =       [       $axdeth5,       player_die_ax6  ] {};
-void()  player_die_ax6  =       [       $axdeth6,       player_die_ax7  ] {};
-void()  player_die_ax7  =       [       $axdeth7,       player_die_ax8  ] {};
-void()  player_die_ax8  =       [       $axdeth8,       player_die_ax9  ] {};
-void()  player_die_ax9  =       [       $axdeth9,       player_die_ax9  ] {PlayerDead();};
-]]--
+player_die_ax1 = ffunc(axdeth1, "player_die_ax2", function() end)
+player_die_ax2 = ffunc(axdeth2, "player_die_ax3", function() end)
+player_die_ax3 = ffunc(axdeth3, "player_die_ax4", function() end)
+player_die_ax4 = ffunc(axdeth4, "player_die_ax5", function() end)
+player_die_ax5 = ffunc(axdeth5, "player_die_ax6", function() end)
+player_die_ax6 = ffunc(axdeth6, "player_die_ax7", function() end)
+player_die_ax7 = ffunc(axdeth7, "player_die_ax8", function() end)
+player_die_ax8 = ffunc(axdeth8, "player_die_ax9", function() end)
+player_die_ax9 = ffunc(axdeth9, "player_die_ax9", function() PlayerDead() end)
