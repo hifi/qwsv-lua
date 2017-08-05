@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <sys/dir.h>
 #endif
 
+#include <time.h>
+
 cvar_t sys_nostdout = { "sys_nostdout", "0" };
 cvar_t sys_extrasleep = { "sys_extrasleep", "0" };
 
@@ -219,6 +221,10 @@ int main(int argc, char *argv[])
     extern int net_socket;
     struct timeval timeout;
     int j;
+    clock_t clock_total, clock_start, clock_end;
+    double clock_next;
+    int clock_frames;
+    qboolean benchmark;
 
     memset(&parms, 0, sizeof(parms));
 
@@ -233,6 +239,8 @@ int main(int argc, char *argv[])
         parms.memsize = (int) (Q_atof(com_argv[j + 1]) * 1024 * 1024);
     if ((parms.membase = malloc(parms.memsize)) == NULL)
         Sys_Error("Can't allocate %ld\n", parms.memsize);
+
+    benchmark = COM_CheckParm("-bench");
 
     parms.basedir = ".";
 
@@ -251,6 +259,8 @@ int main(int argc, char *argv[])
 // main loop
 //
     oldtime = Sys_DoubleTime() - 0.1;
+    clock_next = oldtime + 2.0;
+    clock_total = clock_frames = 0;
     while (1) {
         // select on the net socket and stdin
         // the only reason we have a timeout at all is so that if the last
@@ -271,7 +281,18 @@ int main(int argc, char *argv[])
         time = newtime - oldtime;
         oldtime = newtime;
 
+        clock_start = clock();
         SV_Frame(time);
+        clock_end = clock();
+
+        clock_total += clock_end - clock_start;
+        clock_frames++;
+
+        if (benchmark && newtime >= clock_next) {
+            Sys_Printf("%ld clocks/f (%ld clocks, %ld frames)\n", clock_total / clock_frames, clock_total, clock_frames);
+            clock_next = newtime + 2.0;
+            clock_total = clock_frames = 0;
+        }
 
         // extrasleep is just a way to generate a fucked up connection on purpose
         if (sys_extrasleep.value)
