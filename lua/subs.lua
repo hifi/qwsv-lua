@@ -198,16 +198,15 @@ void() SUB_CalcAngleMoveDone =
 };
 
 
-//=============================================================================
-
-void() DelayThink =
-{
-    activator = self.enemy;
-    SUB_UseTargets ();
-    remove(self);
-};
-
 --]]
+--=============================================================================
+
+function DelayThink()
+    activator = self.enemy
+    SUB_UseTargets ()
+    remove(self)
+end
+
 --[[
 ==============================
 SUB_UseTargets
