@@ -243,7 +243,7 @@ function train_use()
 end
 
 function train_wait()
-    if self.wait and self.wait > 0 then
+    if self.wait and self.wait ~= 0 then
         self.nextthink = self.ltime + self.wait
         sound (self, CHAN_NO_PHS_ADD+CHAN_VOICE, self.noise, 1, ATTN_NORM)
     else
@@ -261,7 +261,7 @@ function train_next()
     if not self.target or #self.target == 0 then
         objerror ("train_next: no next target")
     end
-    if targ.wait and targ.wait > 0 then
+    if targ.wait and targ.wait ~= 0 then
         self.wait = targ.wait
     else
         self.wait = 0
