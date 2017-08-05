@@ -553,7 +553,7 @@ function PlayerDie()
 
     self.items = self.items - (self.items & IT_INVISIBILITY)
 
-    if tonumber(infokey(world,"dq")) ~= 0 and self.super_damage_finished > 0 then
+    if (tonumber(infokey(world,"dq")) or 0) ~= 0 and self.super_damage_finished > 0 then
         DropQuad(self.super_damage_finished - time)
         bprint(PRINT_LOW, self.netname)
         if deathmatch == 4 then
@@ -566,7 +566,7 @@ function PlayerDie()
         bprint(PRINT_LOW, " seconds remaining\n")
     end
 
-    if tonumber(infokey(world,"dr")) ~= 0 and self.invisible_finished > 0 then
+    if (tonumber(infokey(world,"dr")) or 0) ~= 0 and self.invisible_finished > 0 then
         bprint(PRINT_LOW, self.netname)
         bprint(PRINT_LOW, " lost a ring with ")
         s = tostring(rint(self.invisible_finished - time))

@@ -540,7 +540,7 @@ function weapon_touch()
         return
     end
 
-    if tonumber(infokey(other,"w_switch")) == 0 then
+    if (tonumber(infokey(other,"w_switch")) or 0) == 0 then
         w_switch = 8
     else
         w_switch = tonumber(infokey(other,"w_switch")) or 0
@@ -1335,7 +1335,7 @@ function BackpackTouch()
         return
     end
 
-    if tonumber(infokey(other,"b_switch")) == 0 then
+    if (tonumber(infokey(other,"b_switch")) or 0) == 0 then
         b_switch = 8
     else
         b_switch = tonumber(infokey(other,"b_switch")) or 0
