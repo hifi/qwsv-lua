@@ -37,64 +37,64 @@ PLAYER
 --
 axrun1,axrun2,axrun3,axrun4,axrun5,axrun6 = 0,1,2,3,4,5
 
-rockrun1,rockrun2,rockrun3,rockrun4,rockrun5,rockrun6 = 0,1,2,3,4,5
+rockrun1,rockrun2,rockrun3,rockrun4,rockrun5,rockrun6 = 6,7,8,9,10,11
 
 --
 -- standing
 --
-stand1,stand2,stand3,stand4,stand5 = 0,1,2,3,4
+stand1,stand2,stand3,stand4,stand5 = 12,13,14,15,16
 
-axstnd1,axstnd2,axstnd3,axstnd4,axstnd5,axstnd6 = 0,1,2,3,4,5
-axstnd7,axstnd8,axstnd9,axstnd10,axstnd11,axstnd12 = 0,1,2,3,4,5
+axstnd1,axstnd2,axstnd3,axstnd4,axstnd5,axstnd6 = 17,18,19,20,21,22
+axstnd7,axstnd8,axstnd9,axstnd10,axstnd11,axstnd12 = 23,24,25,26,27,28
 
 --
 -- pain
 --
-axpain1,axpain2,axpain3,axpain4,axpain5,axpain6 = 0,1,2,3,4,5
+axpain1,axpain2,axpain3,axpain4,axpain5,axpain6 = 29,30,31,32,33,34
 
-pain1,pain2,pain3,pain4,pain5,pain6 = 0,1,2,3,4,5
+pain1,pain2,pain3,pain4,pain5,pain6 = 35,36,37,38,39,40
 
 
 --
 -- death
 --
 
-axdeth1,axdeth2,axdeth3,axdeth4,axdeth5,axdeth6 = 0,1,2,3,4,5
-axdeth7,axdeth8,axdeth9 = 0,1,2
+axdeth1,axdeth2,axdeth3,axdeth4,axdeth5,axdeth6 = 41,42,43,44,45,46
+axdeth7,axdeth8,axdeth9 = 47,48,49
 
-deatha1,deatha2,deatha3,deatha4,deatha5,deatha6,deatha7,deatha8 = 0,1,2,3,4,5,6,7
-deatha9,deatha10,deatha11 = 0,1,2
+deatha1,deatha2,deatha3,deatha4,deatha5,deatha6,deatha7,deatha8 = 50,51,52,53,54,55,56,57
+deatha9,deatha10,deatha11 = 58,59,60
 
-deathb1,deathb2,deathb3,deathb4,deathb5,deathb6,deathb7,deathb8 = 0,1,2,3,4,5,6,7
-deathb9 = 0
+deathb1,deathb2,deathb3,deathb4,deathb5,deathb6,deathb7,deathb8 = 61,62,63,64,65,66,67,68
+deathb9 = 69
 
-deathc1,deathc2,deathc3,deathc4,deathc5,deathc6,deathc7,deathc8 = 0,1,2,3,4,5,6,7
-deathc9,deathc10,deathc11,deathc12,deathc13,deathc14,deathc15 = 0,1,2,3,4,5,6,7
+deathc1,deathc2,deathc3,deathc4,deathc5,deathc6,deathc7,deathc8 = 70,71,72,73,74,75,76,77
+deathc9,deathc10,deathc11,deathc12,deathc13,deathc14,deathc15 = 78,79,80,81,82,83,84
 
-deathd1,deathd2,deathd3,deathd4,deathd5,deathd6,deathd7 = 0,1,2,3,4,5,6
-deathd8,deathd9 = 0,1
+deathd1,deathd2,deathd3,deathd4,deathd5,deathd6,deathd7 = 85,86,87,88,89,90,91
+deathd8,deathd9 = 92,93
 
-deathe1,deathe2,deathe3,deathe4,deathe5,deathe6,deathe7 = 0,1,2,3,4,5,6
-deathe8,deathe9 = 0,1
+deathe1,deathe2,deathe3,deathe4,deathe5,deathe6,deathe7 = 94,95,96,97,98,99,100
+deathe8,deathe9 = 101,102
 
 --
 -- attacks
 --
-nailatt1,nailatt2 = 0,1
+nailatt1,nailatt2 = 103,104
 
-light1,light2 = 0,1
+light1,light2 = 105,106
 
-rockatt1,rockatt2,rockatt3,rockatt4,rockatt5,rockatt6 = 0,1,2,3,4,5
+rockatt1,rockatt2,rockatt3,rockatt4,rockatt5,rockatt6 = 107,108,109,110,111,112
 
-shotatt1,shotatt2,shotatt3,shotatt4,shotatt5,shotatt6 = 0,1,2,3,4,5
+shotatt1,shotatt2,shotatt3,shotatt4,shotatt5,shotatt6 = 113,114,115,116,117,118
 
-axatt1,axatt2,axatt3,axatt4,axatt5,axatt6 = 0,1,2,3,4,5
+axatt1,axatt2,axatt3,axatt4,axatt5,axatt6 = 119,120,121,122,123,124
 
-axattb1,axattb2,axattb3,axattb4,axattb5,axattb6 = 0,1,2,3,4,5
+axattb1,axattb2,axattb3,axattb4,axattb5,axattb6 = 125,126,127,128,129,130
 
-axattc1,axattc2,axattc3,axattc4,axattc5,axattc6 = 0,1,2,3,4,5
+axattc1,axattc2,axattc3,axattc4,axattc5,axattc6 = 131,132,133,134,135,136
 
-axattd1,axattd2,axattd3,axattd4,axattd5,axattd6 = 0,1,2,3,4,5
+axattd1,axattd2,axattd3,axattd4,axattd5,axattd6 = 137,138,139,140,141,142
 
 
 --[[
