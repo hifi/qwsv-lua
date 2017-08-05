@@ -38,7 +38,7 @@ explosions and melee attacks.
 function CanDamage(targ, inflictor)
     -- bmodels need special checking because their origin is 0,0,0
     if targ.movetype == MOVETYPE_PUSH then
-        traceline(inflictor.origin, 0.5 * (targ.absmin + targ.absmax), true, self)
+        traceline(inflictor.origin, 0.5 * (targ.absmin + targ.absmax), TRUE, self)
         if trace_fraction == 1 then
             return true
         end
@@ -48,27 +48,27 @@ function CanDamage(targ, inflictor)
         return false
     end
     
-    traceline(inflictor.origin, targ.origin, true, self)
+    traceline(inflictor.origin, targ.origin, TRUE, self)
     if trace_fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(15,15,0), true, self)
+    traceline(inflictor.origin, targ.origin + vec3(15,15,0), TRUE, self)
     if trace_fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(-15,-15,0), true, self)
+    traceline(inflictor.origin, targ.origin + vec3(-15,-15,0), TRUE, self)
     if trace_fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(-15,15,0), true, self)
+    traceline(inflictor.origin, targ.origin + vec3(-15,15,0), TRUE, self)
     if trace_fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(15,-15,0), true, self)
+    traceline(inflictor.origin, targ.origin + vec3(15,-15,0), TRUE, self)
     if trace_fraction == 1 then
         return true
     end
