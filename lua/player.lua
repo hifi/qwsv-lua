@@ -24,6 +24,19 @@
         Boston, MA    02111-1307, USA
 ]]--
 
+-- frame function wrapper, the whole frame callback thing needs rethinking
+local function ffunc(frame, think, callback)
+    return function()
+        self.frame = frame
+        self.nextthink = time + 0.1
+        self.think = _G[think] -- sorry
+
+        if callback then
+            callback()
+        end
+    end
+end
+
 -- flips keys and values and zero indexes them
 local function makeframes(t)
     local r = {}

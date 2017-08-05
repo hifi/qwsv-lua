@@ -1,16 +1,3 @@
--- frame function wrapper
-function ffunc(frame, think, callback)
-    return function()
-        self.frame = frame
-        self.nextthink = time + 0.1
-        self.think = _G[think] -- sorry
-
-        if callback then
-            callback()
-        end
-    end
-end
-
 require "defs"
 require "subs"
 require "combat"
