@@ -68,7 +68,7 @@ function light()
         return
     end
 
-    if self.style >= 32 then
+    if self.style and self.style >= 32 then
         self.use = light_use
         if (self.spawnflags & START_OFF) > 0 then
             lightstyle(self.style, "a")
@@ -87,7 +87,7 @@ If targeted, it will toggle between on or off.
 Makes steady fluorescent humming sound
 --]]
 function light_fluoro()
-    if self.style >= 32 then
+    if self.style and self.style >= 32 then
         self.use = light_use
         if (self.spawnflags & START_OFF) > 0 then
             lightstyle(self.style, "a")
