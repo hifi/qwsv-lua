@@ -1331,7 +1331,7 @@ function BackpackTouch()
     local acount
     local b_switch
 
-    if deathmatch == 4 and other.invincible_time > 0 then
+    if deathmatch == 4 and other.invincible_time and other.invincible_time > 0 then
         return
     end
 
