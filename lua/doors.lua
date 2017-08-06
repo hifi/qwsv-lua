@@ -199,7 +199,7 @@ function door_trigger_touch()
         return
     end
 
-    if time < self.attack_finished then
+    if self.attack_finished and time < self.attack_finished then
         return
     end
     self.attack_finished = time + 1
@@ -234,7 +234,7 @@ function door_touch()
     if other.classname ~= "player" then
         return
     end
-    if self.owner.attack_finished > time then
+    if self.owner.attack_finished and self.owner.attack_finished > time then
         return
     end
 
@@ -676,7 +676,7 @@ function fd_secret_done()
 end
 
 function secret_blocked()
-    if time < self.attack_finished then
+    if self.attack_finished and time < self.attack_finished then
         return
     end
     self.attack_finished = time + 0.5
@@ -695,7 +695,7 @@ function secret_touch()
     if other.classname ~= "player" then
         return
     end
-    if self.attack_finished > time then
+    if self.attack_finished and self.attack_finished > time then
         return
     end
 

@@ -227,7 +227,7 @@ end
 --============================================================================
 
 function train_blocked()
-    if time < self.attack_finished then
+    if self.attack_finished and time < self.attack_finished then
         return
     end
     self.attack_finished = time + 0.5

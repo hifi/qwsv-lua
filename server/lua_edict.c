@@ -46,28 +46,6 @@ static void ED_EnsureFields(edict_t *ed)
 
     if (ed->fields == 0) {
         lua_newtable(L);
-
-        // set some defaults so that math works
-        lua_pushstring(L, "style");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        lua_pushstring(L, "speed");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        lua_pushstring(L, "wait");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        lua_pushstring(L, "delay");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
-        lua_pushstring(L, "attack_finished");
-        lua_pushnumber(L, 0);
-        lua_rawset(L, -3);
-
         ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 }
