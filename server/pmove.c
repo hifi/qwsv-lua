@@ -25,6 +25,8 @@ movevars_t movevars;
 
 playermove_t pmove;
 
+static pmplane_t groundplane;
+
 int onground;
 int waterlevel;
 int watertype;
@@ -568,6 +570,7 @@ void PM_CatagorizePosition(void)
         else
             onground = tr.ent;
         if (onground != -1) {
+            groundplane = tr.plane;
             pmove.waterjumptime = 0;
             if (!tr.startsolid && !tr.allsolid)
                 VectorCopy(tr.endpos, pmove.origin);
@@ -641,6 +644,10 @@ void JumpButton(void)
 
     if (pmove.oldbuttons & BUTTON_JUMP)
         return;                 // don't pogo stick
+
+    // jump fix, legend say this was by Tonik
+    if (pmove.velocity[2] < 0 && DotProduct(pmove.velocity, groundplane.normal) < -0.1)
+        PM_ClipVelocity (pmove.velocity, groundplane.normal, pmove.velocity, 1);
 
     onground = -1;
     pmove.velocity[2] += 270;
@@ -858,4 +865,9 @@ void PlayerMove(void)
 
     // set onground, watertype, and waterlevel for final spot
     PM_CatagorizePosition();
+
+    // this is to make sure landing sound is not played twice
+    // and falling damage is calculated correctly
+    if (!onground && pmove.velocity[2] < -300 && DotProduct(pmove.velocity, groundplane.normal) < -0.1)
+	PM_ClipVelocity (pmove.velocity, groundplane.normal, pmove.velocity, 1);
 }
