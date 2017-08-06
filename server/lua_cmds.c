@@ -313,6 +313,8 @@ int PF_normalize(lua_State *L)
         newvalue[2] = value1[2] * new;
     }
 
+    PUSH_GVEC3(trace_plane_normal);
+
     return 1;
 }
 

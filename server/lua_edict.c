@@ -821,61 +821,57 @@ void PR_ExecuteProgram(func_t fnum)
         pr_global_struct->self = EDICT_NUM(0)->ref;
         pr_global_struct->other = EDICT_NUM(0)->ref;
         pr_global_struct->world = EDICT_NUM(0)->ref;
+
+        PUSH_GREF(world);
+        PUSH_GREF(mapname);
+        PUSH_GFLOAT(serverflags);
+
+        // push them but we ignore the values for now
+        PUSH_GFLOAT(total_secrets);
+        PUSH_GFLOAT(total_monsters);
+        PUSH_GFLOAT(found_secrets);
+        PUSH_GFLOAT(killed_monsters);
+    }
+
+    if (fnum == pr_global_struct->StartFrame) {
+        GET_GFLOAT(force_retouch); // this should be fine
+        PUSH_GFLOAT(time);
     }
 
     if (pr_global_struct->self == 0)
         SV_Error("Executing a function with zero self, this is a bug.\n");
 
-    // most of these should be pushed only once per frame
+    // self and other always need to be pushed but they should be params
     PUSH_GREF(self);
     PUSH_GREF(other);
-    PUSH_GREF(world);
-    PUSH_GFLOAT(time);
-    PUSH_GFLOAT(frametime);
-    PUSH_GREF(newmis);
+    // pushing this improves frame efficiency by around 34% on Ryzen
     PUSH_GFLOAT(force_retouch);
-    PUSH_GREF(mapname);
-    PUSH_GFLOAT(serverflags);
-    PUSH_GFLOAT(total_secrets);
-    PUSH_GFLOAT(total_monsters);
-    PUSH_GFLOAT(found_secrets);
-    PUSH_GFLOAT(killed_monsters);
-    PUSH_GVEC3(v_forward);
-    PUSH_GVEC3(v_up);
-    PUSH_GVEC3(v_right);
-    PUSH_GFLOAT(trace_allsolid);
-    PUSH_GFLOAT(trace_startsolid);
-    PUSH_GFLOAT(trace_fraction);
-    PUSH_GVEC3(trace_endpos);
-    PUSH_GVEC3(trace_plane_normal);
-    PUSH_GFLOAT(trace_plane_dist);
-    PUSH_GREF(trace_ent);
-    PUSH_GFLOAT(trace_inopen);
-    PUSH_GFLOAT(trace_inwater);
-    PUSH_GREF(msg_entity);
-    PUSH_GFLOAT(parm1);
-    PUSH_GFLOAT(parm2);
-    PUSH_GFLOAT(parm3);
-    PUSH_GFLOAT(parm4);
-    PUSH_GFLOAT(parm5);
-    PUSH_GFLOAT(parm6);
-    PUSH_GFLOAT(parm7);
-    PUSH_GFLOAT(parm8);
-    PUSH_GFLOAT(parm9);
+
+    if (fnum == pr_global_struct->PutClientInServer) {
+        PUSH_GFLOAT(parm1);
+        PUSH_GFLOAT(parm2);
+        PUSH_GFLOAT(parm3);
+        PUSH_GFLOAT(parm4);
+        PUSH_GFLOAT(parm5);
+        PUSH_GFLOAT(parm6);
+        PUSH_GFLOAT(parm7);
+        PUSH_GFLOAT(parm8);
+        PUSH_GFLOAT(parm9);
+    }
 
     lua_call(L, 0, 0);
 
-    GET_GFLOAT(force_retouch);
-
-    GET_GFLOAT(parm1);
-    GET_GFLOAT(parm2);
-    GET_GFLOAT(parm3);
-    GET_GFLOAT(parm4);
-    GET_GFLOAT(parm5);
-    GET_GFLOAT(parm6);
-    GET_GFLOAT(parm7);
-    GET_GFLOAT(parm8);
-    GET_GFLOAT(parm9);
+    if (fnum == pr_global_struct->SetChangeParms || fnum == pr_global_struct->SetNewParms) {
+        GET_GFLOAT(parm1);
+        GET_GFLOAT(parm2);
+        GET_GFLOAT(parm3);
+        GET_GFLOAT(parm4);
+        GET_GFLOAT(parm5);
+        GET_GFLOAT(parm6);
+        GET_GFLOAT(parm7);
+        GET_GFLOAT(parm8);
+        GET_GFLOAT(parm9);
+    }
 }
 
 edict_t *EDICT_NUM(int n)
