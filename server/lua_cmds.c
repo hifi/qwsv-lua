@@ -179,6 +179,8 @@ int PF_setmodel(lua_State *L)
     if (!*check)
         PR_RunError("no precache: %s\n", m);
 
+    if ((*e)->v.model)
+        luaL_unref(L, LUA_REGISTRYINDEX, (*e)->v.model);
     (*e)->v.model = PR_SetString(m);
     (*e)->v.modelindex = i;
 

@@ -62,14 +62,13 @@ void ED_ClearEdict(edict_t * e)
 {
     e->free = false;
 
+    memset(&e->v, 0, sizeof(entvars_t));
+
     if (e->fields)
         luaL_unref(L, LUA_REGISTRYINDEX, e->fields);
 
     e->fields = 0;
     ED_EnsureFields(e);
-
-    // XXX: actually release refs
-    memset(&e->v, 0, sizeof(entvars_t));
 }
 
 /*
@@ -111,6 +110,12 @@ edict_t *ED_Alloc(void)
     return e;
 }
 
+#define FREE_REF(n) \
+    if (e->v.n) { \
+        luaL_unref(L, LUA_REGISTRYINDEX, e->v.n); \
+        e->v.n = 0; \
+    }
+
 /*
 =================
 ED_Free
@@ -119,23 +124,39 @@ Marks the edict as free
 FIXME: walk all entities and NULL out references to this entity
 =================
 */
-void ED_Free(edict_t * ed)
+void ED_Free(edict_t * e)
 {
-    SV_UnlinkEdict(ed);         // unlink from world bsp
+    SV_UnlinkEdict(e); // unlink from world bsp
 
-    ed->free = true;
-    ed->v.model = 0;
-    ed->v.takedamage = 0;
-    ed->v.modelindex = 0;
-    ed->v.colormap = 0;
-    ed->v.skin = 0;
-    ed->v.frame = 0;
-    VectorCopy(vec3_origin, ed->v.origin);
-    VectorCopy(vec3_origin, ed->v.angles);
-    ed->v.nextthink = -1;
-    ed->v.solid = 0;
+    FREE_REF(classname);
+    FREE_REF(model);
+    FREE_REF(touch);
+    FREE_REF(use);
+    FREE_REF(think);
+    FREE_REF(blocked);
+    FREE_REF(weaponmodel);
+    FREE_REF(netname);
+    FREE_REF(target);
+    FREE_REF(targetname);
+    FREE_REF(message);
+    FREE_REF(noise);
+    FREE_REF(noise1);
+    FREE_REF(noise2);
+    FREE_REF(noise3);
 
-    ed->freetime = sv.time;
+    e->free = true;
+    e->v.model = 0;
+    e->v.takedamage = 0;
+    e->v.modelindex = 0;
+    e->v.colormap = 0;
+    e->v.skin = 0;
+    e->v.frame = 0;
+    VectorCopy(vec3_origin, e->v.origin);
+    VectorCopy(vec3_origin, e->v.angles);
+    e->v.nextthink = -1;
+    e->v.solid = 0;
+
+    e->freetime = sv.time;
 }
 
 //===========================================================================
