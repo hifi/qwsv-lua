@@ -5,6 +5,7 @@ CFLAGS=-DSERVERONLY -Dstricmp=strcasecmp -g -Wall -fomit-frame-pointer -fno-stre
 LDFLAGS = -lm
 
 EXE = qwsv
+QCC = qcc
 
 OBJS = \
     server/sv_init.o \
@@ -41,6 +42,12 @@ LUA_OBJS = \
     server/lua_edict.o \
     server/lua_vector.o
 
+QCC_OBJS = \
+    compiler/qcc.o \
+    compiler/pr_lex.o \
+    compiler/pr_comp.o \
+    compiler/cmdlib.o
+
 ifdef USE_PR1
     OBJS += $(PR_OBJS)
 else
@@ -53,8 +60,13 @@ all: $(EXE)
 $(EXE) : $(OBJS)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJS) $(LUA_LIBS) $(LDFLAGS) 
 
-qwprogs:
-	cd qw && gmqcc -std=qcc
+$(QCC) : $(QCC_OBJS)
+	$(CC) $(CFLAGS) -o $(QCC) $(QCC_OBJS)
+
+progs: qw/qwprogs.dat
+
+qw/qwprogs.dat: $(QCC)
+	cd qw && ../$(QCC)
 
 clean:
-	$(RM) $(OBJS) $(EXE)
+	$(RM) $(OBJS) $(EXE) $(QCC_OBJS) $(QCC) qw/qwprogs.dat
