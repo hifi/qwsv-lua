@@ -24,10 +24,6 @@
         Boston, MA  02111-1307, USA
 --]]
 
--- use Lua booleans?
-FALSE                           = 0
-TRUE                            = 1
-
 -- edict.flags
 FL_FLY                          = 1
 FL_SWIM                         = 2

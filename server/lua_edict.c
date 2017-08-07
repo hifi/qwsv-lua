@@ -441,6 +441,12 @@ int ED_FindFunction(const char *name)
     return LUA_NOREF;
 }
 
+#define PUSH_BOOLEAN(s) \
+    if (strcmp(key, #s) == 0) { \
+        lua_pushboolean(L, (*e)->v.s); \
+        return 1; \
+    }
+
 #define PUSH_FLOAT(s) \
     if (strcmp(key, #s) == 0) { \
         lua_pushnumber(L, (*e)->v.s); \
@@ -516,7 +522,7 @@ static int ED_mt_index(lua_State *L)
     PUSH_FLOAT(button1);
     PUSH_FLOAT(button2);
     PUSH_FLOAT(impulse);
-    PUSH_FLOAT(fixangle);
+    PUSH_BOOLEAN(fixangle);
     PUSH_VEC3(v_angle);
     PUSH_REF(netname);
     PUSH_REF(enemy);
@@ -555,6 +561,12 @@ static int ED_mt_index(lua_State *L)
 
     return 1;
 }
+
+#define SET_BOOLEAN(s)  \
+    if (strcmp(key, #s) == 0) { \
+        (*e)->v.s = lua_toboolean(L, 3); \
+        return 0; \
+    }
 
 #define SET_FLOAT(s)  \
     if (strcmp(key, #s) == 0) { \
@@ -645,7 +657,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_FLOAT(button1);
     SET_FLOAT(button2);
     SET_FLOAT(impulse);
-    SET_FLOAT(fixangle);
+    SET_BOOLEAN(fixangle);
     SET_VEC3(v_angle);
     SET_REF(netname);
     SET_EDICT(enemy);

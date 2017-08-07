@@ -83,7 +83,7 @@ function SpectatorImpulseCommand()
         if self.goalentity ~= world then
             setorigin(self, self.goalentity.origin)
             self.angles = self.goalentity.angles
-            self.fixangle = TRUE -- turn this way immediately
+            self.fixangle = true -- turn this way immediately
         end
     end
 

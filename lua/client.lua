@@ -303,10 +303,6 @@ function ClientKill()
     respawn ()
 end
 
-function CheckSpawnPoint(v)
-    return FALSE
-end
-
 --[[
 ============
 SelectSpawnPoint
@@ -441,7 +437,7 @@ function PutClientInServer()
 
     self.origin = spot.origin + vec3(0,0,1)
     self.angles = spot.angles
-    self.fixangle = TRUE -- turn this way immediately
+    self.fixangle = true -- turn this way immediately
 
     -- oh, this is a hack!
     setmodel (self, "progs/eyes.mdl")
