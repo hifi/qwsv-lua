@@ -62,7 +62,7 @@ function q_touch()
     stuffcmd(other, "bf\n")
     self.solid = SOLID_NOT
     other.items = other.items | IT_QUAD
-    self.model = string_null
+    self.model = ""
     if deathmatch == 4 then
         other.armortype = 0
         other.armorvalue = 0 * 0.01
@@ -127,7 +127,7 @@ function r_touch()
     stuffcmd(other, "bf\n")
     self.solid = SOLID_NOT
     other.items = other.items | IT_INVISIBILITY
-    self.model = string_null
+    self.model = ""
 
     -- do the apropriate action
     other.invisible_time = 1
@@ -311,7 +311,7 @@ function health_touch()
 
     stuffcmd(other, "bf\n")
 
-    self.model = string_null
+    self.model = ""
     self.solid = SOLID_NOT
 
     -- Megahealth = rot down the player's super health
@@ -395,7 +395,7 @@ function armor_touch()
     other.items = other.items - (other.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit
 
     self.solid = SOLID_NOT
-    self.model = string_null
+    self.model = ""
     if deathmatch ~= 2 then
         self.nextthink = time + 20
     end
@@ -640,7 +640,7 @@ function weapon_touch()
     -- TODO: Determine whether this logic is correct; always true?!
     if deathmatch ~= 3 or deathmatch ~=5 then
         -- remove it in single player, or setup for respawning in deathmatch
-        self.model = string_null
+        self.model = ""
         self.solid = SOLID_NOT
         if deathmatch ~= 2 then
             self.nextthink = time + 30
@@ -818,7 +818,7 @@ function ammo_touch()
     self = stemp
 
     -- remove it in single player, or setup for respawning in deathmatch
-    self.model = string_null
+    self.model = ""
     self.solid = SOLID_NOT
     if deathmatch ~= 2 then
         self.nextthink = time + 30
@@ -1022,7 +1022,7 @@ function key_touch()
     other.items = other.items | self.items
 
     self.solid = SOLID_NOT
-    self.model = string_null
+    self.model = ""
 
     activator = other
     SUB_UseTargets() -- fire all targets / killtargets
@@ -1128,7 +1128,7 @@ function sigil_touch()
     sound(other, CHAN_ITEM, self.noise, 1, ATTN_NORM)
     stuffcmd(other, "bf\n")
     self.solid = SOLID_NOT
-    self.model = string_null
+    self.model = ""
     serverflags = serverflags | (self.spawnflags & 15)
     self.classname = "" -- so rune doors won't find it
 
@@ -1207,7 +1207,7 @@ function powerup_touch()
     stuffcmd(other, "bf\n")
     self.solid = SOLID_NOT
     other.items = other.items | self.items
-    self.model = string_null
+    self.model = ""
 
     -- do the apropriate action
     if self.classname == "item_artifact_envirosuit" then

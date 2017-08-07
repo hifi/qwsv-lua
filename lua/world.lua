@@ -371,8 +371,6 @@ function StartFrame()
     fraglimit = cvar("fraglimit")
     teamplay = cvar("teamplay")
     deathmatch = cvar("deathmatch")
-    
-    framecount = framecount + 1
 end
 
 --[[

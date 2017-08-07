@@ -216,16 +216,9 @@ MULTICAST_PVS_R = 5            -- within sight, reliable
 --
 -- globals
 --
-movedist = nil
-
-string_null = ""        -- null string, nothing should be held here
-empty_float = 0
-
 activator = nil         -- the entity that activated a trigger or brush
-
 damage_attacker = nil   -- set by T_Damage
-damage_inflictor = nil
-framecount = 0
+damage_inflictor = nil  -- set by T_Damage
 
 --
 -- cvars checked each frame

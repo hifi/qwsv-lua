@@ -133,7 +133,7 @@ function door_fire()
         sound (self, CHAN_VOICE, self.noise4, 1, ATTN_NORM)
     end
 
-    self.message = string_null -- no more message
+    self.message = "" -- no more message
     oself = self
 
     if (self.spawnflags & DOOR_TOGGLE) > 0 then
@@ -585,7 +585,7 @@ function fd_secret_use()
         return
     end
     
-    self.message = string_null -- no more message
+    self.message = "" -- no more message
 
     SUB_UseTargets() -- fire all targets / killtargets
     
