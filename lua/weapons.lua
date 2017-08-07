@@ -54,7 +54,7 @@ function W_FireAxe()
     local source
     local org
 
-    makevectors (self.v_angle)
+    local v_forward = makevectors (self.v_angle)
     source = self.origin + vec3(0,0,16)
     local trace = traceline (source, source + v_forward*64, MOVE_NORMAL, self)
     if trace.fraction == 1.0 then
@@ -90,6 +90,9 @@ end
 function wall_velocity()
     local vel
 
+    -- XXX: these creeped in from the previous call somewhere else, just doing *something*
+    local v_forward, v_right, v_up = makevectors(self.v_angle)
+
     vel = normalize (self.velocity)
     vel = normalize(vel + v_up*(random()- 0.5) + v_right*(random()- 0.5))
     vel = vel + 2*vec3(0,-1,0) -- XXX: was: trace_plane_normal, constant from fair dice roll
@@ -111,8 +114,6 @@ function SpawnMeatSpray(org, vel)
     missile.owner = self
     missile.movetype = MOVETYPE_BOUNCE
     missile.solid = SOLID_NOT
-
-    makevectors (self.angles)
 
     missile.velocity = vel
     missile.velocity.z = missile.velocity.z + 250 + 50*random()
@@ -235,7 +236,7 @@ BULLETS
 TraceAttack
 ================
 ]]
-function TraceAttack(trace, damage, dir)
+function TraceAttack(trace, damage, dir, v_up, v_right)
     local vel, org
 
     vel = normalize(dir + v_up*crandom() + v_right*crandom())
@@ -265,7 +266,7 @@ function FireBullets(shotcount, dir, spread)
     local direction
     local src
 
-    makevectors(self.v_angle)
+    local v_forward, v_right, v_up = makevectors(self.v_angle)
 
     src = self.origin + v_forward*10
     src.z = self.absmin.z + self.size.z * 0.7
@@ -279,7 +280,7 @@ function FireBullets(shotcount, dir, spread)
         direction = dir + crandom()*spread.x*v_right + crandom()*spread.y*v_up
         trace = traceline (src, src + direction*2048, MOVE_NORMAL, self)
         if trace.fraction ~= 1.0 then
-            TraceAttack (trace, 4, direction)
+            TraceAttack (trace, 4, direction, v_up, v_right)
         end
 
         shotcount = shotcount - 1
@@ -307,7 +308,7 @@ function W_FireShotgun()
         self.currentammo = self.ammo_shells
     end
 
-    FireBullets (6, v_forward, vec3(0.04,0.04,0))
+    FireBullets (6, makevectors(self.v_angle), vec3(0.04,0.04,0))
 end
 
 --[[
@@ -332,7 +333,7 @@ function W_FireSuperShotgun()
         self.ammo_shells = self.ammo_shells - 2
         self.currentammo = self.ammo_shells
     end
-    FireBullets (14, v_forward, vec3(0.14,0.08,0))
+    FireBullets (14, makevectors(self.v_angle), vec3(0.14,0.08,0))
 end
 
 --[[
@@ -407,7 +408,7 @@ function W_FireRocket()
     newmis.solid = SOLID_BBOX
 
     -- set newmis speed
-    makevectors (self.v_angle)
+    local v_forward = makevectors (self.v_angle)
     newmis.velocity = v_forward * 1000
     newmis.angles = vectoangles(newmis.velocity)
 
@@ -485,9 +486,11 @@ function LightningDamage(p1, p2, from, damage)
     end
 end
 
-function W_FireLightning()
+function W_FireLightning(v_forward)
     local org
     local cells
+
+    local v_forward = makevectors(self.v_angle)
 
     if self.ammo_cells < 1 then
         self.weapon = W_BestWeapon ()
@@ -607,7 +610,7 @@ function W_FireGrenade()
     newmis.classname = "grenade"
 
     -- set newmis speed
-    makevectors (self.v_angle)
+    local v_forward, v_right, v_up = makevectors (self.v_angle)
 
     if self.v_angle.x ~= 0 then
         newmis.velocity = v_forward*600 + v_up * 200 + crandom()*v_right*10 + crandom()*v_up*10
@@ -677,7 +680,7 @@ function W_FireSuperSpikes()
         self.ammo_nails = self.ammo_nails - 2
         self.currentammo = self.ammo_nails
     end
-    launch_spike (self.origin + vec3(0,0,16), v_forward)
+    launch_spike (self.origin + vec3(0,0,16), makevectors(self.v_angle))
     newmis.touch = superspike_touch
     setmodel (newmis, "progs/s_spike.mdl")
     setsize (newmis, VEC_ORIGIN, VEC_ORIGIN)
@@ -688,10 +691,10 @@ end
 function W_FireSpikes(ox)
     local old
 
-    makevectors (self.v_angle)
+    local v_forward, v_right = makevectors (self.v_angle)
 
     if self.ammo_nails >= 2 and self.weapon == IT_SUPER_NAILGUN then
-        W_FireSuperSpikes ()
+        W_FireSuperSpikes (v_forward)
         return
     end
 
@@ -909,7 +912,6 @@ function W_Attack()
         return
     end
 
-    makevectors(self.v_angle) -- calculate forward angle for velocity
     self.show_hostile = time + 1 -- wake monsters up
 
     if self.weapon == IT_AXE then

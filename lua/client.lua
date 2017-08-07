@@ -455,8 +455,7 @@ function PutClientInServer()
 
     player_stand1 ()
 
-    makevectors(self.angles)
-    spawn_tfog (self.origin + v_forward*20)
+    spawn_tfog (self.origin + (makevectors(self.angles)) * 20)
 
     spawn_tdeath (self.origin, self)
 
@@ -786,8 +785,6 @@ function PlayerPreThink()
     if self.view_ofs == vec3(0,0,0) then
         return -- intermission or finale
     end
-
-    makevectors (self.v_angle) -- is this still used
 
     self.deathtype = ""
 

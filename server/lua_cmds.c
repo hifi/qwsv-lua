@@ -89,18 +89,17 @@ makevectors(vector)
 */
 int PF_makevectors(lua_State *L)
 {
-    vec_t **v;
+    vec_t **v, *forward, *right, *up;
+
     v = luaL_checkudata(L, 1, "vec3_t");
 
-    AngleVectors((*v), pr_global_struct->v_forward,
-                 pr_global_struct->v_right, pr_global_struct->v_up);
+    forward = PR_Vec3_New(L);
+    right = PR_Vec3_New(L);
+    up = PR_Vec3_New(L);
 
-    // global variables need to be pushed back
-    PUSH_GVEC3(v_forward);
-    PUSH_GVEC3(v_up);
-    PUSH_GVEC3(v_right);
+    AngleVectors(*v, forward, right, up);
 
-    return 0;
+    return 3;
 }
 
 /*

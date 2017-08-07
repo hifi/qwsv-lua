@@ -40,8 +40,7 @@ function SetMovedir()
     elseif self.angles == vec3(0,-2,0) then
         self.movedir = vec3(0,0,-1)
     else
-        makevectors (self.angles)
-        self.movedir = v_forward
+        self.movedir = makevectors(self.angles)
     end
     
     self.angles = vec3(0,0,0)

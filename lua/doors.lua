@@ -600,7 +600,7 @@ function fd_secret_use()
     self.nextthink = self.ltime + 0.1
 
     temp = 1 - (self.spawnflags & SECRET_1ST_LEFT) -- 1 or -1
-    makevectors(self.mangle)
+    local v_forward, v_right, v_up = makevectors(self.mangle)
     
     if not self.t_width or self.t_width == 0 then
         if (self.spawnflags & SECRET_1ST_DOWN) > 0 then
