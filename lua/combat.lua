@@ -255,9 +255,7 @@ function T_RadiusDamage(inflictor, attacker, damage, ignore, dtype)
     local head;
     local org;
 
-    head = findradius(inflictor.origin, damage+40)
-    
-    while head do
+    for head in findradius(inflictor.origin, damage+40) do
         if head ~= ignore then
             if head.takedamage > 0 then
                 org = head.origin + (head.mins + head.maxs)*0.5
@@ -278,7 +276,6 @@ function T_RadiusDamage(inflictor, attacker, damage, ignore, dtype)
                 end
             end
         end
-        head = head.chain
     end
 end
 
@@ -291,9 +288,7 @@ function T_BeamDamage(attacker, damage)
     local points;
     local head;
     
-    head = findradius(attacker.origin, damage+40)
-    
-    while head do
+    for head in findradius(attacker.origin, damage+40) do
         if head.takedamage > 0 then
             points = 0.5 * #(attacker.origin - head.origin)
             if points < 0 then
@@ -309,7 +304,6 @@ function T_BeamDamage(attacker, damage)
                 end
             end
         end
-        head = head.chain
     end
 end
 

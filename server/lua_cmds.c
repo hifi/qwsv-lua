@@ -751,30 +751,19 @@ int PF_cvar_set(lua_State *L)
     return 0;
 }
 
-/*
-=================
-PF_findradius
-
-Returns a chain of entities that have origins within a spherical area
-
-findradius (origin, radius)
-=================
-*/
-int PF_findradius(lua_State *L)
+static int findradius_iterator(lua_State *L)
 {
-    edict_t *ent, *chain;
-    float rad;
+    edict_t *ent;
     vec_t *org;
     vec3_t eorg;
+    float rad;
     int i, j;
 
-    chain = (edict_t *) sv.edicts;
+    org = PR_Vec3_ToVec(L, lua_upvalueindex(1));
+    rad = luaL_checknumber(L, lua_upvalueindex(2));
+    i = lua_tointeger(L, lua_upvalueindex(3));
 
-    org = PR_Vec3_ToVec(L, 1);
-    rad = luaL_checknumber(L, 2);
-
-    ent = NEXT_EDICT(sv.edicts);
-    for (i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent)) {
+    for (; i < sv.num_edicts; i++, ent = EDICT_NUM(i)) {
         if (ent->free)
             continue;
         if (ent->v.solid == SOLID_NOT)
@@ -786,11 +775,31 @@ int PF_findradius(lua_State *L)
         if (Length(eorg) > rad)
             continue;
 
-        ent->v.chain = EDICT_TO_PROG(chain);
-        chain = ent;
+        lua_pushinteger(L, i);
+        lua_replace(L, lua_upvalueindex(3));
+
+        ED_PushEdict(L, ent);
+        return 1;
     }
 
-    ED_PushEdict(L, chain);
+    return 0;
+}
+
+/*
+=================
+PF_findradius
+
+Returns a chain of entities that have origins within a spherical area
+
+findradius (origin, radius)
+=================
+*/
+int PF_findradius(lua_State *L)
+{
+    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 2);
+    lua_pushnumber(L, 0);
+    lua_pushcclosure(L, findradius_iterator, 3);
     return 1;
 }
 

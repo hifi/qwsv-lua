@@ -333,14 +333,12 @@ function SelectSpawnPoint()
     spot = find (world, "classname", "info_player_deathmatch")
     while spot do
         totalspots = totalspots + 1
-        thing = findradius(spot.origin, 84)
         pcount = 0
 
-        while thing do
+        for thing in findradius(spot.origin, 84) do
             if thing.classname == "player" then
                 pcount = pcount + 1
             end
-            thing = thing.chain
         end
 
         if pcount == 0 then
