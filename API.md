@@ -49,3 +49,8 @@ Instead of setting `trace_` globals, we now return a Lua table that has the foll
     }
 }
 ```
+
+### findradius(vector, float)
+Returns a real Lua iterator instead of a chain of edicts.
+
+Usage: `for ent in findradius(self.origin, 50) do ... end`
