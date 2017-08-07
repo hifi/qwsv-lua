@@ -20,6 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "qwsvdef.h"
 
+// sv_main.c depends on this even if we don't use it
+cvar_t sv_aim = { "sv_aim", "2" };
+
 #define PR_RunError(a, ...) SV_Error(a)
 
 extern lua_State *L;
@@ -1126,96 +1129,6 @@ int PF_nextent(lua_State *L)
 }
 
 /*
-=============
-PF_aim
-
-Pick a vector for the player to shoot along
-vector aim(entity, missilespeed)
-=============
-*/
-cvar_t sv_aim = { "sv_aim", "2" };
-
-int PF_aim(lua_State *L)
-{
-    edict_t **ent, *check, *bestent;
-    vec3_t start, dir, end, bestdir;
-    int i, j;
-    trace_t tr;
-    float dist, bestdist;
-    char *noaim;
-    vec_t *ret;
-
-    ent = luaL_checkudata(L, 1, "edict_t");
-
-    ret = PR_Vec3_New(L);
-
-    VectorCopy((*ent)->v.origin, start);
-    start[2] += 20;
-
-    // noaim option
-    i = NUM_FOR_EDICT(*ent);
-    if (i > 0 && i < MAX_CLIENTS) {
-        noaim = Info_ValueForKey(svs.clients[i - 1].userinfo, "noaim");
-        if (atoi(noaim) > 0) {
-            VectorCopy(pr_global_struct->v_forward, ret);
-            return 1;
-        }
-    }
-    // try sending a trace straight
-    VectorCopy(pr_global_struct->v_forward, dir);
-    VectorMA(start, 2048, dir, end);
-    tr = SV_Move(start, vec3_origin, vec3_origin, end, false, *ent);
-    if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
-        && (!teamplay.value || (*ent)->v.team <= 0
-            || (*ent)->v.team != tr.ent->v.team)) {
-        VectorCopy(pr_global_struct->v_forward, ret);
-        return 1;
-    }
-
-    // try all possible entities
-    VectorCopy(dir, bestdir);
-    bestdist = sv_aim.value;
-    bestent = NULL;
-
-    check = NEXT_EDICT(sv.edicts);
-    for (i = 1; i < sv.num_edicts; i++, check = NEXT_EDICT(check)) {
-        if (check->v.takedamage != DAMAGE_AIM)
-            continue;
-        if (check == *ent)
-            continue;
-        if (teamplay.value && (*ent)->v.team > 0
-            && (*ent)->v.team == check->v.team)
-            continue;           // don't aim at teammate
-        for (j = 0; j < 3; j++)
-            end[j] = check->v.origin[j]
-                + 0.5 * (check->v.mins[j] + check->v.maxs[j]);
-        VectorSubtract(end, start, dir);
-        VectorNormalize(dir);
-        dist = DotProduct(dir, pr_global_struct->v_forward);
-        if (dist < bestdist)
-            continue;           // to far to turn
-        tr = SV_Move(start, vec3_origin, vec3_origin, end, false, *ent);
-        if (tr.ent == check) {  // can shoot at this one
-            bestdist = dist;
-            bestent = check;
-        }
-    }
-
-    if (bestent) {
-        VectorSubtract(bestent->v.origin, (*ent)->v.origin, dir);
-        dist = DotProduct(dir, pr_global_struct->v_forward);
-        VectorScale(pr_global_struct->v_forward, dist, end);
-        end[2] = dir[2];
-        VectorNormalize(end);
-        VectorCopy(end, ret);
-    } else {
-        VectorCopy(bestdir, ret);
-    }
-
-    return 1;
-}
-
-/*
 ==============
 PF_changeyaw
 
@@ -1677,7 +1590,6 @@ void PR_InstallBuiltins(void)
     lua_register(L, "rint", PF_rint);
     lua_register(L, "checkbottom", PF_checkbottom);
     lua_register(L, "nextent", PF_nextent);
-    lua_register(L, "aim", PF_aim);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

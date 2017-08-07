@@ -18,6 +18,9 @@ All edict fields that are not shared with C which were in `defs.qc` are gone. Th
 
 **Warning**: Lua does not allow doing arithmetic or string operations on `nil` so all access to custom fields need to be checked.
 
+### aim(edict, speed)
+Removed, use `v_forward` instead.
+
 ### ftos(float)
 Removed, use `tostring(float)` instead.
 

@@ -307,8 +307,7 @@ function W_FireShotgun()
         self.currentammo = self.ammo_shells
     end
 
-    dir = aim (self, 100000)
-    FireBullets (6, dir, vec3(0.04,0.04,0))
+    FireBullets (6, v_forward, vec3(0.04,0.04,0))
 end
 
 --[[
@@ -333,8 +332,7 @@ function W_FireSuperShotgun()
         self.ammo_shells = self.ammo_shells - 2
         self.currentammo = self.ammo_shells
     end
-    dir = aim (self, 100000)
-    FireBullets (14, dir, vec3(0.14,0.08,0))
+    FireBullets (14, v_forward, vec3(0.14,0.08,0))
 end
 
 --[[
@@ -410,8 +408,7 @@ function W_FireRocket()
 
     -- set newmis speed
     makevectors (self.v_angle)
-    newmis.velocity = aim(self, 1000)
-    newmis.velocity = newmis.velocity * 1000
+    newmis.velocity = v_forward * 1000
     newmis.angles = vectoangles(newmis.velocity)
 
     newmis.touch = T_MissileTouch
@@ -615,8 +612,7 @@ function W_FireGrenade()
     if self.v_angle.x ~= 0 then
         newmis.velocity = v_forward*600 + v_up * 200 + crandom()*v_right*10 + crandom()*v_up*10
     else
-        newmis.velocity = aim(self, 10000)
-        newmis.velocity = newmis.velocity * 600
+        newmis.velocity = v_forward * 600
         newmis.velocity.z = 200
     end
 
@@ -673,7 +669,6 @@ function launch_spike(org, dir)
 end
 
 function W_FireSuperSpikes()
-    local dir
     local old
 
     sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM)
@@ -682,8 +677,7 @@ function W_FireSuperSpikes()
         self.ammo_nails = self.ammo_nails - 2
         self.currentammo = self.ammo_nails
     end
-    dir = aim (self, 1000)
-    launch_spike (self.origin + vec3(0,0,16), dir)
+    launch_spike (self.origin + vec3(0,0,16), v_forward)
     newmis.touch = superspike_touch
     setmodel (newmis, "progs/s_spike.mdl")
     setsize (newmis, VEC_ORIGIN, VEC_ORIGIN)
@@ -692,7 +686,6 @@ function W_FireSuperSpikes()
 end
 
 function W_FireSpikes(ox)
-    local dir
     local old
 
     makevectors (self.v_angle)
@@ -714,8 +707,7 @@ function W_FireSpikes(ox)
         self.ammo_nails = self.ammo_nails - 1
         self.currentammo  = self.ammo_nails
     end
-    dir = aim (self, 1000)
-    launch_spike (self.origin + vec3(0,0,16) + v_right*ox, dir)
+    launch_spike (self.origin + vec3(0,0,16) + v_right*ox, v_forward)
 
     msg_entity = self
     WriteByte (MSG_ONE, SVC_SMALLKICK)
