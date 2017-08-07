@@ -191,13 +191,25 @@ static vec_t* str_tovector(const char *s)
     return NULL;
 }
 
-qboolean ED_SetField(edict_t *e, const char *key, const char *value)
+qboolean ED_SetField(edict_t *e, const char *key, char *value)
 {
     int i;
     char string[128];
     char *v, *w;
     vec_t *vec, *nvec;
     double *num;
+
+    // badly unescape NL in value
+    v = w = value;
+    while (*v != '\0') {
+        if (v > value && *v == 'n' && *(v - 1) == '\\') {
+            *(w-1) = '\n';
+            v++;
+        } else {
+            *w++ = *v++;
+        }
+    }
+    *w = '\0';
 
     // first handle C fields
     FIELD_FLOAT(sounds);
