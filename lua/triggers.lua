@@ -502,7 +502,7 @@ function trigger_onlyregistered_touch()
     if other.classname ~= "player" then
         return
     end
-    if self.attack_finished > time then
+    if self.attack_finished and self.attack_finished > time then
         return
     end
 
