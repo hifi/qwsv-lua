@@ -36,40 +36,42 @@ explosions and melee attacks.
 ============
 --]]
 function CanDamage(targ, inflictor)
+    local trace
+
     -- bmodels need special checking because their origin is 0,0,0
     if targ.movetype == MOVETYPE_PUSH then
-        traceline(inflictor.origin, 0.5 * (targ.absmin + targ.absmax), TRUE, self)
-        if trace_fraction == 1 then
+        trace = traceline(inflictor.origin, 0.5 * (targ.absmin + targ.absmax), MOVE_NOMONSTERS, self)
+        if trace.fraction == 1 then
             return true
         end
-        if trace_ent == targ then
+        if trace.ent == targ then
             return false
         end
         return false
     end
     
-    traceline(inflictor.origin, targ.origin, TRUE, self)
-    if trace_fraction == 1 then
+    trace = traceline(inflictor.origin, targ.origin, MOVE_NOMONSTERS, self)
+    if trace.fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(15,15,0), TRUE, self)
-    if trace_fraction == 1 then
+    trace = traceline(inflictor.origin, targ.origin + vec3(15,15,0), MOVE_NOMONSTERS, self)
+    if trace.fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(-15,-15,0), TRUE, self)
-    if trace_fraction == 1 then
+    trace = traceline(inflictor.origin, targ.origin + vec3(-15,-15,0), MOVE_NOMONSTERS, self)
+    if trace.fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(-15,15,0), TRUE, self)
-    if trace_fraction == 1 then
+    trace = traceline(inflictor.origin, targ.origin + vec3(-15,15,0), MOVE_NOMONSTERS, self)
+    if trace.fraction == 1 then
         return true
     end
 
-    traceline(inflictor.origin, targ.origin + vec3(15,-15,0), TRUE, self)
-    if trace_fraction == 1 then
+    trace = traceline(inflictor.origin, targ.origin + vec3(15,-15,0), MOVE_NOMONSTERS, self)
+    if trace.fraction == 1 then
         return true
     end
 

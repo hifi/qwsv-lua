@@ -56,21 +56,20 @@ function W_FireAxe()
 
     makevectors (self.v_angle)
     source = self.origin + vec3(0,0,16)
-    trace_fraction = 1337
-    traceline (source, source + v_forward*64, FALSE, self)
-    if trace_fraction == 1.0 then
+    local trace = traceline (source, source + v_forward*64, MOVE_NORMAL, self)
+    if trace.fraction == 1.0 then
         return
     end
 
-    org = trace_endpos - v_forward*4
+    org = trace.endpos - v_forward*4
 
-    if trace_ent.takedamage > 0 then
-        trace_ent.axhitme = 1
+    if trace.ent.takedamage > 0 then
+        trace.ent.axhitme = 1
         SpawnBlood (org, 20)
         if deathmatch > 3 then
-            T_Damage (trace_ent, self, self, 75)
+            T_Damage (trace.ent, self, self, 75)
         else
-            T_Damage (trace_ent, self, self, 20)
+            T_Damage (trace.ent, self, self, 20)
         end
     else
         -- hit wall
@@ -93,7 +92,7 @@ function wall_velocity()
 
     vel = normalize (self.velocity)
     vel = normalize(vel + v_up*(random()- 0.5) + v_right*(random()- 0.5))
-    vel = vel + 2*trace_plane_normal
+    vel = vel + 2*vec3(0,-1,0) -- XXX: was: trace_plane_normal, constant from fair dice roll
     vel = vel * 200
 
     return vel
@@ -236,19 +235,19 @@ BULLETS
 TraceAttack
 ================
 ]]
-function TraceAttack(damage, dir)
+function TraceAttack(trace, damage, dir)
     local vel, org
 
     vel = normalize(dir + v_up*crandom() + v_right*crandom())
-    vel = vel + 2*trace_plane_normal
+    vel = vel + 2*trace.plane.normal
     vel = vel * 200
 
-    org = trace_endpos - dir*4
+    org = trace.endpos - dir*4
 
-    if trace_ent.takedamage > 0 then
+    if trace.ent.takedamage > 0 then
         blood_count = blood_count + 1
         blood_org = org
-        AddMultiDamage (trace_ent, damage)
+        AddMultiDamage (trace.ent, damage)
     else
         puff_count = puff_count + 1
     end
@@ -273,14 +272,14 @@ function FireBullets(shotcount, dir, spread)
 
     ClearMultiDamage ()
 
-    traceline (src, src + dir*2048, FALSE, self)
-    puff_org = trace_endpos - dir*4
+    local trace = traceline (src, src + dir*2048, MOVE_NORMAL, self)
+    puff_org = trace.endpos - dir*4
 
     while shotcount > 0 do
         direction = dir + crandom()*spread.x*v_right + crandom()*spread.y*v_up
-        traceline (src, src + direction*2048, FALSE, self)
-        if trace_fraction ~= 1.0 then
-            TraceAttack (4, direction)
+        trace = traceline (src, src + direction*2048, MOVE_NORMAL, self)
+        if trace.fraction ~= 1.0 then
+            TraceAttack (trace, 4, direction)
         end
 
         shotcount = shotcount - 1
@@ -434,15 +433,15 @@ LIGHTNING
 ===============================================================================
 ]]
 
-function LightningHit(from, damage)
+function LightningHit(trace, from, damage)
     WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
     WriteByte (MSG_MULTICAST, TE_LIGHTNINGBLOOD)
-    WriteCoord (MSG_MULTICAST, trace_endpos.x)
-    WriteCoord (MSG_MULTICAST, trace_endpos.y)
-    WriteCoord (MSG_MULTICAST, trace_endpos.z)
-    multicast (trace_endpos, MULTICAST_PVS)
+    WriteCoord (MSG_MULTICAST, trace.endpos.x)
+    WriteCoord (MSG_MULTICAST, trace.endpos.y)
+    WriteCoord (MSG_MULTICAST, trace.endpos.z)
+    multicast (trace.endpos, MULTICAST_PVS)
 
-    T_Damage (trace_ent, from, from, damage)
+    T_Damage (trace.ent, from, from, damage)
 end
 
 --[[
@@ -453,6 +452,7 @@ LightningDamage
 function LightningDamage(p1, p2, from, damage)
     local e1,e2
     local f
+    local trace
 
     f = p2 - p1
     normalize (f)
@@ -464,27 +464,27 @@ function LightningDamage(p1, p2, from, damage)
     e1 = world
     e2 = world
 
-    traceline (p1, p2, FALSE, self)
+    trace = traceline (p1, p2, MOVE_NORMAL, self)
 
-    if trace_ent.takedamage > 0 then
-        LightningHit (from, damage)
+    if trace.ent and trace.ent.takedamage > 0 then
+        LightningHit (trace, from, damage)
         if self.classname == "player" then
             if other.classname == "player" then
-                trace_ent.velocity.z = trace_ent.velocity.z + 400
+                trace.ent.velocity.z = trace.ent.velocity.z + 400
             end
         end
     end
-    e1 = trace_ent
+    e1 = trace.ent
 
-    traceline (p1 + f, p2 + f, FALSE, self)
-    if trace_ent ~= e1 and trace_ent.takedamage > 0 then
-        LightningHit (from, damage)
+    trace = traceline (p1 + f, p2 + f, MOVE_NORMAL, self)
+    if trace.ent and trace.ent ~= e1 and trace.ent.takedamage > 0 then
+        LightningHit (trace, from, damage)
     end
-    e2 = trace_ent
+    e2 = trace.ent
 
-    traceline (p1 - f, p2 - f, FALSE, self)
-    if trace_ent ~= e1 and trace_ent ~= e2 and trace_ent.takedamage > 0 then
-        LightningHit (from, damage)
+    trace = traceline (p1 - f, p2 - f, MOVE_NORMAL, self)
+    if trace.ent and trace.ent ~= e1 and trace.ent ~= e2 and trace.ent.takedamage > 0 then
+        LightningHit (trace, from, damage)
     end
 end
 
@@ -534,7 +534,7 @@ function W_FireLightning()
 
     org = self.origin + vec3(0,0,16)
 
-    traceline (org, org + v_forward*600, TRUE, self)
+    local trace = traceline (org, org + v_forward*600, MOVE_NOMONSTERS, self)
 
     WriteByte (MSG_MULTICAST, SVC_TEMPENTITY)
     WriteByte (MSG_MULTICAST, TE_LIGHTNING2)
@@ -542,12 +542,12 @@ function W_FireLightning()
     WriteCoord (MSG_MULTICAST, org.x)
     WriteCoord (MSG_MULTICAST, org.y)
     WriteCoord (MSG_MULTICAST, org.z)
-    WriteCoord (MSG_MULTICAST, trace_endpos.x)
-    WriteCoord (MSG_MULTICAST, trace_endpos.y)
-    WriteCoord (MSG_MULTICAST, trace_endpos.z)
+    WriteCoord (MSG_MULTICAST, trace.endpos.x)
+    WriteCoord (MSG_MULTICAST, trace.endpos.y)
+    WriteCoord (MSG_MULTICAST, trace.endpos.z)
     multicast (org, MULTICAST_PHS)
 
-    LightningDamage (self.origin, trace_endpos + v_forward*4, self, 30)
+    LightningDamage (self.origin, trace.endpos + v_forward*4, self, 30)
 end
 
 

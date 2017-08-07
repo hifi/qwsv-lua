@@ -54,6 +54,11 @@ MOVETYPE_FLYMISSILE             = 9  -- fly with extra size against monsters
 MOVETYPE_BOUNCE                 = 10
 MOVETYPE_BOUNCEMISSILE          = 11 -- bounce with extra size
 
+-- trace
+MOVE_NORMAL                     = 0
+MOVE_NOMONSTERS                 = 1
+MOVE_MISSILE                    = 2
+
 -- edict.solid values
 SOLID_NOT                       = 0 -- no interaction with other objects
 SOLID_TRIGGER                   = 1 -- touch on edge, but not blocking

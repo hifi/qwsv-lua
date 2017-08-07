@@ -315,8 +315,6 @@ int PF_normalize(lua_State *L)
         newvalue[2] = value1[2] * new;
     }
 
-    PUSH_GVEC3(trace_plane_normal);
-
     return 1;
 }
 
@@ -504,48 +502,56 @@ Used for use tracing and shot targeting
 Traces are blocked by bbox and exact bsp entityes, and also slide box entities
 if the tryents flag is set.
 
-traceline (vector1, vector2, tryents)
+traceline (vector1, vector2, type)
 =================
 */
 int PF_traceline(lua_State *L)
 {
-    float *v1, *v2;
+    vec_t *v1, *v2, *tv;
     trace_t trace;
-    int nomonsters;
+    int type;
     edict_t **ent;
 
     v1 = PR_Vec3_ToVec(L, 1);
     v2 = PR_Vec3_ToVec(L, 2);
-    nomonsters = lua_tointeger(L, 3);
+    type = lua_tointeger(L, 3);
     ent = luaL_checkudata(L, 4, "edict_t");
 
-    trace = SV_Move(v1, vec3_origin, vec3_origin, v2, nomonsters, *ent);
+    trace = SV_Move(v1, vec3_origin, vec3_origin, v2, type, *ent);
 
-    pr_global_struct->trace_allsolid = trace.allsolid;
-    pr_global_struct->trace_startsolid = trace.startsolid;
-    pr_global_struct->trace_fraction = trace.fraction;
-    pr_global_struct->trace_inwater = trace.inwater;
-    pr_global_struct->trace_inopen = trace.inopen;
-    VectorCopy(trace.endpos, pr_global_struct->trace_endpos);
-    VectorCopy(trace.plane.normal, pr_global_struct->trace_plane_normal);
-    pr_global_struct->trace_plane_dist = trace.plane.dist;
-    if (trace.ent)
-        pr_global_struct->trace_ent = EDICT_TO_PROG(trace.ent);
-    else
-        pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
+    lua_newtable(L);
+    lua_pushboolean(L, trace.allsolid);
+    lua_setfield(L, -2, "allsolid");
+    lua_pushboolean(L, trace.startsolid);
+    lua_setfield(L, -2, "startsolid");
+    lua_pushboolean(L, trace.inopen);
+    lua_setfield(L, -2, "inopen");
+    lua_pushboolean(L, trace.inwater);
+    lua_setfield(L, -2, "inwater");
+    lua_pushnumber(L, trace.fraction);
+    lua_setfield(L, -2, "fraction");
+    tv = PR_Vec3_New(L);
+    VectorCopy(trace.endpos, tv);
+    lua_setfield(L, -2, "endpos");
 
-    // XXX: these really need to be return values
-    PUSH_GFLOAT(trace_allsolid);
-    PUSH_GFLOAT(trace_startsolid);
-    PUSH_GFLOAT(trace_fraction);
-    PUSH_GFLOAT(trace_inwater);
-    PUSH_GFLOAT(trace_inopen);
-    PUSH_GVEC3(trace_endpos);
-    PUSH_GVEC3(trace_plane_normal);
-    PUSH_GFLOAT(trace_plane_dist);
-    PUSH_GREF(trace_ent);
+    if (trace.ent) {
+        ED_PushEdict(L, trace.ent);
+    } else {
+        lua_pushnil(L);
+    }
 
-    return 0;
+    lua_setfield(L, -2, "ent");
+
+    // plane fields
+    lua_newtable(L);
+    tv = PR_Vec3_New(L);
+    VectorCopy(trace.plane.normal, tv);
+    lua_setfield(L, -2, "normal");
+    lua_pushnumber(L, trace.plane.dist);
+    lua_setfield(L, -2, "dist");
+    lua_setfield(L, -2, "plane");
+
+    return 1;
 }
 
 //============================================================================
