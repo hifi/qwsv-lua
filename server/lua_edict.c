@@ -858,7 +858,6 @@ void PR_ExecuteProgram(func_t fnum)
 
     if (fnum == pr_global_struct->StartFrame) {
         GET_GFLOAT(force_retouch); // this should be fine
-        PUSH_GFLOAT(time);
     }
 
     if (pr_global_struct->self == 0)
@@ -869,6 +868,8 @@ void PR_ExecuteProgram(func_t fnum)
     PUSH_GREF(other);
     // pushing this improves frame efficiency by around 34% on Ryzen
     PUSH_GFLOAT(force_retouch);
+    // time needs to be pushed for accuracy
+    PUSH_GFLOAT(time);
 
     if (fnum == pr_global_struct->PutClientInServer) {
         PUSH_GFLOAT(parm1);
