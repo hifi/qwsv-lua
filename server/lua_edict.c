@@ -343,7 +343,7 @@ void ED_LoadFromFile(char *data)
     inhibit = 0;
 
     // XXX: this is a stupid place to do this
-    for (i = 1; i < MAX_CLIENTS; i++) {
+    for (i = 1; i <= MAX_CLIENTS; i++) {
         ED_EnsureFields(EDICT_NUM(i));
     }
 
