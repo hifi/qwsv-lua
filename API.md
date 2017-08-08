@@ -19,7 +19,12 @@ All edict fields that are not shared with C which were in `defs.qc` are gone. Th
 **Warning**: Lua does not allow doing arithmetic or string operations on `nil` so all access to custom fields need to be checked.
 
 ### aim(edict, speed)
-Removed, use `v_forward` instead.
+Removed, use `v_forward` from `makevectors(vector)` instead. See below.
+
+### makevectors(vector)
+Returns the three vectors rather than sets them to globals.
+
+Usage: `local v_forward, v_right, v_up = makevectors(...)`
 
 ### ftos(float)
 Removed, use `tostring(float)` instead.
