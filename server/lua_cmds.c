@@ -422,9 +422,9 @@ int PF_ambientsound(lua_State *L)
     int i, soundnum;
 
     pos = PR_Vec3_ToVec(L, 1);
-    samp = lua_tostring(L, 2);
-    vol = lua_tonumber(L, 3);
-    attenuation = lua_tonumber(L, 4);
+    samp = luaL_checkstring(L, 2);
+    vol = luaL_checknumber(L, 3);
+    attenuation = luaL_checknumber(L, 4);
 
     // check to see if samp was properly precached
     for (soundnum = 0, check = sv.sound_precache; *check;
@@ -516,7 +516,7 @@ int PF_traceline(lua_State *L)
 
     v1 = PR_Vec3_ToVec(L, 1);
     v2 = PR_Vec3_ToVec(L, 2);
-    type = lua_tointeger(L, 3);
+    type = luaL_checkinteger(L, 3);
     ent = luaL_checkudata(L, 4, "edict_t");
 
     trace = SV_Move(v1, vec3_origin, vec3_origin, v2, type, *ent);
@@ -726,7 +726,7 @@ int PF_cvar(lua_State *L)
 {
     char *str;
 
-    str = (char *)lua_tostring(L, 1);
+    str = (char *)luaL_checkstring(L, 1);
 
     lua_pushnumber(L, Cvar_VariableValue(str));
     return 1;
@@ -743,8 +743,8 @@ int PF_cvar_set(lua_State *L)
 {
     char *var, *val;
 
-    var = (char *)lua_tostring(L, 1);
-    val = (char *)lua_tostring(L, 2);
+    var = (char *)luaL_checkstring(L, 1);
+    val = (char *)luaL_checkstring(L, 2);
 
     Cvar_Set(var, val);
     return 0;
@@ -810,7 +810,7 @@ PF_dprint
 */
 int PF_dprint(lua_State *L)
 {
-    Con_Printf("%s", lua_tostring(L, 1));
+    Con_Printf("%s", luaL_checkstring(L, 1));
     return 0;
 }
 
@@ -846,7 +846,7 @@ int PF_precache_sound(lua_State *L)
         PR_RunError
             ("PF_Precache_*: Precache can only be done in spawn functions");
 
-    s = lua_tostring(L, 1);
+    s = luaL_checkstring(L, 1);
     lua_pushvalue(L, 1);
 
     for (i = 0; i < MAX_SOUNDS; i++) {
@@ -870,7 +870,7 @@ int PF_precache_model(lua_State *L)
         PR_RunError
             ("PF_Precache_*: Precache can only be done in spawn functions");
 
-    s = lua_tostring(L, 1);
+    s = luaL_checkstring(L, 1);
     lua_pushvalue(L, 1);
 
     for (i = 0; i < MAX_MODELS; i++) {
@@ -991,8 +991,8 @@ int PF_lightstyle(lua_State *L)
     client_t *client;
     int j;
 
-    style = lua_tonumber(L, 1);
-    val = (char *)lua_tostring(L, 2);
+    style = luaL_checknumber(L, 1);
+    val = (char *)luaL_checkstring(L, 2);
 
     // change the string in sv
     sv.lightstyles[style] = val;
@@ -1061,7 +1061,9 @@ static int entities_iterator(lua_State *L)
         if (is_func) {
             lua_pushvalue(L, lua_upvalueindex(2));
             ED_PushEdict(L, ent);
-            lua_call(L, 1, 1);
+            if (lua_pcall(L, 1, 1, 0) != LUA_OK)
+                SV_Error((char *)lua_tostring(L, -1));
+            luaL_checktype(L, 1, LUA_TBOOLEAN);
             cont = !lua_toboolean(L, 1);
             lua_pop(L, 1);
 
@@ -1498,9 +1500,9 @@ int PF_vec3(lua_State *L)
 
     v = PR_Vec3_New(L);
 
-    v[0] = lua_tonumber(L, 1);
-    v[1] = lua_tonumber(L, 2);
-    v[2] = lua_tonumber(L, 3);
+    v[0] = luaL_checknumber(L, 1);
+    v[1] = luaL_checknumber(L, 2);
+    v[2] = luaL_checknumber(L, 3);
 
     return 1;
 }

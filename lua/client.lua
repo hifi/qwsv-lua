@@ -25,7 +25,8 @@
 
 ]]
 
-local modelindex_eyes, modelindex_player
+modelindex_eyes = nil
+modelindex_player = nil
 
 --[[
 =============================================================================

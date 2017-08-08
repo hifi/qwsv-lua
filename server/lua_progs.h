@@ -171,7 +171,7 @@ extern int num_prstr;
 
 #define GET_GFLOAT(s) \
     lua_getglobal(L, #s); \
-    pr_global_struct->s = lua_tonumber(L, -1); \
+    pr_global_struct->s = (lua_isnil(L, -1) ? 0 : luaL_checknumber(L, -1)); \
     lua_pop(L, 1); \
 
 //

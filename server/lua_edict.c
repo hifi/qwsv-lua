@@ -564,13 +564,14 @@ static int ED_mt_index(lua_State *L)
 
 #define SET_BOOLEAN(s)  \
     if (strcmp(key, #s) == 0) { \
+        luaL_checktype(L, 3, LUA_TBOOLEAN); \
         (*e)->v.s = lua_toboolean(L, 3); \
         return 0; \
     }
 
 #define SET_FLOAT(s)  \
     if (strcmp(key, #s) == 0) { \
-        (*e)->v.s = lua_tonumber(L, 3); \
+        (*e)->v.s = luaL_checknumber(L, 3); \
         return 0; \
     }
 
@@ -760,7 +761,6 @@ void PR_LoadProgs(void)
     lua_getglobal(L, "package");
     lua_getfield(L, -1, "path");
     path = lua_tostring(L, -1);
-    //lua_pop(L, 1);
 
     buf = Z_Malloc(strlen(path) + strlen(com_gamedir) + 8);
     sprintf(buf, "%s;%s/?.lua", path, com_gamedir);
@@ -781,8 +781,11 @@ void PR_LoadProgs(void)
     if (!code)
         SV_Error("No qwprogs.lua found.");
 
-    luaL_loadstring(L, (char *)code);
-    lua_call(L, 0, 0);
+    if (luaL_loadstring(L, (char *)code) != LUA_OK)
+        SV_Error((char *)lua_tostring(L, -1));
+
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+        SV_Error((char *)lua_tostring(L, -1));
 
     pr_global_struct->main = ED_FindFunction("main");
     pr_global_struct->StartFrame = ED_FindFunction("StartFrame");
@@ -883,7 +886,8 @@ void PR_ExecuteProgram(func_t fnum)
         PUSH_GFLOAT(parm9);
     }
 
-    lua_call(L, 0, 0);
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+        SV_Error((char *)lua_tostring(L, -1));
 
     if (fnum == pr_global_struct->SetChangeParms || fnum == pr_global_struct->SetNewParms) {
         GET_GFLOAT(parm1);
@@ -926,10 +930,7 @@ char *PR_GetString(int num)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, num);
 
-    if (!lua_isstring(L, -1))
-        SV_Error("PR_GetString() did not get a string");
-
-    snprintf(buf, sizeof(buf), "%s", lua_tostring(L, -1));
+    snprintf(buf, sizeof(buf), "%s", luaL_checkstring(L, -1));
 
     lua_pop(L, 1);
 

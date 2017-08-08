@@ -417,7 +417,7 @@ function teleport_touch()
     setorigin (other, t.origin)
     other.angles = t.mangle
     if other.classname == "player" then
-        other.fixangle = 1 -- turn this way immediately
+        other.fixangle = true -- turn this way immediately
         other.teleport_time = time + 0.7
         if (other.flags & FL_ONGROUND) > 0 then
             other.flags = other.flags - FL_ONGROUND
