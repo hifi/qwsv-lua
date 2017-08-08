@@ -1,6 +1,6 @@
 # qwsv-lua
 
-This project aims to be a complete conversion from QuakeC to Lua 5.3 of the original `qwprogs` game source and the required engine changes for `qwsv` to support running it.
+This project is a complete conversion from QuakeC to Lua 5.3 of the original `qwprogs` game source and the required engine changes for `qwsv` to support running it.
 
 ## Goals
 
@@ -8,6 +8,7 @@ This project aims to be a complete conversion from QuakeC to Lua 5.3 of the orig
  * High compatiblity with original `qwsv` (minimal changes to engine)
  * Portability to production quality forks of `qwsv` like MVDSV
  * Replace built-ins with Lua where possible (`vtos()` etc.)
+ * Clean up the source and API where it makes sense, see API.md
 
 ## Non-goals
 
@@ -46,8 +47,6 @@ Tested to build and run on:
  - Ubuntu 16.04 x86_64 running on Bash on Windows
 
 ## Disclaimer
-
-Please note this project is not yet feature complete, the engine integration optimized or the code high quality. Patches are always welcome when they advance towards the goals.
 
 Original QW source was chosen as the base for simplicity as many forks have extended the built-in functions of QW and those are not needed to run the original game.
 
