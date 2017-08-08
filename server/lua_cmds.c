@@ -831,50 +831,6 @@ int PF_Remove(lua_State *L)
     return 0;
 }
 
-
-// entity (entity start, .string field, string match) find = #5;
-int PF_Find(lua_State *L)
-{
-    edict_t **e;
-    const char *f;
-    const char *s, *t;
-    edict_t *ed;
-    int i;
-
-    e = luaL_checkudata(L, 1, "edict_t");
-    f = luaL_checkstring(L, 2);
-    s = luaL_checkstring(L, 3);
-
-    i = NUM_FOR_EDICT(*e);
-
-    for (i++; i < sv.num_edicts; i++) {
-        ed = EDICT_NUM(i);
-        if (ed->free)
-            continue;
-
-        t = NULL;
-
-        // XXX fix these
-        if (strcmp(f, "classname") == 0) {
-            t = PR_GetString(ed->v.classname);
-        }
-        else if (strcmp(f, "targetname") == 0) {
-            t = PR_GetString(ed->v.targetname);
-        } else {
-            SV_Error("PF_Find() called with unknown field");
-        }
-
-        if (!t)
-            continue;
-        if (!strcmp(t, s)) {
-            ED_PushEdict(L, ed);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 int PF_precache_file(lua_State *L)
 {
     // precache_file is only used to copy files with qcc, it does nothing
@@ -1099,34 +1055,61 @@ int PF_pointcontents(lua_State *L)
     return 1;
 }
 
-/*
-=============
-PF_nextent
-
-entity nextent(entity)
-=============
-*/
-int PF_nextent(lua_State *L)
+static int entities_iterator(lua_State *L)
 {
     int i;
-    edict_t **tent, *ent;
+    edict_t *ent;
+    qboolean is_func, cont;
 
-    tent = luaL_checkudata(L, 1, "edict_t");
-    i = NUM_FOR_EDICT(*tent);
-    while (1) {
-        i++;
-        if (i == sv.num_edicts) {
-            ED_PushEdict(L, sv.edicts);
-            return 1;
-        }
+    i = lua_tointeger(L, lua_upvalueindex(1));
+    is_func = lua_isfunction(L, lua_upvalueindex(2));
+
+    for (; i < sv.num_edicts; i++) {
         ent = EDICT_NUM(i);
-        if (!ent->free) {
+
+        if (ent->free)
+            continue;
+
+        // filter
+        if (is_func) {
+            lua_pushvalue(L, lua_upvalueindex(2));
             ED_PushEdict(L, ent);
-            return 1;
+            lua_call(L, 1, 1);
+            cont = !lua_toboolean(L, 1);
+            lua_pop(L, 1);
+
+            if (cont)
+                continue;
         }
+
+        lua_pushinteger(L, i + 1);
+        lua_replace(L, lua_upvalueindex(1));
+
+        ED_PushEdict(L, ent);
+        return 1;
     }
 
     return 0;
+}
+
+/*
+=============
+PF_entities
+
+iterator entities(filter)
+=============
+*/
+int PF_entities(lua_State *L)
+{
+    lua_pushnumber(L, 0);
+
+    if (lua_isfunction(L, 1))
+        lua_pushvalue(L, 1);
+    else
+        lua_pushnil(L);
+
+    lua_pushcclosure(L, entities_iterator, 2);
+    return 1;
 }
 
 /*
@@ -1540,7 +1523,6 @@ void PR_InstallBuiltins(void)
     lua_register(L, "dprint", PF_dprint);
     lua_register(L, "precache_model", PF_precache_model);
     lua_register(L, "precache_model2", PF_precache_model);
-    lua_register(L, "find", PF_Find);
     lua_register(L, "findradius", PF_findradius);
     lua_register(L, "setmodel", PF_setmodel);
     lua_register(L, "setsize", PF_setsize);
@@ -1589,7 +1571,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "walkmove", PF_walkmove);
     lua_register(L, "rint", PF_rint);
     lua_register(L, "checkbottom", PF_checkbottom);
-    lua_register(L, "nextent", PF_nextent);
+    lua_register(L, "entities", PF_entities);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

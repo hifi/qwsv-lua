@@ -38,6 +38,9 @@ Removed, use `tonumber(string)` instead.
 ### vlen(vector)
 Removed, use `#vector` instead.
 
+### nextent(entity)
+Removed, use `entities()` iterator instead.
+
 ### traceline(vector, vector, type, edict)
 Third argument was changed from boolean `nomonsters` to integer `type`. `TRUE`in QuakeC was defined as `1` which equals to `MOVE_NOMONSTERS`. `MOVE_*` enums were introduced to replace that.
 
@@ -62,3 +65,22 @@ Instead of setting `trace_` globals, we now return a Lua table that has the foll
 Returns a real Lua iterator instead of a chain of edicts.
 
 Usage: `for ent in findradius(self.origin, 50) do ... end`
+
+### find(starte, field, value)
+Deprecated, use generic `entities()` iterator with a filter instead.
+
+This has been reimplemented in pure Lua in `defs.lua` until removed completely.
+
+New built-ins
+-------------
+These replace or complement existing built-ins where needed.
+
+### vec3(x,y,x)
+
+Initializes a three point vector.
+
+### entities(filter)
+
+Returns an iterator that can be used to go through all entities/edicts.
+
+Optionally takes a function that is used to filter results, it must return a boolean.

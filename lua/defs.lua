@@ -228,3 +228,25 @@ timelimit   = 0
 fraglimit   = 0
 deathmatch  = 0
 rj          = 1
+
+--
+-- dirty find() replacement as a filter for entities()
+--
+function find(start, field, value)
+    local found_start = false
+
+    return entities(function(e)
+        if not found_start then
+            if e == start then
+                found_start = true
+            end
+            return false
+        end
+
+        if e[field] and e[field] == value then
+            return true
+        end
+
+        return false
+    end)()
+end
