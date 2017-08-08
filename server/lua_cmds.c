@@ -762,7 +762,8 @@ static int findradius_iterator(lua_State *L)
     rad = luaL_checknumber(L, lua_upvalueindex(2));
     i = lua_tointeger(L, lua_upvalueindex(3));
 
-    for (; i < sv.num_edicts; i++, ent = EDICT_NUM(i)) {
+    for (; i < sv.num_edicts; i++) {
+        ent = EDICT_NUM(i);
         if (ent->free)
             continue;
         if (ent->v.solid == SOLID_NOT)
@@ -774,7 +775,7 @@ static int findradius_iterator(lua_State *L)
         if (Length(eorg) > rad)
             continue;
 
-        lua_pushinteger(L, i);
+        lua_pushinteger(L, i + 1);
         lua_replace(L, lua_upvalueindex(3));
 
         ED_PushEdict(L, ent);
