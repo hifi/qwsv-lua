@@ -26,6 +26,9 @@ Returns the three vectors rather than sets them to globals.
 
 Usage: `local v_forward, v_right, v_up = makevectors(...)`
 
+### fabs(float)
+Removed, use `math.abs(float)` instead.
+
 ### ftos(float)
 Removed, use `tostring(float)` instead.
 

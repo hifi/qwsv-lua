@@ -148,5 +148,5 @@ function func_button()
     self.state = STATE_BOTTOM
 
     self.pos1 = self.origin
-    self.pos2 = self.pos1 + self.movedir*(fabs(self.movedir*self.size) - self.lip)
+    self.pos2 = self.pos1 + self.movedir*(math.abs(self.movedir*self.size) - self.lip)
 end

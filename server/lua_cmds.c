@@ -814,14 +814,6 @@ int PF_dprint(lua_State *L)
     return 0;
 }
 
-int PF_fabs(lua_State *L)
-{
-    float v;
-    v = luaL_checknumber(L, 1);
-    lua_pushnumber(L, fabs(v));
-    return 1;
-}
-
 int PF_Spawn(lua_State *L)
 {
     edict_t *ed;
@@ -1583,7 +1575,6 @@ void PR_InstallBuiltins(void)
     lua_register(L, "WriteEntity", PF_WriteEntity);
     lua_register(L, "multicast", PF_multicast);
     lua_register(L, "droptofloor", PF_droptofloor);
-    lua_register(L, "fabs", PF_fabs);
     lua_register(L, "normalize", PF_normalize);
     lua_register(L, "vectoangles", PF_vectoangles);
     lua_register(L, "pointcontents", PF_pointcontents);
