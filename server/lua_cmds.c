@@ -1012,19 +1012,6 @@ int PF_lightstyle(lua_State *L)
     return 0;
 }
 
-int PF_rint(lua_State *L)
-{
-    float f;
-    f = luaL_checknumber(L, 1);
-
-    if (f > 0)
-        lua_pushnumber(L, (int) (f + 0.5));
-    else
-        lua_pushnumber(L, (int) (f - 0.5));
-
-    return 1;
-}
-
 /*
 =============
 PF_checkbottom
@@ -1569,7 +1556,6 @@ void PR_InstallBuiltins(void)
     lua_register(L, "break", PF_break);
     lua_register(L, "checkclient", PF_checkclient);
     lua_register(L, "walkmove", PF_walkmove);
-    lua_register(L, "rint", PF_rint);
     lua_register(L, "checkbottom", PF_checkbottom);
     lua_register(L, "entities", PF_entities);
 

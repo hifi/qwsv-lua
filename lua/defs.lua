@@ -250,3 +250,15 @@ function find(start, field, value)
         return false
     end)()
 end
+
+--
+-- pure Lua rint() built-in
+--
+local mfloor = math.floor
+function rint(num)
+    if num > 0 then
+        return mfloor(num + 0.5)
+    else
+        return mceil(num - 0.5)
+    end
+end
