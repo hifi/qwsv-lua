@@ -1507,6 +1507,49 @@ int PF_vec3(lua_State *L)
     return 1;
 }
 
+int PF_field(lua_State *L)
+{
+    const char *name;
+    const char *type;
+
+    if (lua_gettop(L) != 2)
+        luaL_error(L, "field() requires 2 args");
+
+
+    name = luaL_checkstring(L, 1);
+    type = luaL_checkstring(L, 2);
+
+    lua_pushstring(L, "fields");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+
+    // ensure we have a table
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        lua_newtable(L);
+    }
+
+    printf("adding new field '%s %s'\n", type, name);
+
+    lua_pushstring(L, name);
+
+    if (!strcmp(type, "float")) {
+        lua_pushnumber(L, 0);
+    } else if (!strcmp(type, "string")) {
+        lua_pushstring(L, "");
+    } else if (!strcmp(type, "vector")) {
+        PR_Vec3_New(L);
+    } else {
+        lua_pushnil(L);
+    }
+
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "fields");
+    lua_settable(L, LUA_REGISTRYINDEX);
+
+    return 0;
+}
+
 void PR_InstallBuiltins(void)
 {
     lua_register(L, "dprint", PF_dprint);
@@ -1560,6 +1603,7 @@ void PR_InstallBuiltins(void)
     lua_register(L, "walkmove", PF_walkmove);
     lua_register(L, "checkbottom", PF_checkbottom);
     lua_register(L, "entities", PF_entities);
+    lua_register(L, "field", PF_field);
 
     // constructor for vec3 data
     lua_register(L, "vec3", PF_vec3);

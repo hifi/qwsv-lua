@@ -45,8 +45,19 @@ static void ED_EnsureFields(edict_t *ed)
     }
 
     if (ed->fields == 0) {
+        lua_pushstring(L, "fields");
+        lua_gettable(L, LUA_REGISTRYINDEX);
+
         lua_newtable(L);
+        lua_pushnil(L);
+        while (lua_next(L, -3) != 0) {
+            lua_pushvalue(L, -2);
+            lua_insert(L, -2);
+            lua_settable(L, -4);
+        }
+
         ed->fields = luaL_ref(L, LUA_REGISTRYINDEX);
+        lua_pop(L, 1);
     }
 }
 
@@ -441,15 +452,27 @@ int ED_FindFunction(const char *name)
     return LUA_NOREF;
 }
 
-#define PUSH_BOOLEAN(s) \
-    if (strcmp(key, #s) == 0) { \
-        lua_pushboolean(L, (*e)->v.s); \
-        return 1; \
-    }
-
 #define PUSH_FLOAT(s) \
     if (strcmp(key, #s) == 0) { \
         lua_pushnumber(L, (*e)->v.s); \
+        return 1; \
+    }
+
+#define PUSH_ENTREF(s) \
+    if (strcmp(key, #s) == 0) { \
+        if ((*e)->v.s == 0) \
+            lua_rawgeti(L, LUA_REGISTRYINDEX, EDICT_NUM(0)->ref); \
+        else \
+            lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
+        return 1; \
+    }
+
+#define PUSH_STRINGREF(s) \
+    if (strcmp(key, #s) == 0) { \
+        if ((*e)->v.s == 0) \
+            lua_pushstring(L, ""); \
+        else \
+            lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->v.s); \
         return 1; \
     }
 
@@ -489,8 +512,8 @@ static int ED_mt_index(lua_State *L)
     PUSH_VEC3(velocity);
     PUSH_VEC3(angles);
     PUSH_VEC3(avelocity);
-    PUSH_REF(classname);
-    PUSH_REF(model);
+    PUSH_STRINGREF(classname);
+    PUSH_STRINGREF(model);
     PUSH_FLOAT(frame);
     PUSH_FLOAT(skin);
     PUSH_FLOAT(effects);
@@ -502,11 +525,11 @@ static int ED_mt_index(lua_State *L)
     PUSH_REF(think);
     PUSH_REF(blocked);
     PUSH_FLOAT(nextthink);
-    PUSH_REF(groundentity);
+    PUSH_ENTREF(groundentity);
     PUSH_FLOAT(health);
     PUSH_FLOAT(frags);
     PUSH_FLOAT(weapon);
-    PUSH_REF(weaponmodel);
+    PUSH_STRINGREF(weaponmodel);
     PUSH_FLOAT(weaponframe);
     PUSH_FLOAT(currentammo);
     PUSH_FLOAT(ammo_shells);
@@ -515,17 +538,17 @@ static int ED_mt_index(lua_State *L)
     PUSH_FLOAT(ammo_cells);
     PUSH_FLOAT(items);
     PUSH_FLOAT(takedamage);
-    PUSH_REF(chain);
+    PUSH_ENTREF(chain);
     PUSH_FLOAT(deadflag);
     PUSH_VEC3(view_ofs);
     PUSH_FLOAT(button0);
     PUSH_FLOAT(button1);
     PUSH_FLOAT(button2);
     PUSH_FLOAT(impulse);
-    PUSH_BOOLEAN(fixangle);
+    PUSH_FLOAT(fixangle);
     PUSH_VEC3(v_angle);
-    PUSH_REF(netname);
-    PUSH_REF(enemy);
+    PUSH_STRINGREF(netname);
+    PUSH_ENTREF(enemy);
     PUSH_FLOAT(flags);
     PUSH_FLOAT(colormap);
     PUSH_FLOAT(team);
@@ -537,22 +560,22 @@ static int ED_mt_index(lua_State *L)
     PUSH_FLOAT(watertype);
     PUSH_FLOAT(ideal_yaw);
     PUSH_FLOAT(yaw_speed);
-    PUSH_REF(aiment);
-    PUSH_REF(goalentity);
+    PUSH_ENTREF(aiment);
+    PUSH_ENTREF(goalentity);
     PUSH_FLOAT(spawnflags);
-    PUSH_REF(target);
-    PUSH_REF(targetname);
+    PUSH_ENTREF(target);
+    PUSH_STRINGREF(targetname);
     PUSH_FLOAT(dmg_take);
     PUSH_FLOAT(dmg_save);
-    PUSH_REF(dmg_inflictor);
-    PUSH_REF(owner);
+    PUSH_ENTREF(dmg_inflictor);
+    PUSH_ENTREF(owner);
     PUSH_VEC3(movedir);
-    PUSH_REF(message);
+    PUSH_STRINGREF(message);
     PUSH_FLOAT(sounds);
-    PUSH_REF(noise);
-    PUSH_REF(noise1);
-    PUSH_REF(noise2);
-    PUSH_REF(noise3);
+    PUSH_STRINGREF(noise);
+    PUSH_STRINGREF(noise1);
+    PUSH_STRINGREF(noise2);
+    PUSH_STRINGREF(noise3);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, (*e)->fields);
     lua_pushstring(L, key);
@@ -561,13 +584,6 @@ static int ED_mt_index(lua_State *L)
 
     return 1;
 }
-
-#define SET_BOOLEAN(s)  \
-    if (strcmp(key, #s) == 0) { \
-        luaL_checktype(L, 3, LUA_TBOOLEAN); \
-        (*e)->v.s = lua_toboolean(L, 3); \
-        return 0; \
-    }
 
 #define SET_FLOAT(s)  \
     if (strcmp(key, #s) == 0) { \
@@ -658,7 +674,7 @@ static int ED_mt_newindex(lua_State *L)
     SET_FLOAT(button1);
     SET_FLOAT(button2);
     SET_FLOAT(impulse);
-    SET_BOOLEAN(fixangle);
+    SET_FLOAT(fixangle);
     SET_VEC3(v_angle);
     SET_REF(netname);
     SET_EDICT(enemy);
@@ -774,6 +790,9 @@ void PR_LoadProgs(void)
     luaL_newmetatable(L, "edict_t");
     luaL_setfuncs(L, ED_mt, 0);
     lua_pop(L, 1);
+
+    lua_newtable(L);
+    lua_setfield(L, LUA_REGISTRYINDEX, "fields");
 
     PR_InstallBuiltins();
 
