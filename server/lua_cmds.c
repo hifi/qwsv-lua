@@ -1518,8 +1518,6 @@ int PF_field(lua_State *L)
         lua_newtable(L);
     }
 
-    printf("adding new field '%s %s'\n", type, name);
-
     lua_pushstring(L, name);
 
     if (!strcmp(type, "float")) {
