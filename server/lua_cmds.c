@@ -750,41 +750,6 @@ int PF_cvar_set(lua_State *L)
     return 0;
 }
 
-static int findradius_iterator(lua_State *L)
-{
-    edict_t *ent;
-    vec_t *org;
-    vec3_t eorg;
-    float rad;
-    int i, j;
-
-    org = PR_Vec3_ToVec(L, lua_upvalueindex(1));
-    rad = luaL_checknumber(L, lua_upvalueindex(2));
-    i = lua_tointeger(L, lua_upvalueindex(3));
-
-    for (; i < sv.num_edicts; i++) {
-        ent = EDICT_NUM(i);
-        if (ent->free)
-            continue;
-        if (ent->v.solid == SOLID_NOT)
-            continue;
-        for (j = 0; j < 3; j++)
-            eorg[j] =
-                org[j] - (ent->v.origin[j] +
-                          (ent->v.mins[j] + ent->v.maxs[j]) * 0.5);
-        if (Length(eorg) > rad)
-            continue;
-
-        lua_pushinteger(L, i + 1);
-        lua_replace(L, lua_upvalueindex(3));
-
-        ED_PushEdict(L, ent);
-        return 1;
-    }
-
-    return 0;
-}
-
 /*
 =================
 PF_findradius
@@ -796,10 +761,35 @@ findradius (origin, radius)
 */
 int PF_findradius(lua_State *L)
 {
-    lua_pushvalue(L, 1);
-    lua_pushvalue(L, 2);
-    lua_pushnumber(L, 0);
-    lua_pushcclosure(L, findradius_iterator, 3);
+    edict_t *ent, *chain;
+    float rad;
+    float *org;
+    vec3_t eorg;
+    int i, j;
+
+    chain = (edict_t *) sv.edicts;
+
+    org = PR_Vec3_ToVec(L, 1);
+    rad = luaL_checknumber(L, 2);
+
+    ent = NEXT_EDICT(sv.edicts);
+    for (i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent)) {
+        if (ent->free)
+            continue;
+        if (ent->v.solid == SOLID_NOT)
+            continue;
+        for (j = 0; j < 3; j++)
+            eorg[j] =
+                org[j] - (ent->v.origin[j] +
+                          (ent->v.mins[j] + ent->v.maxs[j]) * 0.5);
+        if (Length(eorg) > rad)
+            continue;
+
+        ent->v.chain = EDICT_TO_PROG(chain);
+        chain = ent;
+    }
+
+    ED_PushEdict(L, ent);
     return 1;
 }
 
