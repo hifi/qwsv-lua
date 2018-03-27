@@ -34,6 +34,8 @@ func_t SpectatorConnect;
 func_t SpectatorThink;
 func_t SpectatorDisconnect;
 
+edict_t null_edict; // init hack
+
 static void ED_EnsureFields(edict_t *ed)
 {
     if (ed->ref == 0) {
@@ -793,6 +795,12 @@ void PR_LoadProgs(void)
 
     lua_newtable(L);
     lua_setfield(L, LUA_REGISTRYINDEX, "fields");
+
+    // set some defaults with null edict
+    ED_EnsureFields(&null_edict);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, null_edict.ref); \
+    lua_setglobal(L, "world");
+    lua_setglobal(L, "self");
 
     PR_InstallBuiltins();
 
