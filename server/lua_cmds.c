@@ -789,7 +789,7 @@ int PF_findradius(lua_State *L)
         chain = ent;
     }
 
-    ED_PushEdict(L, ent);
+    ED_PushEdict(L, chain);
     return 1;
 }
 
@@ -1497,6 +1497,11 @@ int PF_vec3(lua_State *L)
     return 1;
 }
 
+int PF_nullfunc(lua_State *L)
+{
+    return 0;
+}
+
 int PF_field(lua_State *L)
 {
     const char *name;
@@ -1526,6 +1531,8 @@ int PF_field(lua_State *L)
         lua_pushstring(L, "");
     } else if (!strcmp(type, "vector")) {
         PR_Vec3_New(L);
+    } else if (!strcmp(type, "function")) {
+        lua_pushcfunction(L, PF_nullfunc);
     } else {
         lua_pushnil(L);
     }

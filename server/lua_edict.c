@@ -356,7 +356,7 @@ void ED_LoadFromFile(char *data)
     inhibit = 0;
 
     // XXX: this is a stupid place to do this
-    for (i = 1; i <= MAX_CLIENTS; i++) {
+    for (i = 1; i < MAX_EDICTS; i++) {
         ED_EnsureFields(EDICT_NUM(i));
     }
 
@@ -798,9 +798,8 @@ void PR_LoadProgs(void)
 
     // set some defaults with null edict
     ED_EnsureFields(&null_edict);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, null_edict.ref); \
+    lua_rawgeti(L, LUA_REGISTRYINDEX, null_edict.ref);
     lua_setglobal(L, "world");
-    lua_setglobal(L, "self");
 
     PR_InstallBuiltins();
 
